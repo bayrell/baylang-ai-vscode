@@ -1,0 +1,53 @@
+{
+	"name": "baylang-ai",
+	"displayName": "BayLang AI",
+	"description": "BayLang AI. Chat bot",
+	"publisher": "BAYRELL",
+	"version": "0.0.1",
+	"main": "index.js",
+	"author": "Ildar Bikmamatov <ildar@bayrell.org>",
+	"license": "Apache-2.0",
+	"homepage": "https://github.com/bayrell",
+	"extensionUri": "https://github.com/bayrell/baylang-ai-vscode",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/bayrell/baylang-ai-vscode"
+	},
+	"scripts": {
+		"vsce": "./node_modules/.bin/vsce",
+		"build": "./node_modules/.bin/vsce package",
+		"install_plugin": "install_vsix baylang-ai 0.0.1 ./baylang-ai-0.0.1.vsix"
+	},
+	"devDependencies": {
+		"@vscode/vsce": "^3.4.0"
+	},
+	"activationEvents": [
+		"onStartupFinished"
+	],
+	"engines": {
+		"vscode": "^1.98.0"
+	},
+	"categories": [
+		"Programming Languages"
+	],
+	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "baylang-ai-container",
+					"title": "BayLang AI",
+					"icon": "baylang.png"
+				}
+			]
+		},
+		"views": {
+			"baylang-ai-container": [
+				{
+					"type": "webview",
+					"id": "baylang-ai-view",
+					"name": "BayLang AI"
+				}
+			]
+		}
+	}
+}
