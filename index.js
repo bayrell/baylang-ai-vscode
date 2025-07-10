@@ -3,7 +3,6 @@ const extension = vscode.extensions.getExtension("BAYRELL.baylang-ai");
 
 function activate(context)
 {
-	console.log("Activate");
 	var provider = new BayLangViewProvider(context);
 	context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider(provider.getId(), provider)
@@ -27,7 +26,6 @@ class BayLangViewProvider
 	
 	resolveWebviewView(panel, context, token)
 	{
-		console.log("Resolve webview");
 		this.panel = panel;
 		panel.webview.options = {
 			enableScripts: true,
@@ -35,20 +33,31 @@ class BayLangViewProvider
 				this.extensionUri
 			]
 		};
-		panel.webview.html = this.getWebviewContent();
+		panel.webview.html = this.getWebviewContent(panel);
 	}
 	
-	getWebviewContent()
+	getWebviewContent(panel)
 	{
+		const getLink = (uri) =>
+			panel.webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, uri));
 		return `
 		<!DOCTYPE html>
 		<html lang="ru">
 		<head>
 			<meta charset="UTF-8">
 			<title>BayLang AI</title>
+			<link href="${getLink("dist/main.css")}" rel="stylesheet" />
+			<style>
+			body *{ box-sizing: border-box; }
+			:root{
+				--border-color: #e0e1e6;
+			}
+			</style>
 		</head>
 		<body>
-			<h1>BayLang</h1>
+			<div class="app"></div>
+			<script src="${getLink("dist/vue.runtime.global.prod.js")}"></script>
+			<script src="${getLink("dist/main.js")}"></script>
 		</body>
 		</html>
 	  `;
