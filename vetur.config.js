@@ -1,5 +1,8 @@
 module.exports = {
 	projects: [
-		'./app'
+		{
+			root: './app',
+			jsconfig: './jsconfig.json'
+		}
 	]
 }

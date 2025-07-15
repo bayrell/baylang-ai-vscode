@@ -128,6 +128,69 @@ class ApiProvider
 	
 	
 	/**
+	 * Delete chat
+	 */
+	async deleteChat(chat_id)
+	{
+		try
+		{
+			var response = await fetch(
+				this.url + "/api/chat/app.chat/delete",
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/x-www-form-urlencoded",
+					},
+					body: new URLSearchParams({
+						"data[chat_id]": chat_id,
+					}),
+				}
+			);
+			return await response.json();
+		}
+		catch (e)
+		{
+			return {
+				code: -1,
+				message: e.message,
+			};
+		}
+	}
+	
+	
+	/**
+	 * Rename chat
+	 */
+	async renameChat(chat_id, title)
+	{
+		try
+		{
+			var response = await fetch(
+				this.url + "/api/chat/app.chat/rename",
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/x-www-form-urlencoded",
+					},
+					body: new URLSearchParams({
+						"data[chat_id]": chat_id,
+						"data[title]": title,
+					}),
+				}
+			);
+			return await response.json();
+		}
+		catch (e)
+		{
+			return {
+				code: -1,
+				message: e.message,
+			};
+		}
+	}
+	
+	
+	/**
 	 * Send message
 	 */
 	async sendMessage(chat_id, message)
@@ -216,7 +279,37 @@ class BayLangViewProvider
 				"payload": result,
 			})
 		}
-		else if (message.command == "sendMessage")
+		else if (message.command == "delete_chat")
+		{
+			var chat_id = message.payload.chat_id;
+			var result = await this.api.deleteChat(chat_id, name);
+			if (result.code == 1)
+			{
+				this.panel.webview.postMessage({
+					"command": "delete_chat",
+					"payload": {
+						chat_id: chat_id,
+					},
+				});
+			}
+		}
+		else if (message.command == "rename_chat")
+		{
+			var chat_id = message.payload.chat_id;
+			var name = message.payload.name;
+			var result = await this.api.renameChat(chat_id, name);
+			if (result.code == 1)
+			{
+				this.panel.webview.postMessage({
+					"command": "rename_chat",
+					"payload": {
+						chat_id: chat_id,
+						name: name,
+					},
+				});
+			}
+		}
+		else if (message.command == "send_message")
 		{
 			var chat_id = message.payload.chat_id;
 			var message = message.payload.message;
@@ -242,6 +335,12 @@ class BayLangViewProvider
 			body *{ box-sizing: border-box; }
 			:root{
 				--border-color: #e0e1e6;
+				--hover-color: #eee;
+				--primary-color: #0077ee;
+				--secondary-color: #5c6370;
+				--danger-color: #e00000;
+				--success-color: #98c379;
+				--gray-color: #6b7280;
 			}
 			</style>
 		</head>
@@ -249,6 +348,15 @@ class BayLangViewProvider
 			<div class="app"></div>
 			<script src="${getLink("dist/vue.runtime.global.js")}"></script>
 			<script src="${getLink("dist/main.js")}"></script>
+			<script>
+				startApp((app, layout) => {
+					console.log("Mount app");
+					app.mount(".app");
+					layout.setImageUrl("${getLink("dist/images")}");
+					window.app = app;
+					window.layout = layout;
+				});
+			</script>
 		</body>
 		</html>
 	  `;

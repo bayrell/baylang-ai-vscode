@@ -44,13 +44,9 @@
 
 <template>
 	<div class="chat">
-		<div class="chat__select">
-			<select v-model="current_chat_id">
-				<option value="">Select chat</option>
-				<option v-for="chat in getChats()" :key="chat.id" :value="chat.id">{{ chat.title }}</option>
-			</select>
-		</div>
-		<div class="chat__history">
+		<ChatList />
+		<ChatDialog />
+		<div class="chat__history" v-if="layout.show_dialog == ''">
 			<Message
 				v-for="message in getMessages()"
 				:key="message.id"
@@ -59,23 +55,28 @@
 		</div>
 		<div class="chat__send_message">
 			<input v-model="message" />
-			<button @click="sendMessage">Send</button>
+			<Button @click="sendMessage">Send</Button>
 		</div>
 	</div>
 </template>
 
 <script>
+import Button from "./Button.vue";
+import ChatDialog from "./ChatDialog.vue";
+import ChatList from "./ChatList.vue";
 import Message from "./Message.vue";
 
 export default {
 	name: "Chat",
 	components: {
+		Button: Button,
+		ChatDialog: ChatDialog,
+		ChatList: ChatList,
 		Message: Message,
 	},
 	data: function(){
 		return {
 			message: "",
-			current_chat_id: "",
 		};
 	},
 	mounted: function()
@@ -83,19 +84,15 @@ export default {
 		this.layout.load();
 	},
 	methods: {
-		getChats()
-		{
-			return this.layout.chats;
-		},
 		getMessages()
 		{
-			var chat = this.layout.findChatById(this.current_chat_id);
+			var chat = this.layout.findChatById(this.layout.current_chat_id);
 			if (!chat) return [];
 			return chat.messages;
 		},
-		sendMessage: function(e)
+		sendMessage(e)
 		{
-			this.layout.sendMessage(this.current_chat_id, this.message);
+			this.layout.sendMessage(this.layout.current_chat_id, this.message);
 			this.message = "";
 		},
 	},
