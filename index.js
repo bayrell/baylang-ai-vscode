@@ -1,11 +1,12 @@
 const vscode = require("vscode");
+const WebSocket = require("ws");
 const extension = vscode.extensions.getExtension("BAYRELL.baylang-ai");
 
 function activate(context)
 {
 	/* Create socket */
 	var api = new ApiProvider("http://app_baylang_ai");
-	//api.connect();
+	api.connect();
 	
 	/* Register provider */
 	var provider = new BayLangViewProvider(context, api);
@@ -46,10 +47,10 @@ class ApiProvider
 	{
 		this.ws = new WebSocket(this.getWebSocket() + "/api/chat/app.chat/socket");
 		this.ws.binaryType = 'arraybuffer';
-		this.ws.onopen = this.onConnect;
-		this.ws.onmessage = this.onMessage;
-		this.ws.onclose = this.onDisconnect;
-		this.ws.onerror = this.onError;
+		this.ws.onopen = this.onConnect.bind(this);
+		this.ws.onmessage = this.onMessage.bind(this);
+		this.ws.onclose = this.onDisconnect.bind(this);
+		this.ws.onerror = this.onError.bind(this);
 	}
 	
 	
@@ -67,6 +68,7 @@ class ApiProvider
 	 */
 	onConnect()
 	{
+		console.log("Connected to websocket");
 	}
 	
 	
@@ -83,10 +85,24 @@ class ApiProvider
 	 */
 	onMessage(message)
 	{
+		/* JSON decode */
+		var item = null;
+		try
+		{
+			item = JSON.parse(message.data);
+		}
+		catch(e)
+		{
+		}
+		
+		/* Check message */
+		if (item == null) return;
+		
+		/* Receive message */
 		for (var i=0; i<this.listeners.length; i++)
 		{
 			var listener = this.listeners[i];
-			listener(message);
+			listener(item);
 		}
 	}
 	
@@ -195,19 +211,30 @@ class ApiProvider
 	 */
 	async sendMessage(chat_id, message)
 	{
-		await fetch(
-			this.url + "/api/chat/app.chat/send",
-			{
-				method: "POST",
-				headers: {
-					"Content-Type": "application/x-www-form-urlencoded",
-				},
-				body: new URLSearchParams({
-					chat_id: chat_id,
-					text: message,
-				}),
-			}
-		);
+		try
+		{
+			var response = await fetch(
+				this.url + "/api/chat/app.chat/send",
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/x-www-form-urlencoded",
+					},
+					body: new URLSearchParams({
+						"data[chat_id]": chat_id,
+						"data[text]": message,
+					}),
+				}
+			);
+			return await response.json();
+		}
+		catch (e)
+		{
+			return {
+				code: -1,
+				message: e.message,
+			};
+		}
 	}
 }
 
@@ -260,9 +287,15 @@ class BayLangViewProvider
 	/**
 	 * Message from api
 	 */
-	async onApiMessage(message)
+	async onApiMessage(data)
 	{
-		console.log(message);
+		if (data.event == "update_chat")
+		{
+			this.panel.webview.postMessage({
+				"command": "update_chat",
+				"payload": data.message,
+			})
+		}
 	}
 	
 	
@@ -313,6 +346,7 @@ class BayLangViewProvider
 		{
 			var chat_id = message.payload.chat_id;
 			var message = message.payload.message;
+			await this.api.sendMessage(chat_id, message);
 		}
 	}
 	

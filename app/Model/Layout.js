@@ -70,7 +70,11 @@ class Layout
 	{
 		if (pos < 0) pos = 0;
 		if (pos >= this.chats.length) pos = this.chats.length - 1;
-		if (this.chats.length == 0) return;
+		if (this.chats.length == 0)
+		{
+			this.current_chat_id = "";
+			return;
+		}
 		
 		var chat = this.chats[pos];
 		this.current_chat_id = chat.id;
@@ -92,6 +96,17 @@ class Layout
 	getCurrentItem()
 	{
 		return this.findChatById(this.current_chat_id);
+	}
+	
+	
+	/**
+	 * Returns current chat id
+	 */
+	getCurrentChatId()
+	{
+		var chat = this.findChatById(this.current_chat_id);
+		if (!chat) return "";
+		return this.current_chat_id;
 	}
 	
 	
@@ -208,17 +223,17 @@ class Layout
 		/* Create message */
 		var item = new ChatMessage()
 		item.sender = "human";
-		item.message = message;
+		item.text = message;
 		
 		/* Add message to history */
 		chat.addMessage(item);
-		return;
+		this.selectItem(chat.id);
 		
 		/* Send message to backend */
 		this.vscode.postMessage({
 			"command": "send_message",
 			"payload": {
-				chat_id: chat_id,
+				chat_id: chat.id,
 				message: message,
 			},
 		});
@@ -243,6 +258,14 @@ class Layout
 			}
 			this.loading = false;
 			console.log("Load chat");
+		}
+		else if (message.command == "update_chat")
+		{
+			var chat_id = message.payload.chat_id;
+			var chat = this.findChatById(chat_id);
+			if (!chat) return;
+			
+			chat.updateMessage(message.payload);
 		}
 	}
 	

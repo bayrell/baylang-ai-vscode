@@ -60,13 +60,13 @@
 <template>
 	<div class="chat_list" :class="{ 'show': showMenu }">
 		<div class="chat_list__name" @click="toggleMenu">
-			<span>{{ currentItem ? currentItem.title : "Select chat" }}</span>
+			<span>{{ currentItem ? currentItem.title : "New chat" }}</span>
 			<img :src="layout.getImage('dropdown.svg')" />
 		</div>
 		<div class="chat_list__items">
 			<div v-if="!layout.loading">
 				<div class="chat_list__item" @click="selectItem(null)">
-					Select chat
+					New chat
 				</div>
 				<div class="chat_list__item" v-for="item in items" :key="item.id"
 					@click="selectItem(item.id)"

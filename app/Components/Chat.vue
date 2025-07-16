@@ -90,9 +90,9 @@ export default {
 			if (!chat) return [];
 			return chat.messages;
 		},
-		sendMessage(e)
+		sendMessage()
 		{
-			this.layout.sendMessage(this.layout.current_chat_id, this.message);
+			this.layout.sendMessage(this.layout.getCurrentChatId(), this.message);
 			this.message = "";
 		},
 	},

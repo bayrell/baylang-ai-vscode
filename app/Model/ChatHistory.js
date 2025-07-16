@@ -62,6 +62,23 @@ class ChatHistory
 	
 	
 	/**
+	 * Update message
+	 */
+	updateMessage(message)
+	{
+		var item = this.findMessageById(message.id);
+		if (!item)
+		{
+			this.addMessage(message);
+		}
+		else
+		{
+			item.text = message.text;
+		}
+	}
+	
+	
+	/**
 	 * Load history
 	 */
 	async load()
