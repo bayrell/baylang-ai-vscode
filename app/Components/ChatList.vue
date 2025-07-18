@@ -89,7 +89,7 @@
 	</div>
 </template>
 
-<script>
+<script lang="js">
 export default {
 	name: "ChatList",
 	data: function(){

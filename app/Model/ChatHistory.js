@@ -6,6 +6,7 @@ class ChatHistory
 	id = "";
 	title = "";
 	messages = [];
+	is_typing = false;
 	
 	
 	/**
@@ -16,6 +17,25 @@ class ChatHistory
 		this.id = data.id;
 		this.title = data.name;
 		this.addMessages(data.messages);
+	}
+	
+	
+	/**
+	 * Returns true if assistant is typing
+	 */
+	isTyping()
+	{
+		return this.is_typing;
+	}
+	
+	
+	/**
+	 * Set typing
+	 */
+	setTyping(value)
+	{
+		if (this.is_typing == value) return;
+		this.is_typing = value;
 	}
 	
 	

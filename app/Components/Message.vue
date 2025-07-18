@@ -9,13 +9,17 @@
 	</div>
 </template>
 
-<script>
+<script lang="js">
 export default {
 	name: "Message",
 	props: {
 		message: {
 			type: Object,
 		}
+	},
+	updated: function()
+	{
+		this.$emit("update");
 	},
 	methods: {
 		getClass()

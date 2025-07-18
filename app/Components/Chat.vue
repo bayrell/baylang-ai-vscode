@@ -46,12 +46,14 @@
 	<div class="chat">
 		<ChatList />
 		<ChatDialog />
-		<div class="chat__history" v-if="layout.show_dialog == ''">
+		<div class="chat__history" v-if="layout.show_dialog == ''" ref="history">
 			<Message
 				v-for="message in getMessages()"
 				:key="message.id"
 				:message="message"
+				@update="scrollHistory"
 			/>
+			<ChatTyping v-if="currentItem && currentItem.isTyping()" />
 		</div>
 		<div class="chat__send_message">
 			<input v-model="message" />
@@ -60,10 +62,11 @@
 	</div>
 </template>
 
-<script>
+<script lang="js">
 import Button from "./Button.vue";
 import ChatDialog from "./ChatDialog.vue";
 import ChatList from "./ChatList.vue";
+import ChatTyping from "./ChatTyping.vue";
 import Message from "./Message.vue";
 
 export default {
@@ -72,6 +75,7 @@ export default {
 		Button: Button,
 		ChatDialog: ChatDialog,
 		ChatList: ChatList,
+		ChatTyping: ChatTyping,
 		Message: Message,
 	},
 	data: function(){
@@ -79,11 +83,28 @@ export default {
 			message: "",
 		};
 	},
+	computed: {
+		currentItem()
+		{
+			return this.layout.getCurrentItem();
+		},
+	},
 	mounted: function()
 	{
 		this.layout.load();
 	},
+	updated: function()
+	{
+		this.scrollHistory();
+	},
 	methods: {
+		scrollHistory()
+		{
+			this.$nextTick(() => {
+				var history = this.$refs["history"];
+				history.scrollTop = history.scrollHeight;
+			});
+		},
 		getMessages()
 		{
 			var chat = this.layout.findChatById(this.layout.current_chat_id);

@@ -47,7 +47,7 @@
 	</div>
 </template>
 
-<script>
+<script lang="js">
 import Button from "./Button.vue";
 
 export default {

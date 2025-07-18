@@ -289,13 +289,10 @@ class BayLangViewProvider
 	 */
 	async onApiMessage(data)
 	{
-		if (data.event == "update_chat")
-		{
-			this.panel.webview.postMessage({
-				"command": "update_chat",
-				"payload": data.message,
-			})
-		}
+		this.panel.webview.postMessage({
+			"command": data.event,
+			"payload": data.message,
+		})
 	}
 	
 	

@@ -265,7 +265,28 @@ class Layout
 			var chat = this.findChatById(chat_id);
 			if (!chat) return;
 			
+			chat.setTyping(false);
 			chat.updateMessage(message.payload);
+		}
+		else if (message.command == "start_chat")
+		{
+			var chat_id = message.payload.chat_id;
+			var chat = this.findChatById(chat_id);
+			if (!chat) return;
+			
+			chat.setTyping(true);
+		}
+		else if (message.command == "end_chat")
+		{
+			var chat_id = message.payload.chat_id;
+			var chat = this.findChatById(chat_id);
+			if (!chat) return;
+			
+			chat.setTyping(false);
+		}
+		else
+		{
+			console.log(message);
 		}
 	}
 	
