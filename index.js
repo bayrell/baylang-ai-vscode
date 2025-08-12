@@ -19,6 +19,58 @@ function activate(context)
 	);
 }
 
+
+/**
+ * Build URLSearchParams key
+ */
+function buildURLSearchParamsKey(path)
+{
+	if (path.length == 0) return "";
+	if (path.length == 1) return path[0];
+	var name = path[0];
+	path = path.slice(1);
+	return name + "[" + path.join("][") + "]";
+}
+
+
+/**
+ * Update URLSearchParams
+ */
+function updateURLSearchParams(post, path, params)
+{
+	if (Array.isArray(post))
+	{
+		for (var i=0; i<post.length; i++)
+		{
+			updateURLSearchParams(post[i], path.concat(i), params);
+		}
+	}
+	else if (typeof post == "object" && !(post instanceof File))
+	{
+		for (var key in post)
+		{
+			updateURLSearchParams(post[key], path.concat(key), params);
+		}
+	}
+	else
+	{
+		var key = buildURLSearchParamsKey(path);
+		params.append(key, post);
+	}
+}
+
+
+/**
+ * Returns URLSearchParams
+ */
+function getURLSearchParams(post)
+{
+	var params = new URLSearchParams();
+	updateURLSearchParams(post, [], params);
+	return params;
+}
+
+
 class ApiProvider
 {
 	constructor(url)
@@ -45,7 +97,7 @@ class ApiProvider
 	 */
 	connect()
 	{
-		this.ws = new WebSocket(this.getWebSocket() + "/api/chat/app.chat/socket");
+		this.ws = new WebSocket(this.getWebSocket() + "/api/chat/socket");
 		this.ws.binaryType = 'arraybuffer';
 		this.ws.onopen = this.onConnect.bind(this);
 		this.ws.onmessage = this.onMessage.bind(this);
@@ -123,7 +175,35 @@ class ApiProvider
 		try
 		{
 			var response = await fetch(
-				this.url + "/api/chat/app.chat/load",
+				this.url + "/api/chat/load",
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/x-www-form-urlencoded",
+					},
+				}
+			);
+			return await response.json();
+		}
+		catch (e)
+		{
+			return {
+				code: -1,
+				message: e.message,
+			};
+		}
+	}
+	
+	
+	/**
+	 * Load agents
+	 */
+	async loadAgents()
+	{
+		try
+		{
+			var response = await fetch(
+				this.url + "/api/settings/agent",
 				{
 					method: "POST",
 					headers: {
@@ -151,14 +231,14 @@ class ApiProvider
 		try
 		{
 			var response = await fetch(
-				this.url + "/api/chat/app.chat/delete",
+				this.url + "/api/chat/delete",
 				{
 					method: "POST",
 					headers: {
 						"Content-Type": "application/x-www-form-urlencoded",
 					},
 					body: new URLSearchParams({
-						"data[chat_id]": chat_id,
+						"chat_id": chat_id,
 					}),
 				}
 			);
@@ -182,15 +262,15 @@ class ApiProvider
 		try
 		{
 			var response = await fetch(
-				this.url + "/api/chat/app.chat/rename",
+				this.url + "/api/chat/rename",
 				{
 					method: "POST",
 					headers: {
 						"Content-Type": "application/x-www-form-urlencoded",
 					},
 					body: new URLSearchParams({
-						"data[chat_id]": chat_id,
-						"data[title]": title,
+						"chat_id": chat_id,
+						"title": title,
 					}),
 				}
 			);
@@ -209,21 +289,18 @@ class ApiProvider
 	/**
 	 * Send message
 	 */
-	async sendMessage(chat_id, message)
+	async sendMessage(data)
 	{
 		try
 		{
 			var response = await fetch(
-				this.url + "/api/chat/app.chat/send",
+				this.url + "/api/chat/send",
 				{
 					method: "POST",
 					headers: {
 						"Content-Type": "application/x-www-form-urlencoded",
 					},
-					body: new URLSearchParams({
-						"data[chat_id]": chat_id,
-						"data[text]": message,
-					}),
+					body: getURLSearchParams(data),
 				}
 			);
 			return await response.json();
@@ -291,7 +368,7 @@ class BayLangViewProvider
 	{
 		this.panel.webview.postMessage({
 			"command": data.event,
-			"payload": data.message,
+			"payload": data,
 		})
 	}
 	
@@ -303,11 +380,18 @@ class BayLangViewProvider
 	{
 		if (message.command == "load")
 		{
-			var result = await this.api.load();
+			const [load_result, load_agents_result] = await Promise.all([
+				this.api.load(),
+				this.api.loadAgents(),
+			]);
 			this.panel.webview.postMessage({
 				"command": "load",
-				"payload": result,
-			})
+				"payload": load_result,
+			});
+			this.panel.webview.postMessage({
+				"command": "load_agents",
+				"payload": load_agents_result,
+			});
 		}
 		else if (message.command == "delete_chat")
 		{
@@ -341,9 +425,7 @@ class BayLangViewProvider
 		}
 		else if (message.command == "send_message")
 		{
-			var chat_id = message.payload.chat_id;
-			var message = message.payload.message;
-			await this.api.sendMessage(chat_id, message);
+			var result = await this.api.sendMessage(message.payload);
 		}
 	}
 	

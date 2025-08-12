@@ -10,7 +10,9 @@ class Layout
 	 */
 	constructor()
 	{
+		this.agents = [];
 		this.chats = [];
+		this.current_agent_id = null;
 		this.current_chat_id = null;
 		this.image_url = "";
 		this.show_dialog = "";
@@ -208,7 +210,7 @@ class Layout
 	/**
 	 * Send message
 	 */
-	sendMessage(chat_id, message)
+	sendMessage(chat_id, agent_id, message)
 	{
 		/* Find chat by id */
 		var chat = this.findChatById(chat_id);
@@ -216,14 +218,14 @@ class Layout
 		{
 			chat = new ChatHistory();
 			chat.id = Date.now();
-			chat.title = "Chat " + chat.id;
+			chat.title = "Chat";
 			this.chats.push(chat);
 		}
 		
 		/* Create message */
 		var item = new ChatMessage()
 		item.sender = "human";
-		item.text = message;
+		item.setContent(message);
 		
 		/* Add message to history */
 		chat.addMessage(item);
@@ -233,8 +235,10 @@ class Layout
 		this.vscode.postMessage({
 			"command": "send_message",
 			"payload": {
-				chat_id: chat.id,
-				message: message,
+				id: chat.id,
+				agent: agent_id,
+				name: chat.title,
+				content: item.content,
 			},
 		});
 	}
@@ -259,6 +263,10 @@ class Layout
 			this.loading = false;
 			console.log("Load chat");
 		}
+		else if (message.command == "load_agents" & message.payload.code == 1)
+		{
+			this.agents = message.payload.data.items;
+		}
 		else if (message.command == "update_chat")
 		{
 			var chat_id = message.payload.chat_id;
@@ -266,15 +274,27 @@ class Layout
 			if (!chat) return;
 			
 			chat.setTyping(false);
-			chat.updateMessage(message.payload);
+			chat.updateMessage({
+				id: message.payload.message_id,
+				sender: message.payload.sender,
+				content: message.payload.content,
+			});
 		}
-		else if (message.command == "start_chat")
+		else if (message.command == "start_chat" || message.command == "step_chat")
 		{
 			var chat_id = message.payload.chat_id;
 			var chat = this.findChatById(chat_id);
 			if (!chat) return;
 			
 			chat.setTyping(true);
+		}
+		else if (message.command == "update_title")
+		{
+			var chat_id = message.payload.chat_id;
+			var chat = this.findChatById(chat_id);
+			if (!chat) return;
+			
+			chat.title = message.payload.chat_name;
 		}
 		else if (message.command == "end_chat")
 		{

@@ -39,6 +39,9 @@
 			cursor: pointer;
 		}
 	}
+	&__send_message .input[name=message]{
+		min-height: 75px;
+	}
 }
 </style>
 
@@ -55,8 +58,17 @@
 			/>
 			<ChatTyping v-if="currentItem && currentItem.isTyping()" />
 		</div>
+		<div class="chat_main__tools">
+			<Input
+				name="agent"
+				type="select"
+				v-model="layout.current_agent_id"
+				selectMessage="Select agent"
+				:options="getAgents()"
+			/>
+		</div>
 		<div class="chat__send_message">
-			<input v-model="message" />
+			<Input type="textarea" name="message" v-model="message" />
 			<Button @click="sendMessage">Send</Button>
 		</div>
 	</div>
@@ -67,6 +79,7 @@ import Button from "./Button.vue";
 import ChatDialog from "./ChatDialog.vue";
 import ChatList from "./ChatList.vue";
 import ChatTyping from "./ChatTyping.vue";
+import Input from "./Input.vue";
 import Message from "./Message.vue";
 
 export default {
@@ -76,6 +89,7 @@ export default {
 		ChatDialog: ChatDialog,
 		ChatList: ChatList,
 		ChatTyping: ChatTyping,
+		Input: Input,
 		Message: Message,
 	},
 	data: function(){
@@ -102,7 +116,16 @@ export default {
 		{
 			this.$nextTick(() => {
 				var history = this.$refs["history"];
-				history.scrollTop = history.scrollHeight;
+				if (history) history.scrollTop = history.scrollHeight;
+			});
+		},
+		getAgents()
+		{
+			return this.layout.agents.map((item)=>{
+				return {
+					"key": item.id,
+					"value": item.name,
+				};
 			});
 		},
 		getMessages()
@@ -113,7 +136,11 @@ export default {
 		},
 		sendMessage()
 		{
-			this.layout.sendMessage(this.layout.getCurrentChatId(), this.message);
+			this.layout.sendMessage(
+				this.layout.current_chat_id,
+				this.layout.current_agent_id,
+				this.message
+			);
 			this.message = "";
 		},
 	},

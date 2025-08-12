@@ -20,6 +20,7 @@
 		position: absolute;
 		background: white;
 		border: 1px var(--border-color) solid;
+		z-index: 999;
 	}
 	&__item{
 		display: flex;

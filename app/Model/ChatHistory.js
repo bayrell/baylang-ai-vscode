@@ -93,7 +93,7 @@ class ChatHistory
 		}
 		else
 		{
-			item.text = message.text;
+			item.content = message.content;
 		}
 	}
 	
