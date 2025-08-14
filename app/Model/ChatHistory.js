@@ -40,6 +40,14 @@ class ChatHistory
 	
 	
 	/**
+	 * Add files
+	 */
+	addFiles(files)
+	{
+	}
+	
+	
+	/**
 	 * Add message
 	 */
 	addMessage(data)

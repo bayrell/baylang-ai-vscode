@@ -1,3 +1,4 @@
+const fs = require("fs");
 const vscode = require("vscode");
 const WebSocket = require("ws");
 const extension = vscode.extensions.getExtension("BAYRELL.baylang-ai");
@@ -426,6 +427,32 @@ class BayLangViewProvider
 		else if (message.command == "send_message")
 		{
 			var result = await this.api.sendMessage(message.payload);
+		}
+		else if (message.command == "add_files")
+		{
+			var files = [];
+			for (var i=0; i<message.payload.files.length; i++)
+			{
+				var file_path = message.payload.files[i];
+				try
+				{
+					var data = await fs.promises.readFile(file_path, "utf8");
+					files.push({
+						path: file_path,
+						content: Buffer.from(data),
+					});
+				}
+				catch (err)
+				{
+					console.log(err);
+				}
+			}
+			this.panel.webview.postMessage({
+				"command": "add_files",
+				"payload": {
+					"files": files,
+				},
+			});
 		}
 	}
 	

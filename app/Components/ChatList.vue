@@ -106,7 +106,7 @@ export default {
 		},
 		currentItem()
 		{
-			return this.layout.getCurrentItem();
+			return this.layout.getCurrentChat();
 		},
 	},
 	methods:

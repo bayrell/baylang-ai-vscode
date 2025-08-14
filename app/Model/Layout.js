@@ -14,6 +14,7 @@ class Layout
 		this.chats = [];
 		this.current_agent_id = null;
 		this.current_chat_id = null;
+		this.is_drag = false;
 		this.image_url = "";
 		this.show_dialog = "";
 		this.show_dialog_id = "";
@@ -28,6 +29,57 @@ class Layout
 	bind()
 	{
 		window.addEventListener("message", this.onMessage.bind(this));
+		
+		/* Drag start */
+		document.body.addEventListener("dragenter", (event) => {
+			event.preventDefault();
+			event.stopPropagation();
+			
+			/* Start drag and drop */
+			this.is_drag = true;
+		}, true);
+		document.body.addEventListener("dragleave", (event) => {
+			event.preventDefault();
+			event.stopPropagation();
+			
+			/* Stop drag and drop */
+			this.is_drag = false;
+		}, true);
+		document.body.addEventListener("drop", async (event) => {
+			event.preventDefault();
+			event.stopPropagation();
+			
+			/* Stop drag and drop */
+			this.is_drag = false;
+			
+			/* Get files */
+			var files = [];
+			for (var i=0; i<event.dataTransfer.items.length; i++)
+			{
+				var item = event.dataTransfer.items[i];
+				if (item.kind == "string" && item.type == "text/plain")
+				{
+					files.push(new Promise(
+						(resolve) => {
+							item.getAsString((filename) => {
+								resolve(filename);
+							})
+						}
+					));
+				}
+			}
+			
+			/* Resolve files */
+			files = await Promise.all(files);
+			
+			/* Post message */
+			this.vscode.postMessage({
+				command: "add_files",
+				payload: {
+					files: files,
+				},
+			});
+		}, true);
 	}
 	
 	
@@ -95,7 +147,7 @@ class Layout
 	/**
 	 * Returns current item
 	 */
-	getCurrentItem()
+	getCurrentChat()
 	{
 		return this.findChatById(this.current_chat_id);
 	}
@@ -149,6 +201,19 @@ class Layout
 		this.show_dialog = "delete";
 		this.show_dialog_id = chat_id;
 		this.current_chat_id = chat_id;
+	}
+	
+	
+	/**
+	 * Create chat
+	 */
+	createChat()
+	{
+		var chat = new ChatHistory();
+		chat.id = Date.now();
+		chat.title = "Chat";
+		this.chats.push(chat);
+		return chat;
 	}
 	
 	
@@ -216,10 +281,7 @@ class Layout
 		var chat = this.findChatById(chat_id);
 		if (!chat)
 		{
-			chat = new ChatHistory();
-			chat.id = Date.now();
-			chat.title = "Chat";
-			this.chats.push(chat);
+			chat = this.createChat();
 		}
 		
 		/* Create message */
@@ -230,6 +292,9 @@ class Layout
 		/* Add message to history */
 		chat.addMessage(item);
 		this.selectItem(chat.id);
+		
+		/* Set typing */
+		chat.setTyping(true);
 		
 		/* Send message to backend */
 		this.vscode.postMessage({
@@ -303,6 +368,17 @@ class Layout
 			if (!chat) return;
 			
 			chat.setTyping(false);
+		}
+		else if (message.command == "add_files")
+		{
+			var chat = this.getCurrentChat();
+			if (!chat)
+			{
+				chat = this.createChat();
+				this.selectItem(chat.id);
+			}
+			var files = message.payload.files;
+			chat.addFiles(files);
 		}
 		else
 		{

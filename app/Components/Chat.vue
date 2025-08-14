@@ -4,6 +4,9 @@
 	flex-direction: column;
 	height: 100vh;
 	padding-bottom: 20px;
+	&--drag{
+		border: 2px solid var(--primary-color);
+	}
 	&__history{
 		flex: 1;
 		overflow-y: auto;
@@ -46,7 +49,7 @@
 </style>
 
 <template>
-	<div class="chat">
+	<div class="chat" :class="getClassName()">
 		<ChatList />
 		<ChatDialog />
 		<div class="chat__history" v-if="layout.show_dialog == ''" ref="history">
@@ -100,7 +103,7 @@ export default {
 	computed: {
 		currentItem()
 		{
-			return this.layout.getCurrentItem();
+			return this.layout.getCurrentChat();
 		},
 	},
 	mounted: function()
@@ -127,6 +130,12 @@ export default {
 					"value": item.name,
 				};
 			});
+		},
+		getClassName()
+		{
+			var arr = [];
+			if (this.layout.is_drag) arr.push("chat--drag")
+			return arr.join(" ");
 		},
 		getMessages()
 		{
