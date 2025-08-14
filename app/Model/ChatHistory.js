@@ -5,6 +5,7 @@ class ChatHistory
 {
 	id = "";
 	title = "";
+	files = [];
 	messages = [];
 	is_typing = false;
 	
@@ -40,10 +41,70 @@ class ChatHistory
 	
 	
 	/**
+	 * Find file by path
+	 */
+	findFile(path)
+	{
+		return this.files.findIndex((file) => file.path == path);
+	}
+	
+	
+	/**
 	 * Add files
 	 */
 	addFiles(files)
 	{
+		/* Concat files */
+		for (var i=0; i<files.length; i++)
+		{
+			var file = files[i];
+			
+			/* Find file */
+			var index = this.findFile(file.path);
+			if (index < 0)
+			{
+				this.files.push(file);
+				continue;
+			}
+			
+			var find = this.files[index];
+			find.content = file.content;
+		}
+	}
+	
+	
+	/**
+	 * Sort file
+	 */
+	sortFiles()
+	{
+		this.files.sort((a, b) => {
+			var nameA = a.path.toLowerCase();
+			var nameB = b.path.toLowerCase();
+			if (nameA < nameB) return -1;
+			if (nameA > nameB) return 1;
+			return 0;
+		});
+	}
+	
+	
+	/**
+	 * Remove file
+	 */
+	removeFile(path)
+	{
+		var index = this.findFile(path);
+		if (index == -1) return;
+		this.files.splice(index, 1);
+	}
+	
+	
+	/**
+	 * Returns files
+	 */
+	getFiles()
+	{
+		return this.files.map((file) => file.path);
 	}
 	
 	

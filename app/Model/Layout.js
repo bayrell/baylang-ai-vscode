@@ -1,3 +1,4 @@
+import Api from "./Api.js";
 import ChatHistory from "./ChatHistory.js";
 import ChatMessage from "./ChatMessage.js";
 import { markRaw } from "vue";
@@ -10,6 +11,7 @@ class Layout
 	 */
 	constructor()
 	{
+		this.api = null;
 		this.agents = [];
 		this.chats = [];
 		this.current_agent_id = null;
@@ -28,7 +30,10 @@ class Layout
 	 */
 	bind()
 	{
-		window.addEventListener("message", this.onMessage.bind(this));
+		/* Create api */
+		this.api = markRaw(new Api(this.vscode));
+		this.api.bind();
+		this.api.addListener(this.onMessage.bind(this));
 		
 		/* Drag start */
 		document.body.addEventListener("dragenter", (event) => {
@@ -38,6 +43,8 @@ class Layout
 			/* Start drag and drop */
 			this.is_drag = true;
 		}, true);
+		
+		/* Drag leave */
 		document.body.addEventListener("dragleave", (event) => {
 			event.preventDefault();
 			event.stopPropagation();
@@ -45,40 +52,15 @@ class Layout
 			/* Stop drag and drop */
 			this.is_drag = false;
 		}, true);
+		
+		/* Drag drop */
 		document.body.addEventListener("drop", async (event) => {
 			event.preventDefault();
 			event.stopPropagation();
 			
 			/* Stop drag and drop */
 			this.is_drag = false;
-			
-			/* Get files */
-			var files = [];
-			for (var i=0; i<event.dataTransfer.items.length; i++)
-			{
-				var item = event.dataTransfer.items[i];
-				if (item.kind == "string" && item.type == "text/plain")
-				{
-					files.push(new Promise(
-						(resolve) => {
-							item.getAsString((filename) => {
-								resolve(filename);
-							})
-						}
-					));
-				}
-			}
-			
-			/* Resolve files */
-			files = await Promise.all(files);
-			
-			/* Post message */
-			this.vscode.postMessage({
-				command: "add_files",
-				payload: {
-					files: files,
-				},
-			});
+			this.onDrop(event);
 		}, true);
 	}
 	
@@ -315,24 +297,7 @@ class Layout
 	onMessage(event)
 	{
 		var message = event.data;
-		if (message.command == "load" && message.payload.code == 1)
-		{
-			var items = message.payload.data.items;
-			for (var i=0; i<items.length; i++)
-			{
-				var item = items[i];
-				var history = new ChatHistory();
-				history.assign(item);
-				this.chats.push(history);
-			}
-			this.loading = false;
-			console.log("Load chat");
-		}
-		else if (message.command == "load_agents" & message.payload.code == 1)
-		{
-			this.agents = message.payload.data.items;
-		}
-		else if (message.command == "update_chat")
+		if (message.command == "update_chat")
 		{
 			var chat_id = message.payload.chat_id;
 			var chat = this.findChatById(chat_id);
@@ -369,21 +334,6 @@ class Layout
 			
 			chat.setTyping(false);
 		}
-		else if (message.command == "add_files")
-		{
-			var chat = this.getCurrentChat();
-			if (!chat)
-			{
-				chat = this.createChat();
-				this.selectItem(chat.id);
-			}
-			var files = message.payload.files;
-			chat.addFiles(files);
-		}
-		else
-		{
-			console.log(message);
-		}
 	}
 	
 	
@@ -392,9 +342,77 @@ class Layout
 	 */
 	async load()
 	{
-		this.vscode.postMessage({
-			"command": "load",
+		var result = await this.api.call("load");
+		
+		/* Load chat */
+		if (result.chat.code > 0)
+		{
+			var items = result.chat.data.items;
+			for (var i=0; i<items.length; i++)
+			{
+				var item = items[i];
+				var history = new ChatHistory();
+				history.assign(item);
+				this.chats.push(history);
+			}
+		}
+		
+		/* Load agents */
+		if (result.agents.code > 0)
+		{
+			this.agents = result.agents.data.items;
+		}
+		
+		/* Success */
+		this.loading = false;
+		console.log("Load chat");
+	}
+	
+	
+	/**
+	 * On drag drop
+	 */
+	async onDrop(event)
+	{
+		/* Get files */
+		var files = [];
+		for (var i=0; i<event.dataTransfer.items.length; i++)
+		{
+			var item = event.dataTransfer.items[i];
+			if (item.kind == "string" && item.type == "text/plain")
+			{
+				files.push(new Promise(
+					(resolve) => {
+						item.getAsString((filename) => {
+							resolve(filename);
+						})
+					}
+				));
+			}
+		}
+		
+		/* Resolve files */
+		files = await Promise.all(files);
+		
+		/* Read files */
+		files = await this.api.call("read_files", files);
+		
+		/* Create chat */
+		var chat = this.getCurrentChat();
+		if (!chat)
+		{
+			chat = this.createChat();
+			this.selectItem(chat.id);
+		}
+		chat.addFiles(files);
+		
+		/* Update files list */
+		var result = await this.api.call("update_chat_files", {
+			chat_id: chat.id,
+			chat_name: chat.name,
+			files: chat.getFiles(),
 		});
+		console.log(result);
 	}
 };
 

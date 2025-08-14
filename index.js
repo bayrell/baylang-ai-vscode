@@ -169,19 +169,20 @@ class ApiProvider
 	
 	
 	/**
-	 * Load chats
+	 * Send api
 	 */
-	async load()
+	async sendApi(url, post = {})
 	{
 		try
 		{
 			var response = await fetch(
-				this.url + "/api/chat/load",
+				this.url + url,
 				{
 					method: "POST",
 					headers: {
 						"Content-Type": "application/x-www-form-urlencoded",
 					},
+					body: getURLSearchParams(post),
 				}
 			);
 			return await response.json();
@@ -193,6 +194,15 @@ class ApiProvider
 				message: e.message,
 			};
 		}
+	}
+	
+	
+	/**
+	 * Load chats
+	 */
+	async load()
+	{
+		return await this.sendApi("/api/chat/load");
 	}
 	
 	
@@ -201,26 +211,7 @@ class ApiProvider
 	 */
 	async loadAgents()
 	{
-		try
-		{
-			var response = await fetch(
-				this.url + "/api/settings/agent",
-				{
-					method: "POST",
-					headers: {
-						"Content-Type": "application/x-www-form-urlencoded",
-					},
-				}
-			);
-			return await response.json();
-		}
-		catch (e)
-		{
-			return {
-				code: -1,
-				message: e.message,
-			};
-		}
+		return await this.sendApi("/api/settings/agent");
 	}
 	
 	
@@ -229,29 +220,9 @@ class ApiProvider
 	 */
 	async deleteChat(chat_id)
 	{
-		try
-		{
-			var response = await fetch(
-				this.url + "/api/chat/delete",
-				{
-					method: "POST",
-					headers: {
-						"Content-Type": "application/x-www-form-urlencoded",
-					},
-					body: new URLSearchParams({
-						"chat_id": chat_id,
-					}),
-				}
-			);
-			return await response.json();
-		}
-		catch (e)
-		{
-			return {
-				code: -1,
-				message: e.message,
-			};
-		}
+		return await this.sendApi("/api/chat/delete", {
+			"chat_id": chat_id,
+		});
 	}
 	
 	
@@ -260,30 +231,19 @@ class ApiProvider
 	 */
 	async renameChat(chat_id, title)
 	{
-		try
-		{
-			var response = await fetch(
-				this.url + "/api/chat/rename",
-				{
-					method: "POST",
-					headers: {
-						"Content-Type": "application/x-www-form-urlencoded",
-					},
-					body: new URLSearchParams({
-						"chat_id": chat_id,
-						"title": title,
-					}),
-				}
-			);
-			return await response.json();
-		}
-		catch (e)
-		{
-			return {
-				code: -1,
-				message: e.message,
-			};
-		}
+		return await this.sendApi("/api/chat/delete", {
+			"chat_id": chat_id,
+			"title": title,
+		});
+	}
+	
+	
+	/**
+	 * Update chat files
+	 */
+	async updateChatFiles(data)
+	{
+		return await this.sendApi("/api/chat/delete", data);
 	}
 	
 	
@@ -292,27 +252,69 @@ class ApiProvider
 	 */
 	async sendMessage(data)
 	{
+		return await this.sendApi("/api/chat/send", data);
+	}
+}
+
+class CommandRegistry
+{
+	constructor()
+	{
+		this.handlers = {};
+		this.webview = null;
+	}
+	
+	
+	/**
+	 * Register command
+	 */
+	register(command, handler)
+	{
+		this.handlers[command] = handler;
+	}
+	
+	
+	/**
+	 * Handle message
+	 */
+	async handleMessage(message)
+	{
+		var request_id = message.request_id;
+		var command = message.command;
+		var payload = message.payload;
+		
+		/* Get handler */
+		var handler = this.handlers[command];
+		if (!handler)
+		{
+			this.webview.postMessage({
+				request_id: request_id,
+				error: "Command '" + command + "' not found",
+			});
+			return;
+		}
+		
+		/* Call handler */
+		var result = null;
 		try
 		{
-			var response = await fetch(
-				this.url + "/api/chat/send",
-				{
-					method: "POST",
-					headers: {
-						"Content-Type": "application/x-www-form-urlencoded",
-					},
-					body: getURLSearchParams(data),
-				}
-			);
-			return await response.json();
+			result = await handler(payload);
 		}
-		catch (e)
+		catch (error)
 		{
-			return {
-				code: -1,
-				message: e.message,
-			};
+			this.webview.postMessage({
+				request_id: request_id,
+				error: error.message,
+				stack: error.stack,
+			});
+			return;
 		}
+		
+		/* Send result */
+		this.webview.postMessage({
+			request_id: request_id,
+			payload: result
+		});
 	}
 }
 
@@ -329,6 +331,7 @@ class BayLangViewProvider
 	constructor(context, api)
 	{
 		this.api = api;
+		this.registry = new CommandRegistry();
 		this.extensionUri = context.extensionUri;
 	}
 	
@@ -359,6 +362,75 @@ class BayLangViewProvider
 		
 		/* Add listener */
 		this.api.addListener(this.onApiMessage.bind(this));
+		
+		/* Create registry */
+		this.registry.webview = panel.webview;
+		
+		/* Load */
+		this.registry.register("load", async () => {
+			const [load_result, load_agents_result] = await Promise.all([
+				this.api.load(),
+				this.api.loadAgents(),
+			]);
+			return {
+				"chat": load_result,
+				"agents": load_agents_result,
+			};
+		});
+		
+		/* Send message */
+		this.registry.register("send_message", async (message) => {
+			await this.api.sendMessage(message);
+		});
+		
+		/* Rename chat */
+		this.registry.register("rename_chat", async (message) => {
+			var chat_id = message.chat_id;
+			var name = message.name;
+			var result = await this.api.renameChat(chat_id, name);
+			return {
+				success: result.code > 0,
+				chat_id: chat_id,
+				name: name,
+			};
+		});
+		
+		/* Delete chat */
+		this.registry.register("delete_chat", async (message) => {
+			var chat_id = message.chat_id;
+			var result = await this.api.deleteChat(chat_id);
+			return {
+				success: result.code > 0,
+				chat_id: chat_id,
+			}
+		});
+		
+		/* Update chat files */
+		this.registry.register("update_chat_files", async (message) => {
+			await this.api.updateChatFiles(message);
+		});
+		
+		/* Read files */
+		this.registry.register("read_files", async (files) => {
+			var result = [];
+			for (var i=0; i<files.length; i++)
+			{
+				var file_path = files[i];
+				try
+				{
+					var data = await fs.promises.readFile(file_path, "utf8");
+					result.push({
+						path: file_path,
+						content: Buffer.from(data),
+					});
+				}
+				catch (err)
+				{
+					console.log(err);
+				}
+			}
+			return result;
+		});
 	}
 	
 	
@@ -377,83 +449,9 @@ class BayLangViewProvider
 	/**
 	 * Message from view
 	 */
-	async onMessage(message)
+	onMessage(message)
 	{
-		if (message.command == "load")
-		{
-			const [load_result, load_agents_result] = await Promise.all([
-				this.api.load(),
-				this.api.loadAgents(),
-			]);
-			this.panel.webview.postMessage({
-				"command": "load",
-				"payload": load_result,
-			});
-			this.panel.webview.postMessage({
-				"command": "load_agents",
-				"payload": load_agents_result,
-			});
-		}
-		else if (message.command == "delete_chat")
-		{
-			var chat_id = message.payload.chat_id;
-			var result = await this.api.deleteChat(chat_id, name);
-			if (result.code == 1)
-			{
-				this.panel.webview.postMessage({
-					"command": "delete_chat",
-					"payload": {
-						chat_id: chat_id,
-					},
-				});
-			}
-		}
-		else if (message.command == "rename_chat")
-		{
-			var chat_id = message.payload.chat_id;
-			var name = message.payload.name;
-			var result = await this.api.renameChat(chat_id, name);
-			if (result.code == 1)
-			{
-				this.panel.webview.postMessage({
-					"command": "rename_chat",
-					"payload": {
-						chat_id: chat_id,
-						name: name,
-					},
-				});
-			}
-		}
-		else if (message.command == "send_message")
-		{
-			var result = await this.api.sendMessage(message.payload);
-		}
-		else if (message.command == "add_files")
-		{
-			var files = [];
-			for (var i=0; i<message.payload.files.length; i++)
-			{
-				var file_path = message.payload.files[i];
-				try
-				{
-					var data = await fs.promises.readFile(file_path, "utf8");
-					files.push({
-						path: file_path,
-						content: Buffer.from(data),
-					});
-				}
-				catch (err)
-				{
-					console.log(err);
-				}
-			}
-			this.panel.webview.postMessage({
-				"command": "add_files",
-				"payload": {
-					"files": files,
-				},
-			});
-		}
+		this.registry.handleMessage(message);
 	}
 	
 	
