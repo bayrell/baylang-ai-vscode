@@ -231,7 +231,7 @@ class ApiProvider
 	 */
 	async renameChat(chat_id, title)
 	{
-		return await this.sendApi("/api/chat/delete", {
+		return await this.sendApi("/api/chat/rename", {
 			"chat_id": chat_id,
 			"title": title,
 		});

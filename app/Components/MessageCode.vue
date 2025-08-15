@@ -4,6 +4,7 @@
 	pre{
 		margin: 0;
 		padding: 10px;
+		tab-size: 2;
 		background-color: var(--hover-color);
 		border-radius: 5px;
 		overflow-x: auto;

@@ -38,7 +38,7 @@ export default [
 		]
 	},
 	{
-		input: 'index.js',
+		input: 'app/index.js',
 		output: {
 			file: 'dist/index.js',
 			format: 'cjs',

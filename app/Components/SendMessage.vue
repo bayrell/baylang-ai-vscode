@@ -31,6 +31,7 @@
 		}
 		input[name=message]{
 			min-height: 75px;
+			resize: vertical;
 		}
 		button{
 			cursor: pointer;
@@ -41,7 +42,7 @@
 
 <template>
 	<div class="send_message__files">
-		<div v-for="file in getFiles()" :key="file"
+		<div v-for="file in files" :key="file"
 			class="send_message__file"
 		>
 			<span class="send_message__file_name">{{ getFileName(file) }}</span>
@@ -54,7 +55,7 @@
 			type="select"
 			v-model="layout.current_agent_id"
 			selectMessage="Select agent"
-			:options="getAgents()"
+			:options="agents"
 		/>
 	</div>
 	<div class="send_message__text">
@@ -79,6 +80,25 @@ export default {
 			message: "",
 		};
 	},
+	computed:
+	{
+		agents()
+		{
+			return this.layout.agents.map((item)=>{
+				return {
+					"key": item.id,
+					"value": item.name,
+				};
+			});
+		},
+		files()
+		{
+			var chat = this.layout.getCurrentChat();
+			if (!chat) return [];
+			
+			return chat.getFiles();
+		},
+	},
 	methods:
 	{
 		sendMessage()
@@ -90,23 +110,7 @@ export default {
 			);
 			this.message = "";
 		},
-		getAgents()
-		{
-			return this.layout.agents.map((item)=>{
-				return {
-					"key": item.id,
-					"value": item.name,
-				};
-			});
-		},
 		getFileName,
-		getFiles()
-		{
-			var chat = this.layout.getCurrentChat();
-			if (!chat) return [];
-			
-			return chat.getFiles();
-		},
 		removeFile(file)
 		{
 			var chat = this.layout.getCurrentChat();

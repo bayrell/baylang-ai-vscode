@@ -4,8 +4,31 @@
 	flex-direction: column;
 	height: 100vh;
 	padding-bottom: 20px;
-	&--drag{
-		border: 2px solid var(--primary-color);
+	&__drag-overlay {
+		position: absolute;
+		top: 0; left: 0;
+		right: 0; bottom: 0;
+		background-color: rgba(var(--primary-color-rgb), 0.15);
+		border: 3px dashed var(--primary-color);
+		border-radius: 12px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		color: var(--primary-color);
+		font-size: 1.6rem;
+		font-weight: 600;
+		text-align: center;
+		z-index: 100;
+		pointer-events: none;
+		user-select: none;
+		gap: 15px;
+		&__icon {
+			font-size: 4rem;
+		}
+		&__text {
+			padding: 0 20px;
+		}
 	}
 	&__history{
 		flex: 1;
@@ -42,6 +65,18 @@
 			/>
 			<ChatTyping v-if="currentItem && currentItem.isTyping()" />
 		</div>
+		
+		<div v-if="layout.is_drag"
+			class="chat__drag-overlay"
+		>
+			<span class="chat__drag-overlay__icon">
+				&#x2B07;
+			</span>
+			<span class="chat__drag-overlay__text">
+				Drop File
+			</span>
+		</div>
+		
 		<SendMessage />
 	</div>
 </template>
