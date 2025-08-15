@@ -4,7 +4,7 @@
 	"description": "BayLang AI. Chat bot",
 	"publisher": "BAYRELL",
 	"version": "0.0.1",
-	"main": "index.js",
+	"main": "dist/index.js",
 	"author": "Ildar Bikmamatov <ildar@bayrell.org>",
 	"license": "Apache-2.0",
 	"homepage": "https://github.com/bayrell",
@@ -21,6 +21,8 @@
 		"install_plugin": "install_vsix baylang-ai 0.0.1 ./baylang-ai-0.0.1.vsix"
 	},
 	"dependencies": {
+		"@rollup/plugin-commonjs": "^28.0.6",
+		"@rollup/plugin-node-resolve": "^16.0.1",
 		"@rollup/plugin-replace": "^6.0.2",
 		"@rollup/plugin-terser": "^0.4.4",
 		"@vitejs/plugin-vue": "^6.0.0",
