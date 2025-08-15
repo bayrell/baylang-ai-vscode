@@ -1,4 +1,4 @@
-<style lang="scss">
+<style lang="scss" scoped>
 .chat_dialog{
 	display: flex;
 	gap: 10px;
@@ -24,19 +24,19 @@
 </style>
 
 <template>
-	<div class="chat_dialog" v-if="layout.show_dialog == 'edit' && currentItem != null">
+	<div class="chat_dialog" v-if="model.show_dialog == 'edit' && currentItem != null">
 		<div class="chat_dialog__message">
 			Edit '{{ currentItem.title }}'
 		</div>
 		<div class="chat_dialog__input">
-			<input v-model="chat_name">
+			<Input name="chat_name" v-model="chat_name" />
 		</div>
 		<div class="chat_dialog__buttons">
 			<Button class="default small" @click="onCancel">Cancel</Button>
 			<Button class="primary small" @click="onRename">Ok</Button>
 		</div>
 	</div>
-	<div class="chat_dialog" v-if="layout.show_dialog == 'delete' && currentItem != null">
+	<div class="chat_dialog" v-if="model.show_dialog == 'delete' && currentItem != null">
 		<div class="chat_dialog__messages">
 			Delete '{{ currentItem.title }}'?
 		</div>
@@ -48,13 +48,15 @@
 </template>
 
 <script lang="js">
-import Button from "./Button.vue";
+import Button from "@main/Components/Button.vue";
+import Input from "@main/Components/Input.vue";
 
 export default {
 	name: "ChatDialog",
 	components:
 	{
-		Button: Button,
+		Button,
+		Input,
 	},
 	data: function()
 	{
@@ -65,9 +67,13 @@ export default {
 	},
 	computed:
 	{
+		model()
+		{
+			return this.layout.chat_page;
+		},
 		currentItem()
 		{
-			return this.layout.findChatById(this.layout.show_dialog_id);
+			return this.model.findChatById(this.model.show_dialog_id);
 		},
 	},
 	mouned: function()
@@ -82,22 +88,22 @@ export default {
 	{
 		update()
 		{
-			if (this.chat_id == this.layout.show_dialog_id) return;
-			this.chat_id = this.layout.show_dialog_id;
+			if (this.chat_id == this.model.show_dialog_id) return;
+			this.chat_id = this.model.show_dialog_id;
 			this.chat_name = this.currentItem.title;
 		},
 		hide()
 		{
-			this.layout.show_dialog = "";
+			this.model.show_dialog = "";
 		},
 		onRename()
 		{
-			this.layout.renameChat(this.chat_id, this.chat_name);
+			this.model.renameChat(this.chat_id, this.chat_name);
 			this.hide();
 		},
 		onDelete()
 		{
-			this.layout.deleteChat(this.chat_id);
+			this.model.deleteChat(this.chat_id);
 			this.hide();
 		},
 		onCancel()

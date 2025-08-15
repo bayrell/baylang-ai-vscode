@@ -1,4 +1,4 @@
-<style lang="scss">
+<style lang="scss" scoped>
 .chat_message{
 	line-height: 1.35;
 	&__line{
@@ -36,6 +36,13 @@ export default {
 		message: {
 			type: Object,
 		}
+	},
+	computed:
+	{
+		model()
+		{
+			return this.layout.chat_page;
+		},
 	},
 	updated: function()
 	{

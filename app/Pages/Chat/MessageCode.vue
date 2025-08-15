@@ -1,4 +1,4 @@
-<style lang="scss">
+<style lang="scss" scoped>
 .chat_message_code{
 	position: relative;
 	pre{
@@ -36,7 +36,7 @@
 </template>
 
 <script lang="js">
-import Button from "./Button.vue";
+import Button from "@main/Components/Button.vue";
 
 export default{
 	name: "MessageCode",
@@ -56,6 +56,13 @@ export default{
 			status: 'Copy',
 			timeout: null,
 		};
+	},
+	computed:
+	{
+		model()
+		{
+			return this.layout.chat_page;
+		},
 	},
 	methods:
 	{

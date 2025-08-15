@@ -1,4 +1,4 @@
-<style lang="scss">
+<style lang="scss" scoped>
 .chat_list{
 	display: block;
 	&__name{
@@ -65,7 +65,7 @@
 			<img :src="layout.getImage('dropdown.svg')" />
 		</div>
 		<div class="chat_list__items">
-			<div v-if="!layout.loading">
+			<div v-if="!model.loading">
 				<div class="chat_list__item" @click="selectItem(null)">
 					New chat
 				</div>
@@ -100,21 +100,25 @@ export default {
 	},
 	computed:
 	{
+		model()
+		{
+			return this.layout.chat_page;
+		},
 		items()
 		{
-			return this.layout.chats;
+			return this.model.chats;
 		},
 		currentItem()
 		{
-			return this.layout.getCurrentChat();
+			return this.model.getCurrentChat();
 		},
 	},
 	methods:
 	{
 		selectItem(id)
 		{
-			this.layout.show_dialog = "";
-			this.layout.selectItem(id);
+			this.model.show_dialog = "";
+			this.model.selectItem(id);
 			this.hideMenu();
 		},
 		hideMenu()
@@ -129,13 +133,13 @@ export default {
 		{
 			e.stopPropagation();
 			this.hideMenu();
-			this.layout.showEdit(id);
+			this.model.showEdit(id);
 		},
 		onDelete(e, id)
 		{
 			e.stopPropagation();
 			this.hideMenu();
-			this.layout.showDelete(id);
+			this.model.showDelete(id);
 		},
 	}
 }

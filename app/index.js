@@ -256,6 +256,7 @@ class ApiProvider
 	}
 }
 
+
 class CommandRegistry
 {
 	constructor()
@@ -318,6 +319,94 @@ class CommandRegistry
 	}
 }
 
+
+/**
+ * Register commands
+ */
+function registerCommands(registry, api)
+{
+	/* Load */
+	registry.register("load", async () => {
+		const [load_result, load_agents_result] = await Promise.all([
+			api.load(),
+			api.loadAgents(),
+		]);
+		return {
+			"chat": load_result,
+			"agents": load_agents_result,
+		};
+	});
+	
+	/* Save agent */
+	registry.register("save_agent", async (message) => {
+		return {
+			success: false,
+		};
+	});
+	
+	/* Delete agent */
+	registry.register("delete_agent", async (agent_id) => {
+		return {
+			success: false,
+		};
+	});
+	
+	/* Send message */
+	registry.register("send_message", async (message) => {
+		await api.sendMessage(message);
+	});
+	
+	/* Rename chat */
+	registry.register("rename_chat", async (message) => {
+		var chat_id = message.chat_id;
+		var name = message.name;
+		var result = await api.renameChat(chat_id, name);
+		return {
+			success: result.code > 0,
+			chat_id: chat_id,
+			name: name,
+		};
+	});
+	
+	/* Delete chat */
+	registry.register("delete_chat", async (message) => {
+		var chat_id = message.chat_id;
+		var result = await api.deleteChat(chat_id);
+		return {
+			success: result.code > 0,
+			chat_id: chat_id,
+		}
+	});
+	
+	/* Update chat files */
+	registry.register("update_chat_files", async (message) => {
+		await api.updateChatFiles(message);
+	});
+	
+	/* Read files */
+	registry.register("read_files", async (files) => {
+		var result = [];
+		for (var i=0; i<files.length; i++)
+		{
+			var file_path = files[i];
+			try
+			{
+				var data = await fs.promises.readFile(file_path, "utf8");
+				result.push({
+					path: file_path,
+					content: data,
+				});
+			}
+			catch (err)
+			{
+				console.log(err);
+			}
+		}
+		return result;
+	});
+}
+
+
 class BayLangViewProvider
 {
 	api = null;
@@ -366,71 +455,8 @@ class BayLangViewProvider
 		/* Create registry */
 		this.registry.webview = panel.webview;
 		
-		/* Load */
-		this.registry.register("load", async () => {
-			const [load_result, load_agents_result] = await Promise.all([
-				this.api.load(),
-				this.api.loadAgents(),
-			]);
-			return {
-				"chat": load_result,
-				"agents": load_agents_result,
-			};
-		});
-		
-		/* Send message */
-		this.registry.register("send_message", async (message) => {
-			await this.api.sendMessage(message);
-		});
-		
-		/* Rename chat */
-		this.registry.register("rename_chat", async (message) => {
-			var chat_id = message.chat_id;
-			var name = message.name;
-			var result = await this.api.renameChat(chat_id, name);
-			return {
-				success: result.code > 0,
-				chat_id: chat_id,
-				name: name,
-			};
-		});
-		
-		/* Delete chat */
-		this.registry.register("delete_chat", async (message) => {
-			var chat_id = message.chat_id;
-			var result = await this.api.deleteChat(chat_id);
-			return {
-				success: result.code > 0,
-				chat_id: chat_id,
-			}
-		});
-		
-		/* Update chat files */
-		this.registry.register("update_chat_files", async (message) => {
-			await this.api.updateChatFiles(message);
-		});
-		
-		/* Read files */
-		this.registry.register("read_files", async (files) => {
-			var result = [];
-			for (var i=0; i<files.length; i++)
-			{
-				var file_path = files[i];
-				try
-				{
-					var data = await fs.promises.readFile(file_path, "utf8");
-					result.push({
-						path: file_path,
-						content: data,
-					});
-				}
-				catch (err)
-				{
-					console.log(err);
-				}
-			}
-			return result;
-		});
+		/* Register commands */
+		registerCommands(this.registry, this.api);
 	}
 	
 	

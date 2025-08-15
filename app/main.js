@@ -1,6 +1,6 @@
 import { createApp, reactive } from "vue"
-import Chat from "./Components/Chat.vue";
-import Layout from "./Model/Layout.js";
+import Chat from "./Pages/Layout.vue";
+import Layout from "./Pages/Layout.js";
 
 /* Register layout */
 const registerLayout = (layout) => {

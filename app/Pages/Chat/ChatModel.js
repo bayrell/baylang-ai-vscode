@@ -1,27 +1,23 @@
-import Api from "./Api.js";
 import ChatHistory from "./ChatHistory.js";
 import ChatMessage from "./ChatMessage.js";
-import { markRaw } from "vue";
 
 
-class Layout
-{	
+class ChatModel
+{
 	/**
 	 * Constructor
 	 */
-	constructor()
+	constructor(layout)
 	{
-		this.api = null;
+		this.api = layout.api;
 		this.agents = [];
 		this.chats = [];
 		this.current_agent_id = null;
 		this.current_chat_id = null;
 		this.is_drag = false;
-		this.image_url = "";
 		this.show_dialog = "";
 		this.show_dialog_id = "";
 		this.loading = true;
-		this.vscode = markRaw(acquireVsCodeApi());
 	}
 	
 	
@@ -30,11 +26,6 @@ class Layout
 	 */
 	bind()
 	{
-		/* Create api */
-		this.api = markRaw(new Api(this.vscode));
-		this.api.bind();
-		this.api.addListener(this.onMessage.bind(this));
-		
 		/* Drag start */
 		document.body.addEventListener("dragenter", (event) => {
 			event.preventDefault();
@@ -147,24 +138,6 @@ class Layout
 	
 	
 	/**
-	 * Set image url
-	 */
-	setImageUrl(url)
-	{
-		this.image_url = url;
-	}
-	
-	
-	/**
-	 * Returns image path
-	 */
-	getImage(path)
-	{
-		return this.image_url + "/" + path;
-	}
-	
-	
-	/**
 	 * Show edit
 	 */
 	showEdit(chat_id)
@@ -222,11 +195,8 @@ class Layout
 		}
 		
 		/* Send message to backend */
-		this.vscode.postMessage({
-			"command": "delete_chat",
-			"payload": {
-				chat_id: chat_id,
-			},
+		this.api.call("delete_chat", {
+			chat_id: chat_id,
 		});
 	}
 	
@@ -244,12 +214,9 @@ class Layout
 		chat.title = new_name;
 		
 		/* Send message to backend */
-		this.vscode.postMessage({
-			"command": "rename_chat",
-			"payload": {
-				chat_id: chat_id,
-				name: new_name,
-			},
+		this.api.call("rename_chat", {
+			chat_id: chat_id,
+			name: new_name,
 		});
 	}
 	
@@ -283,61 +250,12 @@ class Layout
 		chat.setTyping(true);
 		
 		/* Send message to backend */
-		this.vscode.postMessage({
-			"command": "send_message",
-			"payload": {
-				id: chat.id,
-				agent: agent_id,
-				name: chat.title,
-				content: item.content,
-			},
+		this.api.call("send_message", {
+			id: chat.id,
+			agent: agent_id,
+			name: chat.title,
+			content: item.content,
 		});
-	}
-	
-	
-	/**
-	 * On message
-	 */
-	onMessage(event)
-	{
-		var message = event.data;
-		if (message.command == "update_chat")
-		{
-			var chat_id = message.payload.chat_id;
-			var chat = this.findChatById(chat_id);
-			if (!chat) return;
-			
-			chat.setTyping(false);
-			chat.updateMessage({
-				id: message.payload.message_id,
-				sender: message.payload.sender,
-				content: message.payload.content,
-			});
-		}
-		else if (message.command == "start_chat" || message.command == "step_chat")
-		{
-			var chat_id = message.payload.chat_id;
-			var chat = this.findChatById(chat_id);
-			if (!chat) return;
-			
-			chat.setTyping(true);
-		}
-		else if (message.command == "update_title")
-		{
-			var chat_id = message.payload.chat_id;
-			var chat = this.findChatById(chat_id);
-			if (!chat) return;
-			
-			chat.title = message.payload.chat_name;
-		}
-		else if (message.command == "end_chat")
-		{
-			var chat_id = message.payload.chat_id;
-			var chat = this.findChatById(chat_id);
-			if (!chat) return;
-			
-			chat.setTyping(false);
-		}
 	}
 	
 	
@@ -433,4 +351,4 @@ class Layout
 	}
 };
 
-export default Layout;
+export default ChatModel;

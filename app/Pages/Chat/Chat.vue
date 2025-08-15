@@ -1,4 +1,4 @@
-<style lang="scss">
+<style lang="scss" scoped>
 .chat{
 	display: flex;
 	flex-direction: column;
@@ -56,9 +56,9 @@
 	<div class="chat" :class="getClassName()">
 		<ChatList />
 		<ChatDialog />
-		<div class="chat__history" v-if="layout.show_dialog == ''" ref="history">
+		<div class="chat__history" v-if="model.show_dialog == ''" ref="history">
 			<Message
-				v-for="message in getMessages()"
+				v-for="message in messages"
 				:key="message.id"
 				:message="message"
 				@update="scrollHistory"
@@ -66,7 +66,7 @@
 			<ChatTyping v-if="currentItem && currentItem.isTyping()" />
 		</div>
 		
-		<div v-if="layout.is_drag"
+		<div v-if="model.is_drag"
 			class="chat__drag-overlay"
 		>
 			<span class="chat__drag-overlay__icon">
@@ -82,30 +82,40 @@
 </template>
 
 <script lang="js">
+import ChatTyping from "@main/Components/ChatTyping.vue";
 import ChatDialog from "./ChatDialog.vue";
 import ChatList from "./ChatList.vue";
-import ChatTyping from "./ChatTyping.vue";
 import Message from "./Message.vue";
 import SendMessage from "./SendMessage.vue";
 
 export default {
 	name: "Chat",
 	components: {
-		ChatDialog: ChatDialog,
-		ChatList: ChatList,
-		ChatTyping: ChatTyping,
-		Message: Message,
-		SendMessage: SendMessage,
+		ChatDialog,
+		ChatList,
+		ChatTyping,
+		Message,
+		SendMessage,
 	},
 	computed: {
+		model()
+		{
+			return this.layout.chat_page;
+		},
 		currentItem()
 		{
-			return this.layout.getCurrentChat();
+			return this.model.getCurrentChat();
+		},
+		messages()
+		{
+			var chat = this.model.findChatById(this.model.current_chat_id);
+			if (!chat) return [];
+			return chat.messages;
 		},
 	},
 	mounted: function()
 	{
-		this.layout.load();
+		this.model.load();
 	},
 	updated: function()
 	{
@@ -123,14 +133,8 @@ export default {
 		getClassName()
 		{
 			var arr = [];
-			if (this.layout.is_drag) arr.push("chat--drag")
+			if (this.model.is_drag) arr.push("chat--drag")
 			return arr.join(" ");
-		},
-		getMessages()
-		{
-			var chat = this.layout.findChatById(this.layout.current_chat_id);
-			if (!chat) return [];
-			return chat.messages;
 		}
 	},
 };

@@ -1,4 +1,4 @@
-import { getFileName } from "../lib.js";
+import { getFileName } from "@main/lib.js";
 
 class ChatMessage
 {

@@ -3,9 +3,9 @@ class Api
 	/**
 	 * Create api
 	 */
-	constructor(vscode)
+	constructor(layout)
 	{
-		this.vscode = vscode;
+		this.layout = layout;
 		this.listeners = [];
 		this.pending_requests = {};
 		this.request_id = 0;
@@ -73,7 +73,7 @@ class Api
 				"resolve": resolve,
 				"reject": reject,
 			};
-			this.vscode.postMessage({
+			this.layout.vscode.postMessage({
 				"request_id": id,
 				"command": command,
 				"payload": payload,

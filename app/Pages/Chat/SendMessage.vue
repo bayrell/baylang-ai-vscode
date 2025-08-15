@@ -1,4 +1,4 @@
-<style lang="scss">
+<style lang="scss" scoped>
 .send_message{
 	&__files{
 		display: flex;
@@ -53,7 +53,7 @@
 		<Input
 			name="agent"
 			type="select"
-			v-model="layout.current_agent_id"
+			v-model="model.current_agent_id"
 			selectMessage="Select agent"
 			:options="agents"
 		/>
@@ -65,9 +65,9 @@
 </template>
 
 <script lang="js">
-import Button from "./Button.vue";
-import Input from "./Input.vue";
-import { getFileName } from "../lib.js";
+import Button from "@main/Components/Button.vue";
+import Input from "@main/Components/Input.vue";
+import { getFileName } from "@main/lib.js";
 
 export default {
 	name: "SendMessage",
@@ -82,9 +82,13 @@ export default {
 	},
 	computed:
 	{
+		model()
+		{
+			return this.layout.chat_page;
+		},
 		agents()
 		{
-			return this.layout.agents.map((item)=>{
+			return this.model.agents.map((item)=>{
 				return {
 					"key": item.id,
 					"value": item.name,
@@ -93,7 +97,7 @@ export default {
 		},
 		files()
 		{
-			var chat = this.layout.getCurrentChat();
+			var chat = this.model.getCurrentChat();
 			if (!chat) return [];
 			
 			return chat.getFiles();
@@ -103,9 +107,9 @@ export default {
 	{
 		sendMessage()
 		{
-			this.layout.sendMessage(
-				this.layout.current_chat_id,
-				this.layout.current_agent_id,
+			this.model.sendMessage(
+				this.model.current_chat_id,
+				this.model.current_agent_id,
 				this.message
 			);
 			this.message = "";
@@ -113,7 +117,7 @@ export default {
 		getFileName,
 		removeFile(file)
 		{
-			var chat = this.layout.getCurrentChat();
+			var chat = this.model.getCurrentChat();
 			if (!chat) return;
 			
 			chat.removeFile(file);
