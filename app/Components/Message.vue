@@ -17,7 +17,7 @@
 	<div class="chat_message" :class="getClassMessage()">
 		<div v-for="line in message.getLines()" :key="line" class="chat_message__line">
 			<MessageCode v-if="line.block == 'code'" :content="line.content" />
-			<div v-else class="chat_message_text">
+			<div v-if="line.block == 'text'" class="chat_message_text">
 				{{ line.content }}
 			</div>
 		</div>

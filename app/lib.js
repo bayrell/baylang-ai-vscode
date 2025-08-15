@@ -9,3 +9,8 @@ export function callback(object, method){
         return apply(object, method, args);
     }
 }
+export function getFileName(file)
+{
+    var arr = file.split("/");
+    return arr.pop();
+}

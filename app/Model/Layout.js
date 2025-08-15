@@ -257,7 +257,7 @@ class Layout
 	/**
 	 * Send message
 	 */
-	sendMessage(chat_id, agent_id, message)
+	async sendMessage(chat_id, agent_id, message)
 	{
 		/* Find chat by id */
 		var chat = this.findChatById(chat_id);
@@ -266,9 +266,13 @@ class Layout
 			chat = this.createChat();
 		}
 		
+		/* Update files */
+		await this.updateFiles(chat);
+		
 		/* Create message */
 		var item = new ChatMessage()
 		item.sender = "human";
+		item.addFiles(chat.files);
 		item.setContent(message);
 		
 		/* Add message to history */
@@ -334,6 +338,19 @@ class Layout
 			
 			chat.setTyping(false);
 		}
+	}
+	
+	
+	/**
+	 * Update files
+	 */
+	async updateFiles(chat)
+	{
+		var files = chat.getFiles();
+		
+		/* Read files */
+		files = await this.api.call("read_files", files);
+		chat.addFiles(files);
 	}
 	
 	

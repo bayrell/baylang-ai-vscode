@@ -1,3 +1,5 @@
+import { getFileName } from "../lib.js";
+
 class ChatMessage
 {
 	id = "";
@@ -106,17 +108,34 @@ class ChatMessage
 	
 	
 	/**
+	 * Add files
+	 */
+	addFiles(files)
+	{
+		for (var i=0; i<files.length; i++)
+		{
+			var file = files[i];
+			this.content.push({
+				"block": "textfile",
+				"filename": getFileName(file.path),
+				"content": file.content,
+			});
+		}
+	}
+	
+	
+	/**
 	 * Set new content
 	 */
 	setContent(content)
 	{
-		if (Array.isArray(content))
+		if (!Array.isArray(content))
 		{
-			this.content = content;
-			return;
+			content = this.constructor.parseContent(content);
 		}
 		
-		this.content = this.constructor.parseContent(content);
+		/* Concat */
+		this.content = this.content.concat(content);
 	}
 }
 

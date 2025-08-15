@@ -243,7 +243,7 @@ class ApiProvider
 	 */
 	async updateChatFiles(data)
 	{
-		return await this.sendApi("/api/chat/delete", data);
+		return await this.sendApi("/api/chat/update_chat_files", data);
 	}
 	
 	
@@ -421,7 +421,7 @@ class BayLangViewProvider
 					var data = await fs.promises.readFile(file_path, "utf8");
 					result.push({
 						path: file_path,
-						content: Buffer.from(data),
+						content: data,
 					});
 				}
 				catch (err)
