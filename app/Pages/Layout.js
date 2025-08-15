@@ -10,6 +10,7 @@ class Layout
 		this.chat_page = new ChatModel(this);
 		this.vscode = markRaw(acquireVsCodeApi());
 		this.image_url = "";
+		this.page = "chat";
 	}
 	
 	
@@ -51,7 +52,11 @@ class Layout
 	onMessage(event)
 	{
 		var message = event.data;
-		if (message.command == "update_chat")
+		if (message.command == "show_page")
+		{
+			this.page = message.page;
+		}
+		else if (message.command == "update_chat")
 		{
 			var chat_id = message.payload.chat_id;
 			var chat = this.chat_page.findChatById(chat_id);

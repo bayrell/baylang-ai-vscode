@@ -61,6 +61,32 @@
 					"name": "BayLang AI"
 				}
 			]
+		},
+		"commands": [
+			{
+				"command": "baylang-ai.showChat",
+				"title": "BayLang AI: Show chat",
+				"icon": "$(comment-discussion)"
+			},
+			{
+				"command": "baylang-ai.showSettings",
+				"title": "BayLang AI: Show settings",
+				"icon": "$(gear)"
+			}
+		],
+		"menus": {
+			"view/title": [
+				{
+					"command": "baylang-ai.showChat",
+					"when": "view == baylang-ai-view",
+					"group": "navigation"
+				},
+				{
+					"command": "baylang-ai.showSettings",
+					"when": "view == baylang-ai-view",
+					"group": "navigation"
+				}
+			]
 		}
 	}
 }

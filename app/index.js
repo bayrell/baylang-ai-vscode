@@ -18,6 +18,26 @@ function activate(context)
 			}
 		})
 	);
+	
+	/* Show chat */
+	context.subscriptions.push(
+		vscode.commands.registerCommand("baylang-ai.showChat", () => {
+			if (provider.panel)
+			{
+				provider.panel.webview.postMessage({ command: "show_page", page: "chat" });
+			}
+		})
+	);
+	
+	/* Show settings */
+	context.subscriptions.push(
+		vscode.commands.registerCommand("baylang-ai.showSettings", () => {
+			if (provider.panel)
+			{
+				provider.panel.webview.postMessage({ command: "show_page", page: "settings" });
+			}
+		})
+	);
 }
 
 
