@@ -14,3 +14,55 @@ export function getFileName(file)
     var arr = file.split("/");
     return arr.pop();
 }
+
+
+/**
+ * Api result
+ */
+export class ApiResult
+{
+	code = 0;
+	message = "";
+	data = {};
+	response = null;
+	
+	
+	/**
+	 * Assign response
+	 */
+	assign(response)
+	{
+		this.response = response;
+		if (response.code) this.code = response.code;
+		else if (response.success) this.code = response.success ? 1 : -1;
+		this.message = response.message;
+		this.data = response.data || {};
+	}
+	
+	
+	/**
+	 * Returns true if error
+	 */
+	isError()
+	{
+		return this.code < 0;
+	}
+	
+	
+	/**
+	 * Returns true if success
+	 */
+	isSuccess()
+	{
+		return this.code > 0;
+	}
+	
+	
+	/**
+	 * Returns data
+	 */
+	getData()
+	{
+		return this.data;
+	}
+}

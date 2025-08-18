@@ -2,4 +2,3 @@
 .vscode-test/**
 .gitignore
 node_modules/
-vsc-extension-quickstart.md

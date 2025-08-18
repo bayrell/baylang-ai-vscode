@@ -278,6 +278,7 @@ class ChatModel
 	async load()
 	{
 		var result = await this.api.call("load");
+		if (!result.isSuccess()) return;
 		
 		/* Load chat */
 		if (result.chat.code > 0)

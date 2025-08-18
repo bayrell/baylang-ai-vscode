@@ -21,6 +21,7 @@
 	<div class="settings_page">
 		<div class="item">Agent</div>
 		<div class="item">MCP</div>
+		<div class="item" @click="layout.setPage('models')">Models</div>
 		<div class="item">Rules</div>
 	</div>
 </template>

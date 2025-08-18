@@ -1,16 +1,10 @@
 const fs = require("fs");
 const vscode = require("vscode");
-const WebSocket = require("ws");
-const extension = vscode.extensions.getExtension("BAYRELL.baylang-ai");
 
 function activate(context)
 {
-	/* Create socket */
-	var api = new ApiProvider("http://app_baylang_ai");
-	api.connect();
-	
 	/* Register provider */
-	var provider = new BayLangViewProvider(context, api);
+	var provider = new BayLangViewProvider(context);
 	context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider(provider.getId(), provider, {
 			webviewOptions: {
@@ -38,242 +32,6 @@ function activate(context)
 			}
 		})
 	);
-}
-
-
-/**
- * Build URLSearchParams key
- */
-function buildURLSearchParamsKey(path)
-{
-	if (path.length == 0) return "";
-	if (path.length == 1) return path[0];
-	var name = path[0];
-	path = path.slice(1);
-	return name + "[" + path.join("][") + "]";
-}
-
-
-/**
- * Update URLSearchParams
- */
-function updateURLSearchParams(post, path, params)
-{
-	if (Array.isArray(post))
-	{
-		for (var i=0; i<post.length; i++)
-		{
-			updateURLSearchParams(post[i], path.concat(i), params);
-		}
-	}
-	else if (typeof post == "object" && !(post instanceof File))
-	{
-		for (var key in post)
-		{
-			updateURLSearchParams(post[key], path.concat(key), params);
-		}
-	}
-	else
-	{
-		var key = buildURLSearchParamsKey(path);
-		params.append(key, post);
-	}
-}
-
-
-/**
- * Returns URLSearchParams
- */
-function getURLSearchParams(post)
-{
-	var params = new URLSearchParams();
-	updateURLSearchParams(post, [], params);
-	return params;
-}
-
-
-class ApiProvider
-{
-	constructor(url)
-	{
-		this.url = url;
-		this.listeners = [];
-		this.ws = null;
-	}
-	
-	
-	/**
-	 * Returns domain
-	 */
-	getWebSocket()
-	{
-		var url = new URL(this.url);
-		if (url.protocol == "https") return "wss://" + url.host;
-		return "ws://" + url.host;
-	}
-	
-	
-	/**
-	 * Connect
-	 */
-	connect()
-	{
-		this.ws = new WebSocket(this.getWebSocket() + "/api/chat/socket");
-		this.ws.binaryType = 'arraybuffer';
-		this.ws.onopen = this.onConnect.bind(this);
-		this.ws.onmessage = this.onMessage.bind(this);
-		this.ws.onclose = this.onDisconnect.bind(this);
-		this.ws.onerror = this.onError.bind(this);
-	}
-	
-	
-	/**
-	 * Add listener
-	 */
-	addListener(listener)
-	{
-		this.listeners.push(listener);
-	}
-	
-	
-	/**
-	 * On connect
-	 */
-	onConnect()
-	{
-		console.log("Connected to websocket");
-	}
-	
-	
-	/**
-	 * On disconnect
-	 */
-	onDisconnect()
-	{
-	}
-	
-	
-	/**
-	 * On message
-	 */
-	onMessage(message)
-	{
-		/* JSON decode */
-		var item = null;
-		try
-		{
-			item = JSON.parse(message.data);
-		}
-		catch(e)
-		{
-		}
-		
-		/* Check message */
-		if (item == null) return;
-		
-		/* Receive message */
-		for (var i=0; i<this.listeners.length; i++)
-		{
-			var listener = this.listeners[i];
-			listener(item);
-		}
-	}
-	
-	
-	/**
-	 * On error
-	 */
-	onError()
-	{
-	}
-	
-	
-	/**
-	 * Send api
-	 */
-	async sendApi(url, post = {})
-	{
-		try
-		{
-			var response = await fetch(
-				this.url + url,
-				{
-					method: "POST",
-					headers: {
-						"Content-Type": "application/x-www-form-urlencoded",
-					},
-					body: getURLSearchParams(post),
-				}
-			);
-			return await response.json();
-		}
-		catch (e)
-		{
-			return {
-				code: -1,
-				message: e.message,
-			};
-		}
-	}
-	
-	
-	/**
-	 * Load chats
-	 */
-	async load()
-	{
-		return await this.sendApi("/api/chat/load");
-	}
-	
-	
-	/**
-	 * Load agents
-	 */
-	async loadAgents()
-	{
-		return await this.sendApi("/api/settings/agent");
-	}
-	
-	
-	/**
-	 * Delete chat
-	 */
-	async deleteChat(chat_id)
-	{
-		return await this.sendApi("/api/chat/delete", {
-			"chat_id": chat_id,
-		});
-	}
-	
-	
-	/**
-	 * Rename chat
-	 */
-	async renameChat(chat_id, title)
-	{
-		return await this.sendApi("/api/chat/rename", {
-			"chat_id": chat_id,
-			"title": title,
-		});
-	}
-	
-	
-	/**
-	 * Update chat files
-	 */
-	async updateChatFiles(data)
-	{
-		return await this.sendApi("/api/chat/update_chat_files", data);
-	}
-	
-	
-	/**
-	 * Send message
-	 */
-	async sendMessage(data)
-	{
-		return await this.sendApi("/api/chat/send", data);
-	}
 }
 
 
@@ -343,29 +101,53 @@ class CommandRegistry
 /**
  * Register commands
  */
-function registerCommands(registry, api)
+function registerCommands(registry)
 {
 	/* Load */
 	registry.register("load", async () => {
-		const [load_result, load_agents_result] = await Promise.all([
-			api.load(),
-			api.loadAgents(),
-		]);
 		return {
-			"chat": load_result,
-			"agents": load_agents_result,
+			"chat": [],
+			"agents": [],
+		};
+	});
+	
+	/* Load agent */
+	registry.register("load_agents", async (message) => {
+		return {
+			success: false,
 		};
 	});
 	
 	/* Save agent */
-	registry.register("save_agent", async (message) => {
+	registry.register("save_agent", async ({id, item}) => {
 		return {
 			success: false,
 		};
 	});
 	
 	/* Delete agent */
-	registry.register("delete_agent", async (agent_id) => {
+	registry.register("delete_agent", async (id) => {
+		return {
+			success: false,
+		};
+	});
+	
+	/* Load model */
+	registry.register("load_models", async () => {
+		return {
+			success: false,
+		};
+	});
+	
+	/* Save agent */
+	registry.register("save_model", async ({id, item}) => {
+		return {
+			success: false,
+		};
+	});
+	
+	/* Delete agent */
+	registry.register("delete_model", async (id) => {
 		return {
 			success: false,
 		};
@@ -373,34 +155,33 @@ function registerCommands(registry, api)
 	
 	/* Send message */
 	registry.register("send_message", async (message) => {
-		await api.sendMessage(message);
+		return {
+			success: false,
+		};
 	});
 	
 	/* Rename chat */
-	registry.register("rename_chat", async (message) => {
-		var chat_id = message.chat_id;
-		var name = message.name;
-		var result = await api.renameChat(chat_id, name);
+	registry.register("rename_chat", async ({id, name}) => {
 		return {
-			success: result.code > 0,
-			chat_id: chat_id,
+			success: false,
+			id: id,
 			name: name,
 		};
 	});
 	
 	/* Delete chat */
-	registry.register("delete_chat", async (message) => {
-		var chat_id = message.chat_id;
-		var result = await api.deleteChat(chat_id);
+	registry.register("delete_chat", async (id) => {
 		return {
-			success: result.code > 0,
-			chat_id: chat_id,
+			success: false,
+			chat_id: id,
 		}
 	});
 	
 	/* Update chat files */
 	registry.register("update_chat_files", async (message) => {
-		await api.updateChatFiles(message);
+		return {
+			success: false,
+		};
 	});
 	
 	/* Read files */
@@ -429,17 +210,16 @@ function registerCommands(registry, api)
 
 class BayLangViewProvider
 {
-	api = null;
-	panel = null;
 	extensionUri = null;
+	panel = null;
+	registry = null;
 	
 	
 	/**
 	 * Constructor
 	 */
-	constructor(context, api)
+	constructor(context)
 	{
-		this.api = api;
 		this.registry = new CommandRegistry();
 		this.extensionUri = context.extensionUri;
 	}
@@ -468,9 +248,6 @@ class BayLangViewProvider
 		};
 		panel.webview.html = this.getWebviewContent(panel);
 		panel.webview.onDidReceiveMessage(this.onMessage.bind(this));
-		
-		/* Add listener */
-		this.api.addListener(this.onApiMessage.bind(this));
 		
 		/* Create registry */
 		this.registry.webview = panel.webview;
@@ -515,18 +292,6 @@ class BayLangViewProvider
 			<meta charset="UTF-8">
 			<title>BayLang AI</title>
 			<link href="${getLink("dist/main.css")}" rel="stylesheet" />
-			<style>
-			body *{ box-sizing: border-box; }
-			:root{
-				--border-color: #e0e1e6;
-				--hover-color: #eee;
-				--primary-color: #0077ee;
-				--secondary-color: #5c6370;
-				--danger-color: #e00000;
-				--success-color: #98c379;
-				--gray-color: #6b7280;
-			}
-			</style>
 		</head>
 		<body>
 			<div class="app"></div>

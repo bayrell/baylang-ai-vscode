@@ -1,5 +1,6 @@
 import Api from "./Api.js";
 import ChatModel from "./Chat/ChatModel.js";
+import Models from "./Models/Models.js";
 import { markRaw } from "vue";
 
 class Layout
@@ -8,6 +9,7 @@ class Layout
 	{
 		this.api = markRaw(new Api(this));
 		this.chat_page = new ChatModel(this);
+		this.models_page = new Models(this);
 		this.vscode = markRaw(acquireVsCodeApi());
 		this.image_url = "";
 		this.page = "chat";
@@ -43,6 +45,15 @@ class Layout
 	getImage(path)
 	{
 		return this.image_url + "/" + path;
+	}
+	
+	
+	/**
+	 * Set page
+	 */
+	setPage(page)
+	{
+		this.page = page;
 	}
 	
 	

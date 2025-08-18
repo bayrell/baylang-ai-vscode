@@ -38,6 +38,10 @@
 		color: var(--text-color);
 		border: 1px solid var(--border-color);
 	}
+	&--back{
+		background-color: var(--primary-color);
+		color: white;
+	}
 	&--small{
 		padding: 5px 10px;
 	}

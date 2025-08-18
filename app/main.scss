@@ -1,0 +1,14 @@
+body *{ box-sizing: border-box; }
+:root{
+	--border-color: #e0e1e6;
+	--hover-color: #eee;
+	--primary-color: #0077ee;
+	--secondary-color: #5c6370;
+	--danger-color: #e00000;
+	--success-color: #388600;
+	--gray-color: #6b7280;
+}
+.page_title{
+	margin-top: 5px;
+	margin-bottom: 10px;
+}

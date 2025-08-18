@@ -1,3 +1,5 @@
+import { ApiResult } from "@main/lib.js";
+
 class Api
 {
 	/**
@@ -32,7 +34,9 @@ class Api
 			var promise = this.pending_requests[msg.request_id];
 			if (msg.payload)
 			{
-				promise.resolve(msg.payload);
+				var result = new ApiResult();
+				result.assign(msg.payload);
+				promise.resolve(result);
 			}
 			else if (msg.error)
 			{
