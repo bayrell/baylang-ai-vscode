@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 const vscode = require("vscode");
 
 function activate(context)
@@ -32,6 +33,47 @@ function activate(context)
 			}
 		})
 	);
+}
+
+
+class Settings
+{
+	constructor(globalStorageUri)
+	{
+		this.folderPath = globalStorageUri.path;
+		this.filePath = path.join(this.folderPath, "settings.json");
+		
+		/* Create folder if does not exists */
+		if (!fs.existsSync(this.folderPath))
+		{
+			fs.mkdirSync(this.folderPath, { recursive: true });
+		}
+	}
+	
+	
+	/**
+	 * Load data
+	 */
+	async loadData()
+	{
+        try {
+            const raw = await fs.promises.readFile(this.filePath, "utf-8");
+            return JSON.parse(raw);
+        }
+		catch (e)
+		{
+            return {};
+        }
+    }
+	
+	
+	/**
+	 * Save data
+	 */
+	async saveData(data)
+	{
+        await fs.promises.writeFile(this.filePath, JSON.stringify(data, null, 2));
+    }
 }
 
 
@@ -101,26 +143,35 @@ class CommandRegistry
 /**
  * Register commands
  */
-function registerCommands(registry)
+function registerCommands(provider)
 {
-	/* Load */
-	registry.register("load", async () => {
+	var registry = provider.registry;
+	var settings = new Settings(provider.globalStorageUri);
+	
+	/* Load chat */
+	registry.register("load_chat", async () => {
+		var data = await settings.loadData();
 		return {
-			"chat": [],
-			"agents": [],
+			"success": false,
+			"chat": data.chat ? data.chat : [],
 		};
 	});
 	
 	/* Load agent */
-	registry.register("load_agents", async (message) => {
+	registry.register("load_agents", async () => {
+		var data = await settings.loadData();
 		return {
 			success: true,
-			items: [],
+			items: data.agents ? Object.values(data.agents) : [],
 		};
 	});
 	
 	/* Save agent */
-	registry.register("save_agent", async ({id, item}) => {
+	registry.register("save_agent", async (item) => {
+		var data = await settings.loadData();
+		if (!data.agents) data.agents = {};
+		data.agents[item.id] = item;
+		await settings.saveData(data);
 		return {
 			success: true,
 		};
@@ -128,6 +179,12 @@ function registerCommands(registry)
 	
 	/* Delete agent */
 	registry.register("delete_agent", async (id) => {
+		var data = await settings.loadData();
+		if (data.agents && data.agents[id])
+		{
+			delete data.agents[id];
+			await settings.saveData(data);
+		}
 		return {
 			success: true,
 		};
@@ -135,14 +192,19 @@ function registerCommands(registry)
 	
 	/* Load model */
 	registry.register("load_models", async () => {
+		var data = await settings.loadData();
 		return {
 			success: true,
-			items: [],
+			items: data.models ? Object.values(data.models) : [],
 		};
 	});
 	
 	/* Save agent */
-	registry.register("save_model", async ({id, item}) => {
+	registry.register("save_model", async (item) => {
+		var data = await settings.loadData();
+		if (!data.models) data.models = {};
+		data.models[item.id] = item;
+		await settings.saveData(data);
 		return {
 			success: true,
 		};
@@ -150,6 +212,12 @@ function registerCommands(registry)
 	
 	/* Delete agent */
 	registry.register("delete_model", async (id) => {
+		var data = await settings.loadData();
+		if (data.models && data.models[id])
+		{
+			delete data.models[id];
+			await settings.saveData(data);
+		}
 		return {
 			success: true,
 		};
@@ -212,7 +280,9 @@ function registerCommands(registry)
 
 class BayLangViewProvider
 {
+	context = null;
 	extensionUri = null;
+	globalStorageUri = null;
 	panel = null;
 	registry = null;
 	
@@ -222,8 +292,10 @@ class BayLangViewProvider
 	 */
 	constructor(context)
 	{
+		this.context = context;
 		this.registry = new CommandRegistry();
 		this.extensionUri = context.extensionUri;
+		this.globalStorageUri = context.globalStorageUri;
 	}
 	
 	
@@ -255,7 +327,7 @@ class BayLangViewProvider
 		this.registry.webview = panel.webview;
 		
 		/* Register commands */
-		registerCommands(this.registry, this.api);
+		registerCommands(this);
 	}
 	
 	

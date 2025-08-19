@@ -49,6 +49,8 @@ class Models
 			var item = result.response.items[i];
 			this.items.push(item);
 		}
+		
+		this.crud.setLastId(this.items);
 	}
 	
 	
@@ -61,7 +63,7 @@ class Models
 		item.id = this.crud.generateId();
 		
 		/* Save item */
-		var result = await this.layout.api.call("save_model", {"item": item});
+		var result = await this.layout.api.call("save_model", item);
 		if (result.isSuccess())
 		{
 			this.items.push(item);
@@ -86,7 +88,7 @@ class Models
 		
 		/* Save item */
 		var item = this.form.getItem();
-		var result = await this.layout.api.call("save_model", {"pk": this.form.pk, "item": item});
+		var result = await this.layout.api.call("save_model", item);
 		if (result.isSuccess())
 		{
 			this.items[index] = this.form.getItem();

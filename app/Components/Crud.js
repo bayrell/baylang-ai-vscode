@@ -12,6 +12,14 @@ class Crud
 		this.lastId++;
 		return this.lastId;
 	}
+	setLastId(items)
+	{
+		for (var i=0; i<items.length; i++)
+		{
+			var item = items[i];
+			if (item.id > this.lastId) this.lastId = item.id
+		}
+	}
 	isAdd()
 	{
 		return this.model.form.pk == null;
