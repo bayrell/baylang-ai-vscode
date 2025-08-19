@@ -28,6 +28,15 @@ export class ApiResult
 	
 	
 	/**
+	 * Constructor
+	 */
+	constructor(response)
+	{
+		if (response) this.assign(response);
+	}
+	
+	
+	/**
 	 * Assign response
 	 */
 	assign(response)

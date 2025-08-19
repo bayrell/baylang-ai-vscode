@@ -114,56 +114,58 @@ function registerCommands(registry)
 	/* Load agent */
 	registry.register("load_agents", async (message) => {
 		return {
-			success: false,
+			success: true,
+			items: [],
 		};
 	});
 	
 	/* Save agent */
 	registry.register("save_agent", async ({id, item}) => {
 		return {
-			success: false,
+			success: true,
 		};
 	});
 	
 	/* Delete agent */
 	registry.register("delete_agent", async (id) => {
 		return {
-			success: false,
+			success: true,
 		};
 	});
 	
 	/* Load model */
 	registry.register("load_models", async () => {
 		return {
-			success: false,
+			success: true,
+			items: [],
 		};
 	});
 	
 	/* Save agent */
 	registry.register("save_model", async ({id, item}) => {
 		return {
-			success: false,
+			success: true,
 		};
 	});
 	
 	/* Delete agent */
 	registry.register("delete_model", async (id) => {
 		return {
-			success: false,
+			success: true,
 		};
 	});
 	
 	/* Send message */
 	registry.register("send_message", async (message) => {
 		return {
-			success: false,
+			success: true,
 		};
 	});
 	
 	/* Rename chat */
 	registry.register("rename_chat", async ({id, name}) => {
 		return {
-			success: false,
+			success: true,
 			id: id,
 			name: name,
 		};
@@ -172,7 +174,7 @@ function registerCommands(registry)
 	/* Delete chat */
 	registry.register("delete_chat", async (id) => {
 		return {
-			success: false,
+			success: true,
 			chat_id: id,
 		}
 	});
@@ -180,7 +182,7 @@ function registerCommands(registry)
 	/* Update chat files */
 	registry.register("update_chat_files", async (message) => {
 		return {
-			success: false,
+			success: true,
 		};
 	});
 	

@@ -1,5 +1,5 @@
 <style lang="scss" scoped>
-.models_page{
+.agent_page{
 	padding-top: 5px;
 	.buttons{
 		display: flex;
@@ -14,7 +14,7 @@
 	gap: 5px;
 	margin-top: 20px;
 }
-.models_page :deep(.crud .list .page_title){
+.agent_page :deep(.crud .list .page_title){
 	margin-top: 10px;
 }
 .list_item{
@@ -37,10 +37,13 @@
 		}
 	}
 }
+.agent_page :deep(.save_item textarea){
+	min-height: 200px;
+}
 </style>
 
 <template>
-	<div class="models_page">
+	<div class="agent_page">
 		<div class="buttons" v-show="!model.crud.show_save && !model.crud.show_delete">
 			<Button class="back" @click="layout.setPage('settings')">Back</Button>
 			<Button class="success" @click="model.crud.showAdd()">Add</Button>
@@ -48,7 +51,7 @@
 		<Crud :crud="model.crud">
 			<template v-slot:list>
 				<div class="page_title">
-					Models list
+					Agent list
 				</div>
 				<div v-for="item in model.items" :key="item.id"
 					class="list_item"
@@ -80,11 +83,12 @@
 						:options="getModels()"
 					/>
 				</Field>
-				<Field name="key" v-if="isShowKey()">
-					<label for="name">API key</label>
+				<Field name="prompt">
+					<label for="prompt">Prompt</label>
 					<Input
-						name="key"
-						v-model="model.form.item.settings.key"
+						type="textarea"
+						name="prompt"
+						v-model="model.form.item.prompt"
 					/>
 				</Field>
 			</template>
@@ -102,7 +106,7 @@ import Input from "@main/Components/Input.vue";
 import Field from "@main/Components/Form/Field.vue";
 
 export default {
-	name: "Models",
+	name: "Agent",
 	components: {
 		Button,
 		Crud,
@@ -116,7 +120,7 @@ export default {
 	computed: {
 		model()
 		{
-			return this.layout.models_page;
+			return this.layout.agent_page;
 		},
 	},
 	mounted()
@@ -127,13 +131,15 @@ export default {
 	{
 		getModels()
 		{
-			return [
-				{"key": "gemini", "value": "Gemini"},
-			];
-		},
-		isShowKey()
-		{
-			return this.model.form.item.model == "gemini";
+            var models = this.layout.models_page.items;
+			return models.map(
+                (model) => {
+                    return {
+                        "key": model.id,
+                        "value": model.name,
+                    };
+                }
+            );
 		},
 	},
 }

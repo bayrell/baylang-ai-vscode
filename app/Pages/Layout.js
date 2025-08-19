@@ -1,4 +1,5 @@
 import Api from "./Api.js";
+import Agent from "./Agent/Agent.js";
 import ChatModel from "./Chat/ChatModel.js";
 import Models from "./Models/Models.js";
 import { markRaw } from "vue";
@@ -8,6 +9,7 @@ class Layout
 	constructor()
 	{
 		this.api = markRaw(new Api(this));
+		this.agent_page = new Agent(this);
 		this.chat_page = new ChatModel(this);
 		this.models_page = new Models(this);
 		this.vscode = markRaw(acquireVsCodeApi());

@@ -2,7 +2,7 @@ import Crud from "@main/Components/Crud.js";
 import Form from "@main/Components/Form/Form.js";
 import { ApiResult } from "@main/lib.js";
 
-class Models
+class Agent
 {
 	constructor(layout)
 	{
@@ -12,8 +12,8 @@ class Models
 		this.form = new Form();
 		this.form.setDefault({
 			"name": "",
-			"model": "",
-			"settings": {},
+			"model": 0,
+			"prompt": "",
 		});
 	}
 	
@@ -41,7 +41,7 @@ class Models
 	 */
 	async load()
 	{
-		var result = await this.layout.api.call("load_models");
+		var result = await this.layout.api.call("load_agents");
 		if (!result.isSuccess()) return;
 		
 		for (var i=0; i<result.response.items.length; i++)
@@ -61,7 +61,7 @@ class Models
 		item.id = this.crud.generateId();
 		
 		/* Save item */
-		var result = await this.layout.api.call("save_model", {"item": item});
+		var result = await this.layout.api.call("save_agent", {"item": item});
 		if (result.isSuccess())
 		{
 			this.items.push(item);
@@ -86,7 +86,7 @@ class Models
 		
 		/* Save item */
 		var item = this.form.getItem();
-		var result = await this.layout.api.call("save_model", {"pk": this.form.pk, "item": item});
+		var result = await this.layout.api.call("save_agent", {"pk": this.form.pk, "item": item});
 		if (result.isSuccess())
 		{
 			this.items[index] = this.form.getItem();
@@ -110,7 +110,7 @@ class Models
 		}
 		
 		/* Delete item */
-		var result = await this.layout.api.call("delete_model", this.form.pk);
+		var result = await this.layout.api.call("delete_agent", this.form.pk);
 		if (result.isSuccess())
 		{
 			this.items.splice(index, 1);
@@ -120,4 +120,4 @@ class Models
 	}
 }
 
-export default Models;
+export default Agent;
