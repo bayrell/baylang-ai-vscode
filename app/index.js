@@ -1,3 +1,4 @@
+const ai = require("./ai.js");
 const fs = require("fs");
 const path = require("path");
 const vscode = require("vscode");
@@ -56,15 +57,15 @@ class Settings
 	 */
 	async loadData()
 	{
-        try {
-            const raw = await fs.promises.readFile(this.filePath, "utf-8");
-            return JSON.parse(raw);
-        }
+		try {
+			const raw = await fs.promises.readFile(this.filePath, "utf-8");
+			return JSON.parse(raw);
+		}
 		catch (e)
 		{
-            return {};
-        }
-    }
+			return {};
+		}
+	}
 	
 	
 	/**
@@ -72,8 +73,140 @@ class Settings
 	 */
 	async saveData(data)
 	{
-        await fs.promises.writeFile(this.filePath, JSON.stringify(data, null, 2));
-    }
+		await fs.promises.writeFile(this.filePath, JSON.stringify(data, null, 2));
+	}
+	
+	
+	/**
+	 * Load agents
+	 */
+	async loadAgents()
+	{
+		var data = await this.loadData();
+		return data.agents ? Object.values(data.agents) : [];
+	}
+	
+	
+	/**
+	 * Get agent by ID
+	 */
+	async getAgentById(id)
+	{
+		var data = await this.loadData();
+		if (!data.agents) return null;
+		if (!data.agents[id]) return null;
+		return data.agents[id];
+	}
+	
+	
+	/**
+	 * Save agent
+	 */
+	async saveAgent(item)
+	{
+		var data = await this.loadData();
+		if (!data.agents) data.agents = {};
+		data.agents[item.id] = item;
+		await this.saveData(data);
+	}
+	
+	
+	/**
+	 * Delete agent
+	 */
+	async deleteAgent(id)
+	{
+		var data = await this.loadData();
+		if (data.agents && data.agents[id])
+		{
+			delete data.agents[id];
+			await settings.saveData(data);
+		}
+	}
+	
+	
+	/**
+	 * Load models
+	 */
+	async loadModels()
+	{
+		var data = await this.loadData();
+		return data.models ? Object.values(data.models) : []
+	}
+	
+	
+	/**
+	 * Save model
+	 */
+	async saveModel(item)
+	{
+		var data = await this.loadData();
+		if (!data.models) data.models = {};
+		data.models[item.id] = item;
+		await this.saveData(data);
+	}
+	
+	
+	/**
+	 * Delete model
+	 */
+	async deleteModel(id)
+	{
+		var data = await this.loadData();
+		if (data.models && data.models[id])
+		{
+			delete data.models[id];
+			await this.saveData(data);
+		}
+	}
+	
+	
+	/**
+	 * Load chat by id
+	 */
+	async loadChatById(chat_id)
+	{
+		var folderPath = path.join(this.folderPath, "chat");
+		if (!fs.existsSync(folderPath))
+		{
+			fs.mkdirSync(folderPath, { recursive: true });
+		}
+		
+		var chat = null;
+		var data = null;
+		var filePath = path.join(folderPath, chat_id + ".json");
+		try {
+			const raw = await fs.promises.readFile(filePath, "utf-8");
+			data = JSON.parse(raw);
+		}
+		catch (e)
+		{
+			return null;
+		}
+		
+		if (!data)
+		{
+			var chat = new ai.Chat();
+			chat.assign(data);
+		}
+		return chat;
+	}
+	
+	
+	/**
+	 * Save chat
+	 */
+	async saveChat(chat)
+	{
+		var folderPath = path.join(this.folderPath, "chat");
+		if (!fs.existsSync(folderPath))
+		{
+			fs.mkdirSync(folderPath, { recursive: true });
+		}
+		
+		var filePath = path.join(folderPath, chat.id + ".json");
+		await fs.promises.writeFile(filePath, JSON.stringify(chat.getData(), null, 2));
+	}
 }
 
 
@@ -159,19 +292,16 @@ function registerCommands(provider)
 	
 	/* Load agent */
 	registry.register("load_agents", async () => {
-		var data = await settings.loadData();
+		var items = await settings.loadAgents();
 		return {
 			success: true,
-			items: data.agents ? Object.values(data.agents) : [],
+			items: items,
 		};
 	});
 	
 	/* Save agent */
 	registry.register("save_agent", async (item) => {
-		var data = await settings.loadData();
-		if (!data.agents) data.agents = {};
-		data.agents[item.id] = item;
-		await settings.saveData(data);
+		await settings.saveAgent(item);
 		return {
 			success: true,
 		};
@@ -179,12 +309,7 @@ function registerCommands(provider)
 	
 	/* Delete agent */
 	registry.register("delete_agent", async (id) => {
-		var data = await settings.loadData();
-		if (data.agents && data.agents[id])
-		{
-			delete data.agents[id];
-			await settings.saveData(data);
-		}
+		await settings.deleteAgent(id);
 		return {
 			success: true,
 		};
@@ -192,32 +317,24 @@ function registerCommands(provider)
 	
 	/* Load model */
 	registry.register("load_models", async () => {
-		var data = await settings.loadData();
+		var items = await settings.loadModels();
 		return {
 			success: true,
-			items: data.models ? Object.values(data.models) : [],
+			items: items,
 		};
 	});
 	
-	/* Save agent */
+	/* Save model */
 	registry.register("save_model", async (item) => {
-		var data = await settings.loadData();
-		if (!data.models) data.models = {};
-		data.models[item.id] = item;
-		await settings.saveData(data);
+		await settings.saveModel(item);
 		return {
 			success: true,
 		};
 	});
 	
-	/* Delete agent */
+	/* Delete model */
 	registry.register("delete_model", async (id) => {
-		var data = await settings.loadData();
-		if (data.models && data.models[id])
-		{
-			delete data.models[id];
-			await settings.saveData(data);
-		}
+		await this.deleteModel(id);
 		return {
 			success: true,
 		};
@@ -225,6 +342,43 @@ function registerCommands(provider)
 	
 	/* Send message */
 	registry.register("send_message", async (message) => {
+		
+		/* Find agent by id */
+		var agent = await settings.getAgentById(message.agent);
+		if (!agent)
+		{
+			return {
+				success: false,
+				message: "Agent not found",
+			}
+		}
+		
+		/* Create question */
+		var question = new ai.Question();
+		question.agent = agent;
+		question.provider = provider;
+		question.settings = settings;
+		
+		/* Load chat by id */
+		question.chat = await settings.loadChatById(message.id);
+		if (!question.chat)
+		{
+			question.chat = new ai.Chat();
+			question.chat.id = message.id;
+			question.chat.name = message.name;
+			provider.sendMessage(new ai.CreateChatEvent(question.chat));
+		}
+		
+		/* Send question */
+		var send_question = async () => {
+			await question.addUserMessage(message.content);
+			await question.addAgentMessage();
+			await settings.saveChat(question.chat);
+			await question.send();
+		};
+		send_question();
+		
+		/* Returns result */
 		return {
 			success: true,
 		};
@@ -332,13 +486,13 @@ class BayLangViewProvider
 	
 	
 	/**
-	 * Message from api
+	 * Send message to view
 	 */
-	async onApiMessage(data)
+	async sendMessage(message)
 	{
 		this.panel.webview.postMessage({
-			"command": data.event,
-			"payload": data,
+			"command": message.data.event,
+			"payload": message.getData(),
 		})
 	}
 	

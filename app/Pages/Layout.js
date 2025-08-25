@@ -65,6 +65,7 @@ class Layout
 	onMessage(event)
 	{
 		var message = event.data;
+		if (!message.command) return;
 		if (message.command == "show_page")
 		{
 			this.page = message.page;

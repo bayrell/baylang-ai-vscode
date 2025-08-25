@@ -10,7 +10,6 @@ class ChatModel
 	constructor(layout)
 	{
 		this.api = layout.api;
-		this.agents = [];
 		this.chats = [];
 		this.current_agent_id = null;
 		this.current_chat_id = null;
@@ -250,12 +249,16 @@ class ChatModel
 		chat.setTyping(true);
 		
 		/* Send message to backend */
-		this.api.call("send_message", {
+		var result = await this.api.call("send_message", {
 			id: chat.id,
 			agent: agent_id,
 			name: chat.title,
 			content: item.content,
 		});
+		if (!result.isSuccess())
+		{
+			chat.setTyping(false);
+		}
 	}
 	
 	
@@ -293,15 +296,8 @@ class ChatModel
 			}
 		}
 		
-		/* Load agents */
-		if (result.agents.code > 0)
-		{
-			this.agents = result.agents.data.items;
-		}
-		
 		/* Success */
 		this.loading = false;
-		console.log("Load chat");
 	}
 	
 	

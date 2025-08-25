@@ -88,7 +88,7 @@ export default {
 		},
 		agents()
 		{
-			return this.model.agents.map((item)=>{
+			return this.layout.agent_page.items.map((item)=>{
 				return {
 					"key": item.id,
 					"value": item.name,
