@@ -284,16 +284,12 @@ class ChatModel
 		if (!result.isSuccess()) return;
 		
 		/* Load chat */
-		if (result.chat.code > 0)
+		for (var i=0; i<result.response.items.length; i++)
 		{
-			var items = result.chat.data.items;
-			for (var i=0; i<items.length; i++)
-			{
-				var item = items[i];
-				var history = new ChatHistory();
-				history.assign(item);
-				this.chats.push(history);
-			}
+			var item = result.response.items[i];
+			var history = new ChatHistory();
+			history.assign(item);
+			this.chats.push(history);
 		}
 		
 		/* Success */

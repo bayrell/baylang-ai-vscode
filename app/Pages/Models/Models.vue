@@ -72,11 +72,11 @@
 					/>
 				</Field>
 				<Field name="model">
-					<label for="name">Model</label>
+					<label for="name">Type</label>
 					<Input
 						type="select"
-						name="model"
-						v-model="model.form.item.model"
+						name="type"
+						v-model="model.form.item.type"
 						:options="getModels()"
 					/>
 				</Field>

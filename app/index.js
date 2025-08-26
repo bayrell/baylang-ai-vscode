@@ -1,7 +1,20 @@
 const ai = require("./ai.js");
-const fs = require("fs");
+const fs = require("fs").promises;
 const path = require("path");
 const vscode = require("vscode");
+
+async function fileExists(file_path)
+{
+	try
+	{
+		await fs.access(file_path);
+		return true;
+	}
+	catch
+	{
+		return false;
+	}
+}
 
 function activate(context)
 {
@@ -43,12 +56,7 @@ class Settings
 	{
 		this.folderPath = globalStorageUri.path;
 		this.filePath = path.join(this.folderPath, "settings.json");
-		
-		/* Create folder if does not exists */
-		if (!fs.existsSync(this.folderPath))
-		{
-			fs.mkdirSync(this.folderPath, { recursive: true });
-		}
+		this.data = {};
 	}
 	
 	
@@ -58,12 +66,12 @@ class Settings
 	async loadData()
 	{
 		try {
-			const raw = await fs.promises.readFile(this.filePath, "utf-8");
-			return JSON.parse(raw);
+			const raw = await fs.readFile(this.filePath, "utf-8");
+			this.data = JSON.parse(raw);
 		}
 		catch (e)
 		{
-			return {};
+			this.data = {};
 		}
 	}
 	
@@ -71,31 +79,36 @@ class Settings
 	/**
 	 * Save data
 	 */
-	async saveData(data)
+	async saveData()
 	{
-		await fs.promises.writeFile(this.filePath, JSON.stringify(data, null, 2));
+		/* Create folder if does not exists */
+		if (!await fileExists(this.folderPath))
+		{
+			await fs.mkdir(this.folderPath, { recursive: true });
+		}
+		
+		/* Write file */
+		await fs.writeFile(this.filePath, JSON.stringify(this.data, null, 2));
 	}
 	
 	
 	/**
 	 * Load agents
 	 */
-	async loadAgents()
+	loadAgents()
 	{
-		var data = await this.loadData();
-		return data.agents ? Object.values(data.agents) : [];
+		return this.data.agents ? Object.values(this.data.agents) : [];
 	}
 	
 	
 	/**
 	 * Get agent by ID
 	 */
-	async getAgentById(id)
+	getAgentById(id)
 	{
-		var data = await this.loadData();
-		if (!data.agents) return null;
-		if (!data.agents[id]) return null;
-		return data.agents[id];
+		if (!this.data.agents) return null;
+		if (!this.data.agents[id]) return null;
+		return ai.createAgent(this.data.agents[id], this);
 	}
 	
 	
@@ -104,10 +117,9 @@ class Settings
 	 */
 	async saveAgent(item)
 	{
-		var data = await this.loadData();
-		if (!data.agents) data.agents = {};
-		data.agents[item.id] = item;
-		await this.saveData(data);
+		if (!this.data.agents) this.data.agents = {};
+		this.data.agents[item.id] = item;
+		await this.saveData();
 	}
 	
 	
@@ -116,11 +128,10 @@ class Settings
 	 */
 	async deleteAgent(id)
 	{
-		var data = await this.loadData();
-		if (data.agents && data.agents[id])
+		if (this.data.agents && this.data.agents[id])
 		{
-			delete data.agents[id];
-			await settings.saveData(data);
+			delete this.data.agents[id];
+			await this.saveData();
 		}
 	}
 	
@@ -128,10 +139,20 @@ class Settings
 	/**
 	 * Load models
 	 */
-	async loadModels()
+	loadModels()
 	{
-		var data = await this.loadData();
-		return data.models ? Object.values(data.models) : []
+		return this.data.models ? Object.values(this.data.models) : []
+	}
+	
+	
+	/**
+	 * Returns model by id
+	 */
+	getModelById(id)
+	{
+		if (!this.data.models) return null;
+		if (!this.data.models[id]) return null;
+		return ai.createModel(this.data.models[id]);
 	}
 	
 	
@@ -140,10 +161,9 @@ class Settings
 	 */
 	async saveModel(item)
 	{
-		var data = await this.loadData();
-		if (!data.models) data.models = {};
-		data.models[item.id] = item;
-		await this.saveData(data);
+		if (!this.data.models) this.data.models = {};
+		this.data.models[item.id] = item;
+		await this.saveData();
 	}
 	
 	
@@ -152,12 +172,33 @@ class Settings
 	 */
 	async deleteModel(id)
 	{
-		var data = await this.loadData();
-		if (data.models && data.models[id])
+		if (this.data.models && this.data.models[id])
 		{
-			delete data.models[id];
-			await this.saveData(data);
+			delete this.data.models[id];
+			await this.saveData();
 		}
+	}
+	
+	
+	/**
+	 * Load chat
+	 */
+	async loadChat()
+	{
+		var folderPath = path.join(this.folderPath, "chat");
+		var files = [];
+		try
+		{
+			files = await fs.readdir(folderPath);
+		}
+		catch (e){}
+		
+		files = files.filter(file => file.endsWith(".json"))
+			.map(file => path.basename(file, ".json"));
+		
+		files = await Promise.all(files.map((file_name) => this.loadChatById(file_name)));
+		files = files.filter(file => file != null);
+		return files;
 	}
 	
 	
@@ -166,17 +207,12 @@ class Settings
 	 */
 	async loadChatById(chat_id)
 	{
-		var folderPath = path.join(this.folderPath, "chat");
-		if (!fs.existsSync(folderPath))
-		{
-			fs.mkdirSync(folderPath, { recursive: true });
-		}
-		
 		var chat = null;
 		var data = null;
+		var folderPath = path.join(this.folderPath, "chat");
 		var filePath = path.join(folderPath, chat_id + ".json");
 		try {
-			const raw = await fs.promises.readFile(filePath, "utf-8");
+			const raw = await fs.readFile(filePath, "utf-8");
 			data = JSON.parse(raw);
 		}
 		catch (e)
@@ -184,9 +220,9 @@ class Settings
 			return null;
 		}
 		
-		if (!data)
+		if (data != null)
 		{
-			var chat = new ai.Chat();
+			chat = new ai.Chat();
 			chat.assign(data);
 		}
 		return chat;
@@ -199,13 +235,13 @@ class Settings
 	async saveChat(chat)
 	{
 		var folderPath = path.join(this.folderPath, "chat");
-		if (!fs.existsSync(folderPath))
+		if (!await fileExists(folderPath))
 		{
-			fs.mkdirSync(folderPath, { recursive: true });
+			await fs.mkdir(folderPath, { recursive: true });
 		}
 		
 		var filePath = path.join(folderPath, chat.id + ".json");
-		await fs.promises.writeFile(filePath, JSON.stringify(chat.getData(), null, 2));
+		await fs.writeFile(filePath, JSON.stringify(chat.getData(), null, 2));
 	}
 }
 
@@ -276,23 +312,24 @@ class CommandRegistry
 /**
  * Register commands
  */
-function registerCommands(provider)
+async function registerCommands(provider)
 {
 	var registry = provider.registry;
 	var settings = new Settings(provider.globalStorageUri);
+	await settings.loadData();
 	
 	/* Load chat */
 	registry.register("load_chat", async () => {
-		var data = await settings.loadData();
+		var items = await settings.loadChat();
 		return {
-			"success": false,
-			"chat": data.chat ? data.chat : [],
+			"success": true,
+			"items": items.map(item => item.getData()),
 		};
 	});
 	
 	/* Load agent */
 	registry.register("load_agents", async () => {
-		var items = await settings.loadAgents();
+		var items = settings.loadAgents();
 		return {
 			success: true,
 			items: items,
@@ -317,7 +354,7 @@ function registerCommands(provider)
 	
 	/* Load model */
 	registry.register("load_models", async () => {
-		var items = await settings.loadModels();
+		var items = settings.loadModels();
 		return {
 			success: true,
 			items: items,
@@ -344,7 +381,7 @@ function registerCommands(provider)
 	registry.register("send_message", async (message) => {
 		
 		/* Find agent by id */
-		var agent = await settings.getAgentById(message.agent);
+		var agent = settings.getAgentById(message.agent);
 		if (!agent)
 		{
 			return {
@@ -416,7 +453,7 @@ function registerCommands(provider)
 			var file_path = files[i];
 			try
 			{
-				var data = await fs.promises.readFile(file_path, "utf8");
+				var data = await fs.readFile(file_path, "utf8");
 				result.push({
 					path: file_path,
 					content: data,
