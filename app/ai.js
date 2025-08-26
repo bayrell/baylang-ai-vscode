@@ -285,7 +285,7 @@ export class Chat
 	}
 }
 
-class PromptBuilder
+export class PromptBuilder
 {
 	constructor(prompt)
 	{
@@ -313,7 +313,7 @@ class PromptBuilder
 		var prompt = this.prompt;
 
         /* Create default prompt if tag not found */
-        var matches = prompt.matchAll(/<(\w+)>([\s\S]*?)<\/\1>/g);
+        var matches = [...prompt.matchAll(/<(\w+)>([\s\S]*?)<\/\1>/g)];
         if (matches.length === 0) {
             prompt =
                 `<system>${prompt}</system>` +
@@ -335,7 +335,7 @@ class PromptBuilder
 		
 		/* Find tags */
 		var messages = [];
-		matches = prompt.matchAll(/<(\w+)>([\s\S]*?)<\/\1>/g);
+		matches = [...prompt.matchAll(/<(\w+)>([\s\S]*?)<\/\1>/g)];
 		for (var key in matches)
 		{
 			var item = matches[key];

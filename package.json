@@ -1,5 +1,6 @@
 {
 	"name": "baylang-ai",
+	"type": "module",
 	"displayName": "BayLang AI",
 	"description": "BayLang AI. Chat bot",
 	"publisher": "BAYRELL",
@@ -15,6 +16,7 @@
 	},
 	"scripts": {
 		"vsce": "./node_modules/.bin/vsce",
+		"test": "./node_modules/.bin/jasmine --random=false --config=./jasmine.js",
 		"build": "NODE_ENV=production ./node_modules/.bin/rollup --config rollup.config.js --bundleConfigAsCjs",
 		"watch": "NODE_ENV=development ./node_modules/.bin/rollup --config rollup.config.js --bundleConfigAsCjs --watch",
 		"build_plugin": "./node_modules/.bin/vsce package",
@@ -28,6 +30,7 @@
 		"@rollup/plugin-terser": "^0.4.4",
 		"@vitejs/plugin-vue": "^6.0.0",
 		"@vscode/vsce": "^3.4.0",
+		"jasmine": "^5.9.0",
 		"rollup": "^4.44.2",
 		"rollup-plugin-scss": "^4.0.1",
 		"sass": "^1.89.2",
