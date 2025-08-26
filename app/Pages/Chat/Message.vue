@@ -51,8 +51,8 @@ export default {
 	methods: {
 		getClassMessage()
 		{
-			if (this.message.sender == "assistant") return "chat_main__message--assistant";
-			else if (this.message.sender == "human") return "chat_main__message--human";
+			if (this.message.sender == "agent") return "chat_main__message--assistant";
+			else if (this.message.sender == "user") return "chat_main__message--human";
 			return "";
 		}
 	},

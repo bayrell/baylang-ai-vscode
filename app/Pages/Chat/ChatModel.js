@@ -236,8 +236,9 @@ class ChatModel
 		await this.updateFiles(chat);
 		
 		/* Create message */
-		var item = new ChatMessage()
-		item.sender = "human";
+		var item = new ChatMessage();
+		item.id = chat.messages.length + 1;
+		item.sender = "user";
 		item.addFiles(chat.files);
 		item.setContent(message);
 		

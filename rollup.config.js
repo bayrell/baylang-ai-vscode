@@ -50,7 +50,7 @@ export default [
 	{
 		input: 'app/index.js',
 		output: {
-			file: 'dist/index.js',
+			file: 'dist/index.cjs',
 			format: 'cjs',
 			sourcemap: true
 		},

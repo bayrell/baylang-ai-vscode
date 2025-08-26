@@ -122,9 +122,9 @@ export class StartChatEvent extends ChatEvent
 		super("start_chat");
 		this.data["chat_id"] = chat.id;
 		this.data["message_id"] = message.id;
+		this.data["sender"] = message.sender;
 	}
 }
-
 
 export class EndChatEvent extends ChatEvent
 {
@@ -133,6 +133,29 @@ export class EndChatEvent extends ChatEvent
 		super("end_chat");
 		this.data["chat_id"] = chat.id;
 		this.data["message_id"] = message.id;
+		this.data["sender"] = message.sender;
+	}
+}
+
+export class StepEvent extends ChatEvent
+{
+	constructor(chat, message)
+	{
+		super("step_chat");
+		this.data["chat_id"] = chat.id;
+		this.data["message_id"] = message.id;
+		this.data["sender"] = message.sender;
+	}
+}
+
+export class EndChunkEvent extends ChatEvent
+{
+	constructor(chat, message)
+	{
+		super("end_chunk");
+		this.data["chat_id"] = chat.id;
+		this.data["message_id"] = message.id;
+		this.data["sender"] = message.sender;
 	}
 }
 
@@ -144,6 +167,7 @@ export class UpdateChatEvent extends ChatEvent
 		this.data["chat_id"] = chat.id;
 		this.data["message_id"] = message.id;
 		this.data["content"] = message.getData().content;
+		this.data["sender"] = message.sender;
 	}
 }
 
@@ -159,7 +183,17 @@ export class ErrorChatEvent extends ChatEvent
 
 export class MessageItem
 {
-	constructor(item)
+	constructor(type)
+	{
+		this.block = type || "";
+		this.content = "";
+	}
+	
+	
+	/**
+	 * Assign
+	 */
+	assign(item)
 	{
 		this.block = item.block;
 		this.content = item.content;
@@ -185,11 +219,22 @@ export class MessageItem
 			"content": this.content,
 		};
 	}
+	
+	
+	/**
+	 * Add token
+	 */
+	addToken(token)
+	{
+		this.content += token;
+	}
 }
 
 function convertMessageItem(item)
 {
-	return new MessageItem(item);
+	var message_item = new MessageItem();
+	message_item.assign(item);
+	return message_item;
 }
 
 export class Message
@@ -197,6 +242,7 @@ export class Message
 	constructor(content)
 	{
 		this.id = 0;
+		this.sender = "";
 		this.content = content || [];
 		this.content = this.content.map((item) => convertMessageItem(item));
 	}
@@ -208,7 +254,19 @@ export class Message
 	assign(data)
 	{
 		this.id = data.id;
+		this.sender = data.sender;
 		this.content = data.content ? data.content.map((item) => convertMessageItem(item)) : [];
+	}
+	
+	
+	/**
+	 * Returns name
+	 */
+	getName()
+	{
+		if (this.sender == "agent") return "Agent";
+		if (this.sender == "user") return "User";
+		return this.sender;
 	}
 	
 	
@@ -229,8 +287,19 @@ export class Message
 	{
 		return {
 			"id": this.id,
+			"sender": this.sender,
 			"content": this.content.map((item) => item.getData()),
 		};
+	}
+	
+	
+	/**
+	 * Returns last item
+	 */
+	getLastItem()
+	{
+		if (this.content.length == 0) return null;
+		return this.content[this.content.length - 1];
 	}
 	
 	
@@ -239,6 +308,9 @@ export class Message
 	 */
 	addToken(token)
 	{
+		if (this.content.length == 0) this.content = [new MessageItem("text")];
+		var last_item = this.getLastItem();
+		last_item.addToken(token);
 	}
 }
 
@@ -399,6 +471,8 @@ export class Client
 			return;
 		}
 		
+		/* Begin response */
+		await this.callback("step");
 		var reader = response.body.getReader();
 		var decoder = new TextDecoder("utf-8");
 		while (true)
@@ -410,20 +484,25 @@ export class Client
 			var lines = chunk.split("\n").filter(line => line.trim() !== "");
 			for (var line of lines)
 			{
-				console.log(line);
 				if (line.startsWith("data: "))
 				{
 					var data = line.replace("data: ", "");
 					if (data === "[DONE]") return;
 					
+					/* Parse chunk */
+					chunk = null;
 					try {
-						var json = JSON.parse(data);
-						var token = json.choices[0]?.delta?.content || "";
-						await this.callback("token", token);
+						var chunk = JSON.parse(data);
 					}
 					catch (e)
 					{
-						console.error("Ошибка парсинга:", e);
+						console.error("Error:", e);
+					}
+					
+					/* Send chunk */
+					if (chunk)
+					{
+						await this.callback("chunk", chunk);
 					}
 				}
 			}
@@ -474,8 +553,13 @@ export class Question
 	getPrompt()
 	{
 		var builder = new PromptBuilder(this.agent.prompt);
+		var history = this.chat.messages
+			.filter((message) => message != this.user_message && message != this.agent_message)
+			.map((message) => message.getName() + ":\n" + message.getText())
+		;
 		return builder.getResult({
-			"user": this.user_message.getText(),
+			"query": this.user_message.getText(),
+			"history": history.join("\n\n"),
 		});
 	}
 	
@@ -492,10 +576,19 @@ export class Question
 				console.log("Ошибка:", data);
 				this.provider.sendMessage(new ErrorChatEvent(this.chat, data));
 			}
-			else if (type == "token")
+			else if (type == "step")
 			{
-				console.log(data);
-				this.agent_message.addToken(data);
+				this.provider.sendMessage(new StepEvent(this.chat, this.agent_message));
+			}
+			else if (type == "chunk" && data.choices[0]?.finish_reason == "stop")
+			{
+				await this.settings.saveChat(this.chat);
+				this.provider.sendMessage(new EndChunkEvent(this.chat, this.agent_message));
+			}
+			else if (type == "chunk")
+			{
+				var token = data.choices[0]?.delta?.content || "";
+				this.agent_message.addToken(token);
 				this.provider.sendMessage(new UpdateChatEvent(this.chat, this.agent_message));
 			}
 		});
@@ -511,6 +604,7 @@ export class Question
 		this.provider.sendMessage(new StartChatEvent(this.chat, this.agent_message));
 		
 		var prompt = this.getPrompt();
+		console.log(prompt);
 		await this.sendPrompt(prompt);
 		await this.settings.saveChat(this.chat);
 		
