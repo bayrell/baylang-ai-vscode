@@ -47,6 +47,77 @@ export function urlJoin(...args)
 	return url;
 }
 
+
+/**
+ * Fetch + stream
+ */
+export async function fetchEventSource(url, {
+	method = "GET",
+	headers = {},
+	body = null,
+	onopen,
+	onmessage,
+	onerror,
+	signal
+}) {
+	try
+	{
+		const response = await fetch(url, {
+			method,
+			headers,
+			body,
+			signal,
+		});
+		
+		/* Open connection */
+		if (onopen) await onopen(response);
+		
+		/* Response error */
+		if (!response.ok)
+		{
+			if (onerror)
+			{
+				await onerror(new Error(`Bad response: ${response.status} ${response.statusText}`));
+			}
+			return;
+		}
+		
+		/* Read stream */
+		const reader = response.body.getReader();
+		const decoder = new TextDecoder("utf-8");
+		let buffer = "";
+		
+		while (true)
+		{
+			const { done, value } = await reader.read();
+			if (done) break;
+			
+			buffer += decoder.decode(value, { stream: true });
+			const parts = buffer.split("\n\n");
+			buffer = parts.pop();
+			
+			for (let part of parts)
+			{
+				part = part.trim();
+				if (!part.startsWith("data:")) continue;
+				
+				const data = part.replace(/^data:\s*/, "");
+				if (onmessage)
+				{
+					await onmessage(data);
+				}
+			}
+		}
+	}
+	catch (err)
+	{
+		if (onerror)
+		{
+			await onerror(err);
+		}
+	}
+}
+
 /**
  * Api result
  */

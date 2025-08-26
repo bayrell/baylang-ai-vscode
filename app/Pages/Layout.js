@@ -99,7 +99,7 @@ class Layout
 			
 			chat.title = message.payload.chat_name;
 		}
-		else if (message.command == "end_chat")
+		else if (message.command == "error_chat" || message.command == "end_chat")
 		{
 			var chat_id = message.payload.chat_id;
 			var chat = this.chat_page.findChatById(chat_id);

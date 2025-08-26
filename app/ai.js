@@ -1,4 +1,4 @@
-import { htmlUnescape, urlJoin } from "./lib.js";
+import { htmlUnescape, urlJoin, fetchEventSource } from "./lib.js";
 
 export class Model
 {
@@ -430,6 +430,7 @@ export class Client
 		this.agent = agent;
 		this.prompt = prompt;
 		this.callback = null;
+		this.source = null;
 	}
 	
 	
@@ -452,7 +453,7 @@ export class Client
 		var url = this.agent.model.getUrl("chat/completions");
 		if (!url) return;
 		
-		var response = await fetch(url, {
+		await fetchEventSource(url, {
 			method: "POST",
 			headers: {
 				"Authorization": "Bearer " + this.agent.model.getKey(),
@@ -462,51 +463,30 @@ export class Client
 				model: this.agent.model_name,
 				messages: this.prompt,
 				stream: true
-			})
-		});
-		if (!response.ok)
-		{
-			var error = await response.text();
-			await this.callback("error", error);
-			return;
-		}
-		
-		/* Begin response */
-		await this.callback("step");
-		var reader = response.body.getReader();
-		var decoder = new TextDecoder("utf-8");
-		while (true)
-		{
-			var { done, value } = await reader.read();
-			if (done) break;
-			
-			var chunk = decoder.decode(value);
-			var lines = chunk.split("\n").filter(line => line.trim() !== "");
-			for (var line of lines)
-			{
-				if (line.startsWith("data: "))
+			}),
+			onopen: async (res) => {
+				if (res.ok)
 				{
-					var data = line.replace("data: ", "");
-					if (data === "[DONE]") return;
-					
-					/* Parse chunk */
-					chunk = null;
-					try {
-						var chunk = JSON.parse(data);
-					}
-					catch (e)
-					{
-						console.error("Error:", e);
-					}
-					
-					/* Send chunk */
-					if (chunk)
-					{
-						await this.callback("chunk", chunk);
-					}
+					await this.callback("step");
 				}
-			}
-		}
+				else
+				{
+					await this.callback("error", res.statusText);
+				}
+			},
+			onmessage: async (data) => {
+				if (data == "[DONE]") return;
+				try
+				{
+					var chunk = JSON.parse(data);
+					await this.callback("chunk", chunk);
+				}
+				catch (e){}
+			},
+			onerror: async (error) => {
+				await this.callback("error", error);
+			},
+		});
 	}
 }
 
@@ -580,16 +560,16 @@ export class Question
 			{
 				this.provider.sendMessage(new StepEvent(this.chat, this.agent_message));
 			}
-			else if (type == "chunk" && data.choices[0]?.finish_reason == "stop")
-			{
-				await this.settings.saveChat(this.chat);
-				this.provider.sendMessage(new EndChunkEvent(this.chat, this.agent_message));
-			}
 			else if (type == "chunk")
 			{
 				var token = data.choices[0]?.delta?.content || "";
-				this.agent_message.addToken(token);
+				if (token != "") this.agent_message.addToken(token);
 				this.provider.sendMessage(new UpdateChatEvent(this.chat, this.agent_message));
+				if (data.choices[0]?.finish_reason == "stop")
+				{
+					await this.settings.saveChat(this.chat);
+					this.provider.sendMessage(new EndChunkEvent(this.chat, this.agent_message));
+				}
 			}
 		});
 		await client.send();
@@ -604,7 +584,6 @@ export class Question
 		this.provider.sendMessage(new StartChatEvent(this.chat, this.agent_message));
 		
 		var prompt = this.getPrompt();
-		console.log(prompt);
 		await this.sendPrompt(prompt);
 		await this.settings.saveChat(this.chat);
 		
