@@ -464,7 +464,10 @@ async function registerCommands(provider)
 				console.log(err);
 			}
 		}
-		return result;
+		return {
+			success: true,
+			items: result,
+		};
 	});
 }
 

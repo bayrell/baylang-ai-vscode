@@ -183,9 +183,9 @@ export class ErrorChatEvent extends ChatEvent
 
 export class MessageItem
 {
-	constructor(type)
+	constructor(block)
 	{
-		this.block = type || "";
+		this.block = block || "";
 		this.content = "";
 	}
 	
@@ -353,7 +353,7 @@ export class FileItem extends MessageItem
 {
 	constructor()
 	{
-		super("file");
+		super("textfile");
 		this.filename = "";
 	}
 	
@@ -361,9 +361,9 @@ export class FileItem extends MessageItem
 	/**
 	 * Assign
 	 */
-	assing(item)
+	assign(item)
 	{
-		super.assing(item);
+		super.assign(item);
 		this.filename = item.filename;
 	}
 	
@@ -391,9 +391,9 @@ export class FileItem extends MessageItem
 function convertMessageItem(item)
 {
 	var message_item = null;
-	if (item.type == "text") message_item = new TextItem();
-	else if (item.type == "code") message_item = new CodeItem();
-	else if (item.type == "file") message_item = new FileItem();
+	if (item.block == "text") message_item = new TextItem();
+	else if (item.block == "code") message_item = new CodeItem();
+	else if (item.block == "textfile") message_item = new FileItem();
 	else message_item = new MessageItem();
 	message_item.assign(item);
 	return message_item;
@@ -690,10 +690,23 @@ export class Client
 	 */
 	async send()
 	{
-		if (!this.agent.model) return;
+		if (!this.agent.model)
+		{
+			await this.callback("error", new Error("Agent not found"));
+			return;
+		}
+		if (!this.agent.model_name)
+		{
+			await this.callback("error", new Error("Model name not found"));
+			return;
+		}
 		
 		var url = this.agent.model.getUrl("chat/completions");
-		if (!url) return;
+		if (!url)
+		{
+			await this.callback("error", new Error("URL not found"));
+			return;
+		}
 		
 		await fetchEventSource(url, {
 			method: "POST",
@@ -789,6 +802,9 @@ export class Question
 			if (type == "error")
 			{
 				console.log("Ошибка:", data);
+				this.agent_message.addChunk("Error: " + data.message);
+				await this.settings.saveChat(this.chat);
+				this.provider.sendMessage(new UpdateChatEvent(this.chat, this.agent_message));
 				this.provider.sendMessage(new ErrorChatEvent(this.chat, data));
 			}
 			else if (type == "step")

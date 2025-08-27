@@ -74,7 +74,7 @@ export async function fetchEventSource(url, {
 		{
 			if (onerror)
 			{
-				await onerror(new Error(`Bad response: ${response.status} ${response.statusText}`));
+				await onerror(new Error(`Bad response: ${response.statusText}`));
 			}
 			return;
 		}

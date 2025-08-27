@@ -1,4 +1,4 @@
-import { Message, MessageItem } from "../app/ai.js";
+import { Message } from "../app/ai.js";
 
 describe("Messages", function(){
 	it("One line test", function(){
@@ -50,6 +50,17 @@ describe("Messages", function(){
 		expect(data).toEqual([
 			{ block: "text", content: "Line1" },
 			{ block: "code", content: "var a = 1;", language: "javascript" },
+		]);
+	});
+	it("File", function(){
+		var message = new Message([
+			{ block: "textfile", filename: "index.php", content: "<?php echo 'Hello world!';" },
+			{ block: "text", content: "File" },
+		]);
+		var data = message.getData().content;
+		expect(data).toEqual([
+			{ block: "textfile", filename: "index.php", content: "<?php echo 'Hello world!';" },
+			{ block: "text", content: "File" },
 		]);
 	});
 });

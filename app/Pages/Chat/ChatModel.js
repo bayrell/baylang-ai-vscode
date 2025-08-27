@@ -324,7 +324,9 @@ class ChatModel
 		files = await Promise.all(files);
 		
 		/* Read files */
-		files = await this.api.call("read_files", files);
+		var result = await this.api.call("read_files", files);
+		if (!result.isSuccess()) return;
+		files = result.response.items;
 		
 		/* Create chat */
 		var chat = this.getCurrentChat();
@@ -336,12 +338,11 @@ class ChatModel
 		chat.addFiles(files);
 		
 		/* Update files list */
-		var result = await this.api.call("update_chat_files", {
+		await this.api.call("update_chat_files", {
 			chat_id: chat.id,
 			chat_name: chat.name,
 			files: chat.getFiles(),
 		});
-		console.log(result);
 	}
 };
 
