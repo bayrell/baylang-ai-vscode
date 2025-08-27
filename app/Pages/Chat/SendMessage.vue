@@ -88,12 +88,14 @@ export default {
 		},
 		agents()
 		{
-			return this.layout.agent_page.items.map((item)=>{
+			var items = this.layout.agent_page.items.map((item)=>{
 				return {
 					"key": item.id,
 					"value": item.name,
 				};
 			});
+			items.sort((a,b) => a.value.localeCompare(b.value));
+			return items;
 		},
 		files()
 		{

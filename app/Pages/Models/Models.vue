@@ -50,7 +50,7 @@
 				<div class="page_title">
 					Models list
 				</div>
-				<div v-for="item in model.items" :key="item.id"
+				<div v-for="item in items" :key="item.id"
 					class="list_item"
 				>
 					<div class="list_item__name">{{ item.name }}</div>
@@ -87,6 +87,13 @@
 						v-model="model.form.item.settings.key"
 					/>
 				</Field>
+				<Field name="url" v-if="isShowUrl()">
+					<label for="name">URL</label>
+					<Input
+						name="url"
+						v-model="model.form.item.settings.url"
+					/>
+				</Field>
 			</template>
 			<template v-slot:delete_message>
 				Delete item {{ model.form.item.name }}?
@@ -118,6 +125,12 @@ export default {
 		{
 			return this.layout.models_page;
 		},
+		items()
+		{
+			var items = this.model.items.slice();
+			items.sort((a, b) => a.name.localeCompare(b.name));
+			return items;
+		},
 	},
 	mounted()
 	{
@@ -129,11 +142,16 @@ export default {
 		{
 			return [
 				{"key": "gemini", "value": "Gemini"},
+				{"key": "ollama", "value": "Ollama"},
 			];
 		},
 		isShowKey()
 		{
-			return this.model.form.item.model == "gemini";
+			return this.model.form.item.type == "gemini";
+		},
+		isShowUrl()
+		{
+			return this.model.form.item.type == "ollama";
 		},
 	},
 }

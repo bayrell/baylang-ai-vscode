@@ -211,7 +211,8 @@ class Settings
 		var data = null;
 		var folderPath = path.join(this.folderPath, "chat");
 		var filePath = path.join(folderPath, chat_id + ".json");
-		try {
+		try
+		{
 			const raw = await fs.readFile(filePath, "utf-8");
 			data = JSON.parse(raw);
 		}
@@ -242,6 +243,22 @@ class Settings
 		
 		var filePath = path.join(folderPath, chat.id + ".json");
 		await fs.writeFile(filePath, JSON.stringify(chat.getData(), null, 2));
+	}
+	
+	
+	/**
+	 * Delete chat
+	 */
+	async deleteChat(chat_id)
+	{
+		var folderPath = path.join(this.folderPath, "chat");
+		var filePath = path.join(folderPath, chat_id + ".json");
+		if (!fileExists(filePath)) return;
+		try
+		{
+			fs.unlink(filePath);
+		}
+		catch (e){}
 	}
 }
 
@@ -423,6 +440,15 @@ async function registerCommands(provider)
 	
 	/* Rename chat */
 	registry.register("rename_chat", async ({id, name}) => {
+		var chat = await settings.loadChatById(id);
+		if (!chat)
+		{
+			return {
+				success: false,
+			};
+		}
+		chat.name = name;
+		await settings.saveChat(chat);
 		return {
 			success: true,
 			id: id,
@@ -432,6 +458,7 @@ async function registerCommands(provider)
 	
 	/* Delete chat */
 	registry.register("delete_chat", async (id) => {
+		await settings.deleteChat(id);
 		return {
 			success: true,
 			chat_id: id,

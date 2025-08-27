@@ -194,9 +194,7 @@ class ChatModel
 		}
 		
 		/* Send message to backend */
-		this.api.call("delete_chat", {
-			chat_id: chat_id,
-		});
+		this.api.call("delete_chat", chat_id);
 	}
 	
 	
@@ -214,7 +212,7 @@ class ChatModel
 		
 		/* Send message to backend */
 		this.api.call("rename_chat", {
-			chat_id: chat_id,
+			id: chat_id,
 			name: new_name,
 		});
 	}

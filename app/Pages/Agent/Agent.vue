@@ -53,7 +53,7 @@
 				<div class="page_title">
 					Agent list
 				</div>
-				<div v-for="item in model.items" :key="item.id"
+				<div v-for="item in items" :key="item.id"
 					class="list_item"
 				>
 					<div class="list_item__name">{{ item.name }}</div>
@@ -81,6 +81,13 @@
 						name="model"
 						v-model="model.form.item.model"
 						:options="getModels()"
+					/>
+				</Field>
+				<Field name="name">
+					<label for="name">Model name</label>
+					<Input
+						name="name"
+						v-model="model.form.item.model_name"
 					/>
 				</Field>
 				<Field name="prompt">
@@ -121,6 +128,12 @@ export default {
 		model()
 		{
 			return this.layout.agent_page;
+		},
+		items()
+		{
+			var items = this.model.items.slice();
+			items.sort((a, b) => a.name.localeCompare(b.name));
+			return items;
 		},
 	},
 	mounted()
