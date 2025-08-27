@@ -195,7 +195,7 @@ class Settings
 		
 		files = files.filter(file => file.endsWith(".json"))
 			.map(file => path.basename(file, ".json"));
-		
+		files.sort();
 		files = await Promise.all(files.map((file_name) => this.loadChatById(file_name)));
 		files = files.filter(file => file != null);
 		return files;

@@ -201,15 +201,6 @@ export class MessageItem
 	
 	
 	/**
-	 * Returns text
-	 */
-	getText()
-	{
-		return this.content;
-	}
-	
-	
-	/**
 	 * Returns data
 	 */
 	getData()
@@ -222,17 +213,188 @@ export class MessageItem
 	
 	
 	/**
+	 * Returns true if empty
+	 */
+	isEmpty()
+	{
+		return this.content == "";
+	}
+	
+	
+	/**
+	 * Returns text
+	 */
+	getText()
+	{
+		return this.content;
+	}
+	
+	
+	/**
 	 * Add token
 	 */
 	addToken(token)
 	{
 		this.content += token;
 	}
+	
+	
+	/**
+	 * Trim content
+	 */
+	trim()
+	{
+	}
+}
+
+export class TextItem extends MessageItem
+{
+	constructor()
+	{
+		super("text");
+	}
+}
+
+export class CodeItem extends MessageItem
+{
+	constructor()
+	{
+		super("code");
+		this.language = "";
+	}
+	
+	
+	/**
+	 * Assign
+	 */
+	assing(item)
+	{
+		super.assing(item);
+		this.language = item.language;
+	}
+	
+	
+	/**
+	 * Returns data
+	 */
+	getData()
+	{
+		var data = super.getData();
+		data["language"] = this.language;
+		return data;
+	}
+	
+	
+	/**
+	 * Returns true if line is tag
+	 */
+	static isTag(line)
+	{
+		return line.trim().substring(0, 3) == "```";
+	}
+	
+	
+	/**
+	 * Detect language
+	 */
+	detectLanguage()
+	{
+		var lines = this.content.split("\n");
+		if (lines.length == 0) return;
+		var line = lines[0].trim();
+		this.language = line.substring(3);
+	}
+	
+	
+	/**
+	 * Is end of block
+	 */
+	isBlockEnd()
+	{
+		var content = this.content.trim();
+		return content.length >= 6 && content.substring(content.length - 3) == "```";
+	}
+	
+	
+	/**
+	 * Returns text
+	 */
+	getText()
+	{
+		return "```" + this.language + "\n" + this.content + "```";
+	}
+	
+	
+	/**
+	 * Trim content
+	 */
+	trim()
+	{
+		var lines = this.content.split("\n");
+		if (lines.length > 0)
+		{
+			if (this.constructor.isTag(lines[0]))
+			{
+				lines = lines.slice(1);
+			}
+		}
+		if (lines.length > 0)
+		{
+			if (this.constructor.isTag(lines[lines.length - 1]))
+			{
+				lines = lines.slice(0, -1);
+			}
+		}
+		this.content = lines.join("\n");
+	}
+}
+
+export class FileItem extends MessageItem
+{
+	constructor()
+	{
+		super("file");
+		this.filename = "";
+	}
+	
+	
+	/**
+	 * Assign
+	 */
+	assing(item)
+	{
+		super.assing(item);
+		this.filename = item.filename;
+	}
+	
+	
+	/**
+	 * Returns data
+	 */
+	getData()
+	{
+		var data = super.getData();
+		data["filename"] = this.filename;
+		return data;
+	}
+	
+	
+	/**
+	 * Returns text
+	 */
+	getText()
+	{
+		return "Filename: " + this.filename + "\n" + "```" + this.content + "```";
+	}
 }
 
 function convertMessageItem(item)
 {
-	var message_item = new MessageItem();
+	var message_item = null;
+	if (item.type == "text") message_item = new TextItem();
+	else if (item.type == "code") message_item = new CodeItem();
+	else if (item.type == "file") message_item = new FileItem();
+	else message_item = new MessageItem();
 	message_item.assign(item);
 	return message_item;
 }
@@ -304,13 +466,93 @@ export class Message
 	
 	
 	/**
-	 * Add token
+	 * Replace last item
 	 */
-	addToken(token)
+	replaceLastItem(item)
 	{
-		if (this.content.length == 0) this.content = [new MessageItem("text")];
-		var last_item = this.getLastItem();
-		last_item.addToken(token);
+		this.content[this.content.length - 1] = item;
+	}
+	
+	
+	/**
+	 * Add text item
+	 */
+	addTextItem(data)
+	{
+		var item = new TextItem();
+		if (data != undefined)
+		{
+			item.assign(data);
+		}
+		this.content.push(item);
+		return item;
+	}
+	
+	
+	/**
+	 * Add new line
+	 */
+	addNewLine(last)
+	{
+		if (last instanceof TextItem)
+		{
+			if (CodeItem.isTag(last.content))
+			{
+				var new_item = new CodeItem();
+				new_item.content = last.content;
+				new_item.addToken("\n");
+				new_item.detectLanguage();
+				this.replaceLastItem(new_item);
+				return new_item;
+			}
+		}
+		if (last instanceof CodeItem)
+		{
+			if (!last.isBlockEnd())
+			{
+				last.addToken("\n");
+				return last;
+			}
+		}
+		if (!last.isEmpty())
+		{
+			return this.addTextItem();
+		}
+		return last;
+	}
+	
+	
+	/**
+	 * Add chunk
+	 */
+	addChunk(chunk)
+	{
+		var last = this.getLastItem();
+		if (last == null) last = this.addTextItem();
+		for (var i=0; i<chunk.length; i++)
+		{
+			var char = chunk[i];
+			if (char == "\n")
+			{
+				last = this.addNewLine(last);
+			}
+			else
+			{
+				last.addToken(char);
+			}
+		}
+	}
+	
+	
+	/**
+	 * Trim
+	 */
+	trim()
+	{
+		for (var i=0; i<this.content.length; i++)
+		{
+			this.content[i].trim();
+		}
 	}
 }
 
@@ -464,15 +706,8 @@ export class Client
 				messages: this.prompt,
 				stream: true
 			}),
-			onopen: async (res) => {
-				if (res.ok)
-				{
-					await this.callback("step");
-				}
-				else
-				{
-					await this.callback("error", res.statusText);
-				}
+			onopen: async () => {
+				await this.callback("step");
 			},
 			onmessage: async (data) => {
 				if (data == "[DONE]") return;
@@ -563,10 +798,11 @@ export class Question
 			else if (type == "chunk")
 			{
 				var token = data.choices[0]?.delta?.content || "";
-				if (token != "") this.agent_message.addToken(token);
+				if (token != "") this.agent_message.addChunk(token);
 				this.provider.sendMessage(new UpdateChatEvent(this.chat, this.agent_message));
 				if (data.choices[0]?.finish_reason == "stop")
 				{
+					this.agent_message.trim();
 					await this.settings.saveChat(this.chat);
 					this.provider.sendMessage(new EndChunkEvent(this.chat, this.agent_message));
 				}

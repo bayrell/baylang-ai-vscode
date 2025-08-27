@@ -69,9 +69,6 @@ export async function fetchEventSource(url, {
 			signal,
 		});
 		
-		/* Open connection */
-		if (onopen) await onopen(response);
-		
 		/* Response error */
 		if (!response.ok)
 		{
@@ -81,6 +78,9 @@ export async function fetchEventSource(url, {
 			}
 			return;
 		}
+		
+		/* Open connection */
+		if (onopen) await onopen(response);
 		
 		/* Read stream */
 		const reader = response.body.getReader();
