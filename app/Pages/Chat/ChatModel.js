@@ -10,6 +10,7 @@ class ChatModel
 	constructor(layout)
 	{
 		this.api = layout.api;
+		this.layout = layout;
 		this.chats = [];
 		this.current_agent_id = null;
 		this.current_chat_id = null;
@@ -288,6 +289,7 @@ class ChatModel
 			var item = result.response.items[i];
 			var history = new ChatHistory();
 			history.assign(item);
+			history.formatMessages(this.layout);
 			this.chats.push(history);
 		}
 		

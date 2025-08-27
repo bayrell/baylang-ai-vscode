@@ -31,7 +31,8 @@
 		<Button class="copy_button small primary" @click="onCopyClick" :disabled="is_copying">
 			{{ status }}
 		</Button>
-		<pre><code>{{ getCodeContent(content) }}</code></pre>
+		<pre v-if="item.html"><code v-html="item.html"></code></pre>
+		<pre v-else><code>{{ item.content }}</code></pre>
 	</div>
 </template>
 
@@ -44,8 +45,8 @@ export default{
 		Button,
 	},
 	props: {
-		content: {
-			type: String,
+		item: {
+			type: Object,
 			required: true,
 		},
 	},
@@ -69,14 +70,14 @@ export default{
 		getCodeContent(line)
 		{
 			var arr = line.split("\n");
-			if (arr.length == 0) return 0;
+			if (arr.length == 0) return "";
 			if (arr[0].substring(0, 3) == "```") arr.splice(0, 1);
 			if (arr[arr.length - 1].substring(0, 3) == "```") arr.splice(arr.length - 1, 1);
 			return arr.join("\n");
 		},
 		async copy()
 		{
-			const content = this.getCodeContent(this.content);
+			const content = this.getCodeContent(this.item.content);
 			if (!navigator.clipboard || !navigator.clipboard.writeText)
 			{
 				let text = document.createElement("textarea");

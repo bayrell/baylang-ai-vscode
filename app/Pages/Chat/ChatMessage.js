@@ -1,10 +1,13 @@
 import { getFileName } from "@main/lib.js";
+import DOMPurify from 'dompurify';
+import hljs from 'highlight.js';
 
 class ChatMessage
 {
 	id = "";
 	sender = "";
 	content = [];
+	formated = false;
 	
 	
 	/**
@@ -36,6 +39,113 @@ class ChatMessage
 		var lines = this.getLines();
 		if (lines.length == 0) return null;
 		return lines[lines.length - 1];
+	}
+	
+	
+	/**
+	 * Format message
+	 */
+	format(layout)
+	{
+		if (this.formated) return;
+		
+		var lines = this.getLines();
+		var merged_lines = [];
+		var last_content = "";
+		var prev_line = null;
+		
+		for (var line of lines)
+		{
+			if (line.block == "text")
+			{
+				if (last_content != "")
+				{
+					if (prev_line && prev_line.block == "text" && prev_line.content[0] == "|")
+						last_content += "\n";
+					else
+						last_content += "\n\n";
+				}
+				last_content += line.content;
+			}
+			else
+			{
+				if (last_content != "")
+				{
+					merged_lines.push({
+						block: "text",
+						content: last_content,
+					});
+					last_content = "";
+				}
+				merged_lines.push(line);
+			}
+			prev_line = line;
+		}
+		
+		if (last_content != "")
+		{
+			merged_lines.push({
+				block: "text",
+				content: last_content,
+			});
+			last_content = "";
+		}
+		
+		this.formated = true;
+		this.content = merged_lines.map((line) => {
+			if (line.block == "text")
+			{
+				var html = layout.parser.render(line.content || "");
+				html = DOMPurify.sanitize(html, {
+					USE_PROFILES: { html: true }
+				});
+				
+				return {
+					...line, html
+				};
+			}
+			else if (line.block == "code")
+			{
+				var html = this.constructor.formatCode(line);
+				return {
+					...line, html
+				};
+			}
+			return line;
+		});
+	}
+	
+	
+	/**
+	 * Returns code content
+	 */
+	static getCodeContent(item)
+	{
+		var arr = item.content.split("\n");
+		if (arr.length == 0) return "";
+		if (arr[0].substring(0, 3) == "```") arr.splice(0, 1);
+		if (arr[arr.length - 1].substring(0, 3) == "```") arr.splice(arr.length - 1, 1);
+		return arr.join("\n");
+	}
+	
+	
+	/**
+	 * Format code
+	 */
+	static formatCode(item)
+	{
+		var content = this.getCodeContent(item);
+		var language = item.language.toLowerCase();
+		if (language !== 'auto' && hljs.getLanguage(language))
+		{
+			return hljs.highlight(content, {
+				language: language
+			}).value;
+		}
+		else
+		{
+			return hljs.highlightAuto(content).value;
+		}
 	}
 	
 	

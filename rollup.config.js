@@ -34,6 +34,8 @@ export default [
 			}),
 			vue(),
 			compress(),
+			commonjs(),
+			nodeResolve({ preferBuiltins: true }),
 			replace({
 				preventAssignment: true,
 				'process.env.NODE_ENV': JSON.stringify('production'),

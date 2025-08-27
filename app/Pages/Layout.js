@@ -2,6 +2,7 @@ import Api from "./Api.js";
 import Agent from "./Agent/Agent.js";
 import ChatModel from "./Chat/ChatModel.js";
 import Models from "./Models/Models.js";
+import MarkdownIt from 'markdown-it';
 import { markRaw } from "vue";
 
 class Layout
@@ -15,6 +16,12 @@ class Layout
 		this.vscode = markRaw(acquireVsCodeApi());
 		this.image_url = "";
 		this.page = "chat";
+		this.parser = new MarkdownIt({
+			html: false,
+			linkify: true,
+			typographer: true
+		});
+		this.parser.disable(['code', 'fence']);
 	}
 	
 	
@@ -106,6 +113,7 @@ class Layout
 			if (!chat) return;
 			
 			chat.setTyping(false);
+			chat.formatMessages(this);
 		}
 	}
 }

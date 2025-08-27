@@ -168,6 +168,19 @@ class ChatHistory
 	
 	
 	/**
+	 * Format messages
+	 */
+	formatMessages(layout)
+	{
+		for (var i=0; i<this.messages.length; i++)
+		{
+			var message = this.messages[i];
+			message.format(layout);
+		}
+	}
+	
+	
+	/**
 	 * Load history
 	 */
 	async load()
