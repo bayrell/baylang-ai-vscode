@@ -10,11 +10,12 @@
 		overflow-x: auto;
 		text-align: left;
 		position: relative;
+		white-space: pre-wrap;
+		word-wrap: break-word;
 	}
 	code{
 		display: block;
 		all: unset;
-		white-space: pre;
 	}
 	.button--copy_button{
 		position: absolute;
