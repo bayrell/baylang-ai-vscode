@@ -23,7 +23,7 @@
 		<!--<div class="item">Index</div>-->
 		<!--<div class="item">MCP</div>-->
 		<div class="item" @click="layout.setPage('models')">Models</div>
-		<!--<div class="item">Rules</div>-->
+		<div class="item" @click="layout.setPage('rules')">Rules</div>
 	</div>
 </template>
 

@@ -2,6 +2,7 @@ import Api from "./Api.js";
 import Agent from "./Agent/Agent.js";
 import ChatModel from "./Chat/ChatModel.js";
 import Models from "./Models/Models.js";
+import Rules from "./Rules/Rules.js";
 import MarkdownIt from 'markdown-it';
 import { markRaw } from "vue";
 
@@ -13,6 +14,7 @@ class Layout
 		this.agent_page = new Agent(this);
 		this.chat_page = new ChatModel(this);
 		this.models_page = new Models(this);
+		this.rules_page = new Rules(this);
 		this.vscode = markRaw(acquireVsCodeApi());
 		this.image_url = "";
 		this.page = "chat";

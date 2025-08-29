@@ -6,12 +6,14 @@
 	<Chat v-show="layout.page == 'chat'" />
 	<Settings v-show="layout.page == 'settings'" />
 	<Models v-show="layout.page == 'models'" />
+	<Rules v-show="layout.page == 'rules'" />
 </template>
 
 <script lang="js">
 import Agent from "./Agent/Agent.vue";
 import Chat from "./Chat/Chat.vue";
 import Models from "./Models/Models.vue";
+import Rules from "./Rules/Rules.vue";
 import Settings from "./Settings/Settings.vue";
 
 export default {
@@ -20,6 +22,7 @@ export default {
 		Agent,
 		Chat,
 		Models,
+		Rules,
 		Settings
 	},
 }

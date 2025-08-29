@@ -556,6 +556,119 @@ export class Message
 	}
 }
 
+export class Rule
+{
+	constructor()
+	{
+		this.name = "";
+		this.description = "";
+		this.rules = "";
+		this.content = "";
+	}
+	
+	
+	/**
+	 * Assign
+	 */
+	assign(item)
+	{
+		this.name = item.name || "";
+		this.description = item.description || "";
+		this.rules = item.rules || "";
+		this.content = item.content;
+	}
+	
+	
+	/**
+	 * Get data
+	 */
+	getData()
+	{
+		return {
+			name: this.name,
+			description: this.description,
+			rules: this.rules,
+			content: this.content,
+		};
+	}
+	
+	
+	/**
+	 * Returns rules
+	 */
+	getRules()
+	{
+		return this.rules.split(",").map(g => g.trim()).filter(g => g.length > 0);
+	}
+	
+	
+	/**
+	 * Parse content
+	 */
+	parseContent(content)
+	{
+		this.rules = "";
+		this.description = "";
+		
+		var match = content.match(/^---\s*([\s\S]*?)\s*---\s*([\s\S]*)$/);
+		if (!match)
+		{
+			this.content = content;
+			return;
+		}
+		
+		var lines = match[1].split("\n");
+		this.content = match[2].trim();
+		
+		for (var line of lines)
+		{
+			line = line.trim();
+			if (!line) continue;
+			
+			var description = line.match(/^description:\s*(.*)$/i);
+			if (description)
+			{
+				this.description = description[1].trim();
+				continue;
+			}
+			
+			var rules = line.match(/^globs:\s*(.*)$/i);
+			if (rules)
+			{
+				this.rules = rules[1].trim();
+				continue;
+			}
+		}
+	}
+	
+	
+	/**
+	 * Returns content
+	 */
+	getContent()
+	{
+		var content = [
+			"---"
+		];
+		if (this.description.length > 0)
+		{
+			content.push("description: " + this.description);
+		}
+		if (this.rules.length > 0)
+		{
+			content.push("globs: " + this.rules);
+		}
+		if (content.length > 1)
+		{
+			content.push("---");
+			content.push("");
+		}
+		else content = [];
+		content.push(this.content);
+		return content.join("\n");
+	}
+}
+
 export class Chat
 {
 	constructor()

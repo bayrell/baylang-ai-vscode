@@ -57,6 +57,12 @@ class Settings
 		this.folderPath = globalStorageUri.path;
 		this.filePath = path.join(this.folderPath, "settings.json");
 		this.data = {};
+		this.workspaceFolderPath = "";
+		if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0)
+		{
+			var folder = vscode.workspace.workspaceFolders[0];
+			this.workspaceFolderPath = folder.uri.fsPath;
+		}
 	}
 	
 	
@@ -177,6 +183,104 @@ class Settings
 			delete this.data.models[id];
 			await this.saveData();
 		}
+	}
+	
+	
+	/**
+	 * Load rules
+	 */
+	async loadRules()
+	{
+		if (!await fileExists(this.workspaceFolderPath))
+		{
+			return;
+		}
+		
+		var folderPath = path.join(this.workspaceFolderPath, ".vscode", "rules");
+		var files = [];
+		try
+		{
+			files = await fs.readdir(folderPath);
+		}
+		catch (e){}
+		
+		files = files.filter(file => file.endsWith(".rule"))
+			.map(file => path.basename(file, ".rule"));
+		files.sort();
+		files = await Promise.all(files.map((file_name) => this.loadRule(file_name)));
+		files = files.filter(file => file != null);
+		return files;
+	}
+	
+	
+	/**
+	 * Load rule
+	 */
+	async loadRule(rule_name)
+	{
+		if (!await fileExists(this.workspaceFolderPath))
+		{
+			return;
+		}
+		
+		var folderPath = path.join(this.workspaceFolderPath, ".vscode", "rules");
+		var filePath = path.join(folderPath, rule_name + ".rule");
+		var content = "";
+		try
+		{
+			content = await fs.readFile(filePath, "utf-8");
+		}
+		catch (e)
+		{
+			return null;
+		}
+		
+		var rule = new ai.Rule();
+		rule.name = rule_name;
+		rule.parseContent(content);
+		return rule;
+	}
+	
+	
+	/**
+	 * Save rule
+	 */
+	async saveRule(item)
+	{
+		if (!await fileExists(this.workspaceFolderPath))
+		{
+			return;
+		}
+		
+		var folderPath = path.join(this.workspaceFolderPath, ".vscode", "rules");
+		var filePath = path.join(folderPath, item.name + ".rule");
+		if (!await fileExists(folderPath))
+		{
+			await fs.mkdir(folderPath, { recursive: true });
+		}
+		
+		await fs.writeFile(filePath, item.getContent());
+	}
+	
+	
+	/**
+	 * Delete rule
+	 */
+	async deleteRule(rule_name)
+	{
+		if (!await fileExists(this.workspaceFolderPath))
+		{
+			return;
+		}
+		
+		var folderPath = path.join(this.workspaceFolderPath, ".vscode", "rules");
+		var filePath = path.join(folderPath, rule_name + ".rule");
+		if (!fileExists(filePath)) return;
+		try
+		{
+			fs.unlink(filePath);
+		}
+		catch (e){}
 	}
 	
 	
@@ -389,6 +493,34 @@ async function registerCommands(provider)
 	/* Delete model */
 	registry.register("delete_model", async (id) => {
 		await this.deleteModel(id);
+		return {
+			success: true,
+		};
+	});
+	
+	/* Load rules */
+	registry.register("load_rules", async () => {
+		var items = await settings.loadRules();
+		items = items.map(item => item.getData());
+		return {
+			success: true,
+			items: items,
+		};
+	});
+	
+	/* Save rule */
+	registry.register("save_rule", async (item) => {
+		var rule = new ai.Rule();
+		rule.assign(item);
+		await settings.saveRule(rule);
+		return {
+			success: true,
+		};
+	});
+	
+	/* Delete rule */
+	registry.register("delete_rule", async (id) => {
+		await settings.deleteRule(id);
 		return {
 			success: true,
 		};
