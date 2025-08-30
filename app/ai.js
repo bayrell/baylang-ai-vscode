@@ -65,6 +65,7 @@ export class Agent
 	constructor()
 	{
 		this.name = "";
+		this.enable_rules = true;
 		this.model = null;
 		this.model_name = "";
 		this.prompt = "";
@@ -76,10 +77,20 @@ export class Agent
 	 */
 	assign(data)
 	{
-		this.name = data.name;
-		this.model = data.model;
-		this.model_name = data.model_name
-		this.prompt = data.prompt;
+		this.name = data.name || "";
+		this.enable_rules = data.enable_rules || "1";
+		this.model = data.model || "";
+		this.model_name = data.model_name || "";
+		this.prompt = data.prompt || "";
+	}
+	
+	
+	/**
+	 * Enable rules
+	 */
+	enableRules()
+	{
+		return this.enable_rules == "1";
 	}
 }
 
@@ -978,6 +989,11 @@ export class Question
 	 */
 	async updateRules()
 	{
+		if (!this.agent.enableRules())
+		{
+			this.rules = [];
+			return;
+		}
 		var rules = await this.settings.loadRules();
 		this.rules = filterRules(rules, this.user_message);
 	}
@@ -996,7 +1012,7 @@ export class Question
 		return builder.getResult({
 			"query": this.user_message.getText(),
 			"history": history.join("\n\n"),
-			"rules": this.rules.map(rule => rule.content).join("\n\n"),
+			"rules": this.agent.enableRules() ? this.rules.map(rule => rule.content).join("\n\n") : "",
 		});
 	}
 	

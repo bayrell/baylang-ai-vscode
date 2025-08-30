@@ -90,7 +90,7 @@ export default {
 		{
 			var items = this.layout.agent_page.items.map((item)=>{
 				return {
-					"key": item.id,
+					"key": item.name,
 					"value": item.name,
 				};
 			});

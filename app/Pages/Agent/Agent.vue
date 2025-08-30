@@ -74,6 +74,15 @@
 						v-model="model.form.item.name"
 					/>
 				</Field>
+				<Field name="enable_rules">
+					<label for="name">Enable rules</label>
+					<Input
+						type="select"
+						name="enable_rules"
+						v-model="model.form.item.enable_rules"
+						:options="enable_rules"
+					/>
+				</Field>
 				<Field name="model">
 					<label for="name">Model</label>
 					<Input
@@ -128,6 +137,13 @@ export default {
 		model()
 		{
 			return this.layout.agent_page;
+		},
+		enable_rules()
+		{
+			return [
+				{ key: "0", value: "No" },
+				{ key: "1", value: "Yes" },
+			]
 		},
 		items()
 		{

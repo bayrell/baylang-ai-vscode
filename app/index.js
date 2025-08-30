@@ -498,7 +498,7 @@ async function registerCommands(provider)
 	
 	/* Delete model */
 	registry.register("delete_model", async (id) => {
-		await this.deleteModel(id);
+		await settings.deleteModel(id);
 		return {
 			success: true,
 		};
