@@ -87,7 +87,7 @@ export function createAgent(data, settings)
 {
 	var agent = new Agent();
 	agent.assign(data);
-	agent.model = settings.getModelById(data.model);
+	agent.model = settings.getModelByName(data.model);
 	return agent;
 };
 

@@ -50,13 +50,13 @@
 				<div class="page_title">
 					Models list
 				</div>
-				<div v-for="item in items" :key="item.id"
+				<div v-for="item in items" :key="item.name"
 					class="list_item"
 				>
 					<div class="list_item__name">{{ item.name }}</div>
 					<div class="list_item__buttons">
-						<span @click="model.crud.showEdit(item.id)">[Edit]</span>
-						<span @click="model.crud.showDelete(item.id)">[Delete]</span>
+						<span @click="model.crud.showEdit(item.name)">[Edit]</span>
+						<span @click="model.crud.showDelete(item.name)">[Delete]</span>
 					</div>
 				</div>
 			</template>

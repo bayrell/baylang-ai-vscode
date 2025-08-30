@@ -21,9 +21,9 @@ class Models
 	/**
 	 * Find item by id
 	 */
-	findItemById(id)
+	findItemById(name)
 	{
-		return this.items.find((item) => item.id == id);
+		return this.items.find((item) => item.name == name);
 	}
 	
 	
@@ -32,7 +32,7 @@ class Models
 	 */
 	getPrimaryKey(item)
 	{
-		return item.id;
+		return item.name;
 	}
 	
 	
@@ -49,8 +49,6 @@ class Models
 			var item = result.response.items[i];
 			this.items.push(item);
 		}
-		
-		this.crud.setLastId(this.items);
 	}
 	
 	
@@ -60,10 +58,9 @@ class Models
 	async add()
 	{
 		var item = this.form.getItem();
-		item.id = this.crud.generateId();
 		
 		/* Save item */
-		var result = await this.layout.api.call("save_model", item);
+		var result = await this.layout.api.call("save_model", {item});
 		if (result.isSuccess())
 		{
 			this.items.push(item);
@@ -78,7 +75,7 @@ class Models
 	 */
 	async save()
 	{
-		var index = this.items.findIndex((item) => item.id == this.form.pk);
+		var index = this.items.findIndex((item) => item.name == this.form.pk);
 		if (index == -1)
 		{
 			return new ApiResult({
@@ -88,7 +85,7 @@ class Models
 		
 		/* Save item */
 		var item = this.form.getItem();
-		var result = await this.layout.api.call("save_model", item);
+		var result = await this.layout.api.call("save_model", {id: this.form.pk, item});
 		if (result.isSuccess())
 		{
 			this.items[index] = this.form.getItem();
@@ -103,7 +100,7 @@ class Models
 	 */
 	async delete()
 	{
-		var index = this.items.findIndex((item) => item.id == this.form.pk);
+		var index = this.items.findIndex((item) => item.name == this.form.pk);
 		if (index == -1)
 		{
 			return new ApiResult({

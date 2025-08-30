@@ -103,28 +103,31 @@ class Settings
 	 */
 	loadAgents()
 	{
-		return this.data.agents ? Object.values(this.data.agents) : [];
+		return this.data.agents ? this.data.agents : [];
 	}
 	
 	
 	/**
-	 * Get agent by ID
+	 * Get agent by name
 	 */
-	getAgentById(id)
+	getAgentByName(name)
 	{
 		if (!this.data.agents) return null;
-		if (!this.data.agents[id]) return null;
-		return ai.createAgent(this.data.agents[id], this);
+		var agent = this.data.agents.find((item) => item.name == name);
+		if (!agent) return null;
+		return ai.createAgent(agent, this);
 	}
 	
 	
 	/**
 	 * Save agent
 	 */
-	async saveAgent(item)
+	async saveAgent(id, item)
 	{
-		if (!this.data.agents) this.data.agents = {};
-		this.data.agents[item.id] = item;
+		if (!this.data.agents) this.data.agents = [];
+		var index = this.data.agents.findIndex((agent) => agent.name == id);
+		if (index == -1) this.data.agents.push(item);
+		else this.data.agents[index] = item;
 		await this.saveData();
 	}
 	
@@ -132,13 +135,13 @@ class Settings
 	/**
 	 * Delete agent
 	 */
-	async deleteAgent(id)
+	async deleteAgent(name)
 	{
-		if (this.data.agents && this.data.agents[id])
-		{
-			delete this.data.agents[id];
-			await this.saveData();
-		}
+		if (!this.data.agents) return;
+		
+		var index = this.data.agents.findIndex((agent) => agent.name == name);
+		if (index != -1) this.data.agents.splice(index, 1);
+		await this.saveData();
 	}
 	
 	
@@ -147,28 +150,31 @@ class Settings
 	 */
 	loadModels()
 	{
-		return this.data.models ? Object.values(this.data.models) : []
+		return this.data.models ? this.data.models : []
 	}
 	
 	
 	/**
-	 * Returns model by id
+	 * Returns model by name
 	 */
-	getModelById(id)
+	getModelByName(name)
 	{
 		if (!this.data.models) return null;
-		if (!this.data.models[id]) return null;
-		return ai.createModel(this.data.models[id]);
+		var model = this.data.models.find((item) => item.name == name);
+		if (!model) return null;
+		return ai.createModel(model);
 	}
 	
 	
 	/**
 	 * Save model
 	 */
-	async saveModel(item)
+	async saveModel(id, item)
 	{
-		if (!this.data.models) this.data.models = {};
-		this.data.models[item.id] = item;
+		if (!this.data.models) this.data.models = [];
+		var index = this.data.models.findIndex((agent) => agent.name == id);
+		if (index == -1) this.data.models.push(item);
+		else this.data.models[index] = item;
 		await this.saveData();
 	}
 	
@@ -176,13 +182,13 @@ class Settings
 	/**
 	 * Delete model
 	 */
-	async deleteModel(id)
+	async deleteModel(name)
 	{
-		if (this.data.models && this.data.models[id])
-		{
-			delete this.data.models[id];
-			await this.saveData();
-		}
+		if (!this.data.models) return;
+		
+		var index = this.data.models.findIndex((model) => model.name == name);
+		if (index != -1) this.data.models.splice(index, 1);
+		await this.saveData();
 	}
 	
 	
@@ -458,8 +464,8 @@ async function registerCommands(provider)
 	});
 	
 	/* Save agent */
-	registry.register("save_agent", async (item) => {
-		await settings.saveAgent(item);
+	registry.register("save_agent", async ({id, item}) => {
+		await settings.saveAgent(id, item);
 		return {
 			success: true,
 		};
@@ -483,8 +489,8 @@ async function registerCommands(provider)
 	});
 	
 	/* Save model */
-	registry.register("save_model", async (item) => {
-		await settings.saveModel(item);
+	registry.register("save_model", async ({id, item}) => {
+		await settings.saveModel(id, item);
 		return {
 			success: true,
 		};
@@ -530,7 +536,7 @@ async function registerCommands(provider)
 	registry.register("send_message", async (message) => {
 		
 		/* Find agent by id */
-		var agent = settings.getAgentById(message.agent);
+		var agent = settings.getAgentByName(message.agent);
 		if (!agent)
 		{
 			return {

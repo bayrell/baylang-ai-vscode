@@ -42,6 +42,7 @@ class Rules
 		var result = await this.layout.api.call("load_rules");
 		if (!result.isSuccess()) return;
 		
+		this.items = [];
 		for (var i=0; i<result.response.items.length; i++)
 		{
 			var item = result.response.items[i];

@@ -65,6 +65,10 @@ class Layout
 	setPage(page)
 	{
 		this.page = page;
+		if (page == "rules")
+		{
+			this.rules_page.load();
+		}
 	}
 	
 	

@@ -1,4 +1,3 @@
-import { minimatch } from "minimatch";
 import { createRule, filterRules, PromptBuilder, Message, Rule } from "../app/ai.js";
 
 describe("Rules", function(){
@@ -88,14 +87,6 @@ describe("Rules", function(){
 	{
 		if (Rule.match(filename, rule)) return true;
 		return false;
-		/*
-		var regex = Rule.convertRule(rule);
-		if (regex.test(filename)) return true;
-		
-		var regex = Rule.convertRule(rule, false);
-		if (regex.test(filename)) return true;
-		
-		return false;*/
 	}
 	
 	it("Test file", function(){
