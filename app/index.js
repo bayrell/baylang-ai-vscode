@@ -560,6 +560,7 @@ async function registerCommands(provider)
 			await question.addUserMessage(message.content);
 			await question.addAgentMessage();
 			await settings.saveChat(question.chat);
+			await question.updateRules();
 			await question.send();
 		};
 		send_question();

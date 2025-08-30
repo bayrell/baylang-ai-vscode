@@ -163,7 +163,6 @@ class ChatMessage
 		for (var i=0; i<lines.length; i++)
 		{
 			var line = lines[i];
-			line = line.trim();
 			if (line == "") continue;
 			if (line.substring(0, 3) == "```")
 			{

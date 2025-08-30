@@ -46,7 +46,11 @@ export function urlJoin(...args)
 	}
 	return url;
 }
-
+export function getFileExtension(filename)
+{
+	var arr = filename.split(".");
+	return arr.pop();
+}
 
 /**
  * Fetch + stream

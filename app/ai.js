@@ -1,4 +1,5 @@
-import { htmlUnescape, urlJoin, fetchEventSource } from "./lib.js";
+import { minimatch } from "minimatch";
+import { htmlUnescape, urlJoin, fetchEventSource, getFileExtension } from "./lib.js";
 
 export class Model
 {
@@ -267,9 +268,9 @@ export class CodeItem extends MessageItem
 	/**
 	 * Assign
 	 */
-	assing(item)
+	assign(item)
 	{
-		super.assing(item);
+		super.assign(item);
 		this.language = item.language;
 	}
 	
@@ -388,7 +389,11 @@ export class FileItem extends MessageItem
 	}
 }
 
-function convertMessageItem(item)
+
+/**
+ * Convert item to message
+ */
+export function createMessageItem(item)
 {
 	var message_item = null;
 	if (item.block == "text") message_item = new TextItem();
@@ -399,6 +404,7 @@ function convertMessageItem(item)
 	return message_item;
 }
 
+
 export class Message
 {
 	constructor(content)
@@ -406,7 +412,7 @@ export class Message
 		this.id = 0;
 		this.sender = "";
 		this.content = content || [];
-		this.content = this.content.map((item) => convertMessageItem(item));
+		this.content = this.content.map((item) => createMessageItem(item));
 	}
 	
 	
@@ -417,7 +423,7 @@ export class Message
 	{
 		this.id = data.id;
 		this.sender = data.sender;
-		this.content = data.content ? data.content.map((item) => convertMessageItem(item)) : [];
+		this.content = data.content ? data.content.map((item) => createMessageItem(item)) : [];
 	}
 	
 	
@@ -594,6 +600,44 @@ export class Rule
 	
 	
 	/**
+	 * Convert rule to regexp
+	 */
+	static convertRule(rule, subfolder=true)
+	{
+		if (rule == "*") return new RegExp("^.*$");
+		var pattern = rule.replace(new RegExp("[.+^${}()|[\]\\]", "g"), "\\$&");
+		if (subfolder) pattern = pattern.replace(new RegExp("\\*\\*", "g"), ".*");
+		else pattern = pattern.replace(new RegExp("\\*\\*\/", "g"), "");
+		pattern = pattern.replace(new RegExp("\\*", "g"), "[^/]*");
+		return new RegExp("^" + pattern + "$");
+	}
+	
+	
+	/**
+	 * Match rule
+	 */
+	static match(filename, rule)
+	{
+		if (minimatch(filename, rule, { matchBase: true })) return true;
+		return false;
+	}
+	
+	
+	/**
+	 * Match file
+	 */
+	matchFile(filename)
+	{
+		var rules = this.getRules();
+		for (var rule of rules)
+		{
+			if (this.constructor.match(filename, rule)) return true;
+		}
+		return false;
+	}
+	
+	
+	/**
 	 * Returns rules
 	 */
 	getRules()
@@ -668,6 +712,44 @@ export class Rule
 		return content.join("\n");
 	}
 }
+
+
+/**
+ * Create rule
+ */
+export function createRule(item)
+{
+	var rule = new Rule();
+	rule.assign(item)
+	return rule;
+}
+
+
+/**
+ * Returns true if file matching
+ */
+export function ruleMatching(rule, message)
+{
+	if (!rule.rules) return true;
+	for (var item of message.content)
+	{
+		if (!(item instanceof FileItem)) continue;
+		if (rule.matchFile(item.filename)) return true;
+	}
+	return false;
+}
+
+
+/**
+ * Filter rules
+ */
+export function filterRules(rules, message)
+{
+	return rules.filter(rule => {
+		return ruleMatching(rule, message);
+	});
+}
+
 
 export class Chat
 {
@@ -744,6 +826,7 @@ export class PromptBuilder
         if (matches.length === 0) {
             prompt =
                 `<system>${prompt}</system>` +
+                `<system>%rules%</system>` +
                 `<system>%history%</system>` +
                 `<user>%query%</user>`;
         }
@@ -771,6 +854,7 @@ export class PromptBuilder
 			content = htmlUnescape(content);
 			
 			if (content == "") continue;
+			if (content.length > 2 && content[0] == "%" && content[content.length - 1] == "%") continue;
 			this.addMessage(messages, tag, content);
 		}
 		
@@ -860,6 +944,7 @@ export class Question
 		this.user_message = null;
 		this.chat = null;
 		this.provider = null;
+		this.rules = [];
 		this.settings = null;
 	}
 	
@@ -889,6 +974,16 @@ export class Question
 	
 	
 	/**
+	 * Update rules
+	 */
+	async updateRules()
+	{
+		var rules = await this.settings.loadRules();
+		this.rules = filterRules(rules, this.user_message);
+	}
+	
+	
+	/**
 	 * Returns prompt
 	 */
 	getPrompt()
@@ -901,6 +996,7 @@ export class Question
 		return builder.getResult({
 			"query": this.user_message.getText(),
 			"history": history.join("\n\n"),
+			"rules": this.rules.map(rule => rule.content).join("\n\n"),
 		});
 	}
 	
@@ -910,6 +1006,8 @@ export class Question
 	 */
 	async sendPrompt(prompt)
 	{
+		console.log("Send prompt");
+		console.log(prompt);
 		var client = new Client(this.agent, prompt);
 		client.setCallback(async (type, data) => {
 			if (type == "error")
