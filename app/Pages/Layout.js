@@ -23,7 +23,7 @@ class Layout
 			linkify: true,
 			typographer: true
 		});
-		this.parser.disable(['code', 'fence']);
+		this.parser.disable(["code", "fence"]);
 	}
 	
 	

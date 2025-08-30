@@ -166,7 +166,6 @@ class ChatModel
 	{
 		var chat = new ChatHistory();
 		chat.id = Date.now();
-		chat.title = "Chat";
 		this.chats.push(chat);
 		return chat;
 	}
@@ -220,6 +219,17 @@ class ChatModel
 	
 	
 	/**
+	 * Returns title
+	 */
+	getTitle(message)
+	{
+		var block = message.content.find((item) => item.block == "text");
+		if (!block) return "Chat";
+		return block.content.split(" ").slice(0, 5).join(" ");
+	}
+	
+	
+	/**
 	 * Send message
 	 */
 	async sendMessage(chat_id, agent_id, message)
@@ -247,6 +257,9 @@ class ChatModel
 		
 		/* Set typing */
 		chat.setTyping(true);
+		
+		/* Update title */
+		if (chat.title == "") chat.title = this.getTitle(item);
 		
 		/* Send message to backend */
 		var result = await this.api.call("send_message", {
