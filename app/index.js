@@ -1,6 +1,8 @@
 const ai = require("./ai.js");
+const lib = require("./lib.js");
 const fs = require("fs").promises;
 const path = require("path");
+const crypto = require("crypto");
 const vscode = require("vscode");
 
 async function fileExists(file_path)
@@ -49,6 +51,10 @@ function activate(context)
 	);
 }
 
+function makeHash(item)
+{
+	return crypto.createHash('md5').update(item).digest('hex');
+}
 
 class Settings
 {
@@ -58,10 +64,12 @@ class Settings
 		this.filePath = path.join(this.folderPath, "settings.json");
 		this.data = {};
 		this.workspaceFolderPath = "";
+		this.workspaceFolderHash = "";
 		if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0)
 		{
 			var folder = vscode.workspace.workspaceFolders[0];
-			this.workspaceFolderPath = folder.uri.fsPath;
+			this.workspaceFolderPath = lib.removeLastSlash(folder.uri.fsPath);
+			this.workspaceFolderHash = makeHash(this.workspaceFolderPath);
 		}
 	}
 	
@@ -291,11 +299,21 @@ class Settings
 	
 	
 	/**
+	 * Returns chat folder
+	 */
+	getChatFolderPath()
+	{
+		if (this.workspaceFolderHash == "") return path.join(this.folderPath, "chat");
+		return path.join(this.folderPath, "chat", this.workspaceFolderHash);
+	}
+	
+	
+	/**
 	 * Load chat
 	 */
 	async loadChat()
 	{
-		var folderPath = path.join(this.folderPath, "chat");
+		var folderPath = this.getChatFolderPath();
 		var files = [];
 		try
 		{
@@ -319,7 +337,7 @@ class Settings
 	{
 		var chat = null;
 		var data = null;
-		var folderPath = path.join(this.folderPath, "chat");
+		var folderPath = this.getChatFolderPath();
 		var filePath = path.join(folderPath, chat_id + ".json");
 		try
 		{
@@ -345,7 +363,7 @@ class Settings
 	 */
 	async saveChat(chat)
 	{
-		var folderPath = path.join(this.folderPath, "chat");
+		var folderPath = this.getChatFolderPath();
 		if (!await fileExists(folderPath))
 		{
 			await fs.mkdir(folderPath, { recursive: true });
@@ -361,7 +379,7 @@ class Settings
 	 */
 	async deleteChat(chat_id)
 	{
-		var folderPath = path.join(this.folderPath, "chat");
+		var folderPath = this.getChatFolderPath();
 		var filePath = path.join(folderPath, chat_id + ".json");
 		if (!fileExists(filePath)) return;
 		try
