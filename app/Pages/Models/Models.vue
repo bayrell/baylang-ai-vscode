@@ -78,6 +78,7 @@
 						name="type"
 						v-model="model.form.item.type"
 						:options="getModels()"
+						@change="typeChange"
 					/>
 				</Field>
 				<Field name="key" v-if="isShowKey()">
@@ -143,16 +144,32 @@ export default {
 			return [
 				{"key": "gemini", "value": "Gemini"},
 				{"key": "ollama", "value": "Ollama"},
+				{"key": "openai", "value": "OpenAI"},
 			];
 		},
 		isShowKey()
 		{
-			return this.model.form.item.type == "gemini";
+			return ["gemini", "openai"].indexOf(this.model.form.item.type) != -1;
 		},
 		isShowUrl()
 		{
-			return this.model.form.item.type == "ollama";
+			return ["ollama", "openai"].indexOf(this.model.form.item.type) != -1;
 		},
+		isWrongUrl()
+		{
+			if (!this.model.form.item.settings.url) return true;
+			if (this.model.form.item.type != "openai" && this.model.form.item.settings.url == "https://api.openai.com/v1/") return true;
+			return false;
+		},
+		typeChange()
+		{
+			if (!this.isWrongUrl()) return;
+			if (this.model.form.item.type == "openai")
+			{
+				this.model.form.item.settings.url = "https://api.openai.com/v1/";
+			}
+			else this.model.form.item.settings.url = "";
+		}
 	},
 }
 </script>

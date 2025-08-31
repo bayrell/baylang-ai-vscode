@@ -15,6 +15,7 @@ textarea.input{
 <template>
 	<input
 		v-if="type == 'input'"
+		v-bind="$attrs"
 		:id="name"
 		:name="name"
 		:value="modelValue"
@@ -23,6 +24,7 @@ textarea.input{
 	>
 	<select
 		v-if="type == 'select'"
+		v-bind="$attrs"
 		:id="name"
 		:name="name"
 		:value="modelValue"
@@ -38,6 +40,7 @@ textarea.input{
 	</select>
 	<textarea
 		v-if="type == 'textarea'"
+		v-bind="$attrs"
 		:id="name"
 		:name="name"
 		:value="modelValue"
