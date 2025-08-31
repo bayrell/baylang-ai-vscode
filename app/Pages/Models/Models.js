@@ -37,6 +37,23 @@ class Models
 	
 	
 	/**
+	 * Reload models
+	 */
+	async reloadModels(name)
+	{
+		var model = this.findItemById(name);
+		if (!model) return null;
+		
+		var result = await this.layout.api.call("reload_models", name);
+		if (result.isSuccess())
+		{
+			model.models = result.response.items;
+		}
+		return result;
+	}
+	
+	
+	/**
 	 * Load
 	 */
 	async load()

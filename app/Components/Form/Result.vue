@@ -26,9 +26,10 @@ export default {
 			required: true,
 		},
 	},
-	computed: {
+	methods: {
 		getClass()
 		{
+			if (!this.result) return "";
 			if (this.result.code < 0) return "result--error";
 			if (this.result.code > 0) return "result--success";
 			return "";

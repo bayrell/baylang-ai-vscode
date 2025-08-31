@@ -20,6 +20,7 @@
 <template>
 	<div class="settings_page">
 		<div class="item" @click="layout.setPage('agent')">Agent</div>
+		<div class="item" @click="layout.setPage('chat')">Chat</div>
 		<!--<div class="item">Index</div>-->
 		<!--<div class="item">MCP</div>-->
 		<div class="item" @click="layout.setPage('models')">Models</div>

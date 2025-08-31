@@ -7,12 +7,14 @@ export class Model
 	{
 		this.type = "";
 		this.name = "";
+		this.models = [];
 		this.settings = {};
 	}
 	assign(data)
 	{
 		this.type = data.type;
 		this.name = data.name;
+		this.models = data.models;
 		this.settings = data.settings;
 	}
 	getKey()
@@ -23,6 +25,9 @@ export class Model
 	{
 		return "";
 	}
+	async loadModels()
+	{
+	}
 }
 
 export class OpenAIModel extends Model
@@ -31,9 +36,50 @@ export class OpenAIModel extends Model
 	{
 		return urlJoin("https://api.openai.com/v1/", path);
 	}
+	
+	
+	/**
+	 * Load models
+	 */
+	async loadModels()
+	{
+		var url = this.getUrl("models");
+		if (!url)
+		{
+			throw new Error("Url not found");
+		}
+		
+		try
+		{
+			var response = await fetch(url, {
+				method: "GET",
+				headers: {
+					"Authorization": "Bearer " + this.getKey(),
+					"Content-Type": "application/json"
+				},
+			});
+			if (!response.ok)
+			{
+				throw new Error("Bad response: " + response.statusText);
+			}
+			
+			var response_data = await response.json();
+			var models = response_data.data;
+			if (!models || !Array.isArray(models))
+			{
+				throw new Error("Models not found");
+			}
+			
+			this.models = models;
+		}
+		catch (e)
+		{
+			throw e;
+		}
+	}
 }
 
-export class GeminiModel extends Model
+export class GeminiModel extends OpenAIModel
 {
 	getUrl(path)
 	{
@@ -41,7 +87,7 @@ export class GeminiModel extends Model
 	}
 }
 
-export class OllamaModel extends Model
+export class OllamaModel extends OpenAIModel
 {
 	getUrl(path)
 	{

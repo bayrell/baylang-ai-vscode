@@ -9,6 +9,9 @@
 	display: block;
 	margin-bottom: 5px;
 }
+.field :deep(.result){
+	margin-top: 5px;
+}
 </style>
 
 <template>

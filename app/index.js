@@ -479,6 +479,27 @@ async function registerCommands(provider)
 		};
 	});
 	
+	/* Reload models */
+	registry.register("reload_models", async (model_name) => {
+		var model = settings.getModelByName(model_name);
+		try
+		{
+			await model.loadModels();
+		}
+		catch (e)
+		{
+			return {
+				success: false,
+				message: e.message,
+			};
+		}
+		await settings.saveModel(model.name, model);
+		return {
+			success: true,
+			items: model.models,
+		};
+	});
+	
 	/* Load model */
 	registry.register("load_models", async () => {
 		var items = settings.loadModels();

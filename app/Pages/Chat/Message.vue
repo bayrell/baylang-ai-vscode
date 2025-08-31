@@ -27,7 +27,7 @@
 		margin-top: 1em;
 	}
 	ul, ol {
-		margin-left: 1.5em;
+		margin-left: 2em;
 		margin-bottom: 1em;
 		li {
 			margin-bottom: 1em;

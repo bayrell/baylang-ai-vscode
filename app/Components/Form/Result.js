@@ -22,6 +22,12 @@ class Result
 	 */
 	setApiResult(result)
 	{
+		if (!result)
+		{
+			this.code = 0;
+			this.message = "";
+			return;
+		}
 		this.code = result.code;
 		this.message = result.message;
 	}

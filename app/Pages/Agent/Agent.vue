@@ -89,15 +89,20 @@
 						type="select"
 						name="model"
 						v-model="model.form.item.model"
-						:options="getModels()"
+						:options="models"
 					/>
 				</Field>
-				<Field name="name">
+				<Field name="name" :error="reload_result">
 					<label for="name">Model name</label>
-					<Input
-						name="name"
-						v-model="model.form.item.model_name"
-					/>
+					<FieldGroup>
+						<Input
+							type="select"
+							name="name"
+							v-model="model.form.item.model_name"
+							:options="model_names"
+						/>
+						<Button @click="reloadModels">Reload</Button>
+					</FieldGroup>
 				</Field>
 				<Field name="prompt">
 					<label for="prompt">Prompt</label>
@@ -120,6 +125,8 @@ import Button from "@main/Components/Button.vue";
 import Crud from "@main/Components/Crud.vue";
 import Input from "@main/Components/Input.vue";
 import Field from "@main/Components/Form/Field.vue";
+import FieldGroup from "@main/Components/Form/FieldGroup.vue";
+import Result from "@main/Components/Form/Result.js";
 
 export default {
 	name: "Agent",
@@ -128,15 +135,44 @@ export default {
 		Crud,
 		Input,
 		Field,
+		FieldGroup,
 	},
 	data(){
 		return {
+			reload_result: new Result(),
 		};
 	},
 	computed: {
 		model()
 		{
 			return this.layout.agent_page;
+		},
+		models()
+		{
+			var models = this.layout.models_page.items;
+			models = models.map(
+				(model) => {
+					return {
+						"key": model.id,
+						"value": model.name,
+					};
+				}
+			);
+			models.sort((a, b) => a.value.localeCompare(b.value));
+			return models;
+		},
+		model_names()
+		{
+			var name = this.model.form.item.model;
+			var model = this.layout.models_page.findItemById(name);
+			if (!model) return [];
+			if (!model.models) return [];
+			return model.models.map(item => {
+				return {
+					key: item.id,
+					value: item.id,
+				};
+			});
 		},
 		enable_rules()
 		{
@@ -158,18 +194,12 @@ export default {
 	},
 	methods:
 	{
-		getModels()
+		async reloadModels()
 		{
-            var models = this.layout.models_page.items;
-			return models.map(
-                (model) => {
-                    return {
-                        "key": model.id,
-                        "value": model.name,
-                    };
-                }
-            );
-		},
+			this.reload_result.setWaitMessage();
+			var result = await this.layout.models_page.reloadModels(this.model.form.item.model);
+			this.reload_result.setApiResult(result);
+		}
 	},
 }
 </script>
