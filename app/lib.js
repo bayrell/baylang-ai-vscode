@@ -150,7 +150,7 @@ export class ApiResult
 		this.response = response;
 		if (response.code != undefined) this.code = response.code;
 		else if (response.success != undefined) this.code = response.success ? 1 : -1;
-		this.message = response.message || this.isSuccess() ? "Ok" : "Error";
+		this.message = response.message || (this.isSuccess() ? "Ok" : "Error");
 		this.data = response.data || {};
 	}
 	

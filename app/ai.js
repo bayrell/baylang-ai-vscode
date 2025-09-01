@@ -112,7 +112,7 @@ export class Agent
 	{
 		this.name = "";
 		this.global = true;
-		this.enable_rules = true;
+		this.enable_rules = "1";
 		this.default = {
 			model: "",
 			model_name: "",

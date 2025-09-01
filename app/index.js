@@ -115,8 +115,9 @@ class Settings
 	/**
 	 * Load agents
 	 */
-	loadAgents()
+	async loadAgents()
 	{
+		await this.loadLocalAgents();
 		var convert = (agents, global) => agents.map((item) => {
 			var agent = new ai.Agent();
 			agent.assign(item);
@@ -159,7 +160,7 @@ class Settings
 			for (var i=0; i<items.length; i++)
 			{
 				var item = items[i];
-				var agent = this.agents.find((obj) => obj.name = item.name);
+				var agent = this.agents.find((obj) => obj.name == item.name);
 				if (agent)
 				{
 					agent.default = {
@@ -222,7 +223,9 @@ class Settings
 			if (!agent) return null;
 			return ai.createAgent(agent, this);
 		}
-		return null;
+		var agent = this.agents.find((item) => item.name == name);
+		if (!agent) return null;
+		return ai.createAgent(agent, this);
 	}
 	
 	
@@ -249,7 +252,14 @@ class Settings
 			var data = item.getData();
 			delete data["default"];
 			delete data["global"];
-			if (index == -1) this.agents.push(data);
+			if (index == -1)
+			{
+				data.default = {
+					model: data.model,
+					model_name: data.model_name,
+				};
+				this.agents.push(data);
+			}
 			else 
 			{
 				var agent = this.agents[index];
@@ -609,7 +619,7 @@ async function registerCommands(provider)
 	
 	/* Load agent */
 	registry.register("load_agents", async () => {
-		var items = settings.loadAgents();
+		var items = await settings.loadAgents();
 		return {
 			success: true,
 			items: items.map(item => item.getData()),

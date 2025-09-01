@@ -37,6 +37,10 @@
 		}
 	}
 }
+.default_model_name{
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
 .agent_page :deep(.save_item textarea){
 	min-height: 200px;
 }
@@ -85,6 +89,9 @@
 						:options="enable_rules"
 					/>
 				</Field>
+				<div class="default_model_name" v-if="model.form.item.default && model.form.item.default.model">
+					Default model {{ model.form.item.default.model }} ({{ model.form.item.default.model_name }})
+				</div>
 				<Field name="model">
 					<label for="name">Model</label>
 					<Input
