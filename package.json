@@ -4,7 +4,7 @@
 	"displayName": "BayLang AI",
 	"description": "BayLang AI. Chat bot",
 	"publisher": "BAYRELL",
-	"version": "0.0.1",
+	"version": "1.0.0",
 	"main": "dist/index.cjs",
 	"author": "Ildar Bikmamatov <ildar@bayrell.org>",
 	"license": "Apache-2.0",
@@ -20,7 +20,7 @@
 		"build": "NODE_ENV=production ./node_modules/.bin/rollup --config rollup.config.js --bundleConfigAsCjs",
 		"watch": "NODE_ENV=development ./node_modules/.bin/rollup --config rollup.config.js --bundleConfigAsCjs --watch",
 		"build_plugin": "./node_modules/.bin/vsce package",
-		"install_plugin": "install_vsix baylang-ai 0.0.1 ./baylang-ai-0.0.1.vsix"
+		"install_plugin": "install_vsix baylang-ai 1.0.0 ./baylang-ai-1.0.0.vsix"
 	},
 	"dependencies": {
 		"@rollup/plugin-alias": "^5.1.1",
