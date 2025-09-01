@@ -234,6 +234,9 @@ class ChatModel
 	 */
 	async sendMessage(chat_id, agent_id, message)
 	{
+		var agent = this.layout.agent_page.items[agent_id];
+		if (!agent) return;
+		
 		/* Find chat by id */
 		var chat = this.findChatById(chat_id);
 		if (!chat)
@@ -255,6 +258,9 @@ class ChatModel
 		chat.addMessage(item);
 		this.selectItem(chat.id);
 		
+		/* Find new chat */
+		chat = this.findChatById(chat.id);
+		
 		/* Set typing */
 		chat.setTyping(true);
 		
@@ -264,13 +270,23 @@ class ChatModel
 		/* Send message to backend */
 		var result = await this.api.call("send_message", {
 			id: chat.id,
-			agent: agent_id,
+			agent: agent.name,
+			global: agent.global,
 			name: chat.title,
 			content: item.content,
 		});
 		if (!result.isSuccess())
 		{
 			chat.setTyping(false);
+			chat.addMessage({
+				sender: "agent",
+				content: [
+					{
+						block: "text",
+						content: result.message,
+					}
+				],
+			});
 		}
 	}
 	

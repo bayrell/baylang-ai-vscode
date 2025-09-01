@@ -88,12 +88,15 @@ export default {
 		},
 		agents()
 		{
-			var items = this.layout.agent_page.items.map((item)=>{
-				return {
-					"key": item.name,
+			var items = [];
+			for (var i=0; i<this.layout.agent_page.items.length; i++)
+			{
+				var item = this.layout.agent_page.items[i];
+				items.push({
+					"key": i,
 					"value": item.name,
-				};
-			});
+				});
+			}
 			items.sort((a,b) => a.value.localeCompare(b.value));
 			return items;
 		},

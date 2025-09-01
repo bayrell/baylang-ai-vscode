@@ -63,6 +63,7 @@ class Settings
 		this.folderPath = globalStorageUri.path;
 		this.filePath = path.join(this.folderPath, "settings.json");
 		this.data = {};
+		this.agents = [];
 		this.workspaceFolderPath = "";
 		this.workspaceFolderHash = "";
 		if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0)
@@ -79,14 +80,19 @@ class Settings
 	 */
 	async loadData()
 	{
-		try {
-			const raw = await fs.readFile(this.filePath, "utf-8");
+		/* Load global settings */
+		try
+		{
+			var raw = await fs.readFile(this.filePath, "utf-8");
 			this.data = JSON.parse(raw);
 		}
 		catch (e)
 		{
 			this.data = {};
 		}
+		
+		/* Load agents */
+		await this.loadLocalAgents();
 	}
 	
 	
@@ -111,19 +117,112 @@ class Settings
 	 */
 	loadAgents()
 	{
-		return this.data.agents ? this.data.agents : [];
+		var convert = (agents, global) => agents.map((item) => {
+			var agent = new ai.Agent();
+			agent.assign(item);
+			agent.global = global;
+			return agent;
+		});
+		var agents = [];
+		if (this.data.agents)
+		{
+			agents = agents.concat(convert(this.data.agents, true));
+		}
+		agents = agents.concat(convert(this.agents, false));
+		return agents;
+	}
+	
+	
+	/**
+	 * Load local agents
+	 */
+	async loadLocalAgents()
+	{
+		/* Read project agents */
+		try
+		{
+			var file_name = path.join(this.workspaceFolderPath, ".vscode", "agents.json");
+			var raw = await fs.readFile(file_name, "utf-8");
+			this.agents = JSON.parse(raw);
+		}
+		catch (e)
+		{
+			this.agents = [];
+		}
+		
+		/* Read custom settings */
+		try
+		{
+			var file_name = path.join(this.getChatFolderPath(), "agents.json");
+			var raw = await fs.readFile(file_name, "utf-8");
+			var items = JSON.parse(raw);
+			for (var i=0; i<items.length; i++)
+			{
+				var item = items[i];
+				var agent = this.agents.find((obj) => obj.name = item.name);
+				if (agent)
+				{
+					agent.default = {
+						model: agent.model,
+						model_name: agent.model_name,
+					};
+					agent.model = item.model;
+					agent.model_name = item.model_name;
+				}
+			}
+		}
+		catch (e)
+		{
+		}
+	}
+	
+	
+	/**
+	 * Save local agents
+	 */
+	async saveLocalAgents()
+	{
+		var folder_path = path.join(this.workspaceFolderPath, ".vscode");
+		var file_path = path.join(folder_path, "agents.json");
+		
+		/* Create folder if does not exists */
+		if (!await fileExists(folder_path))
+		{
+			await fs.mkdir(folder_path, { recursive: true });
+		}
+		
+		/* Write project file */
+		var agents = this.agents.map((agent) => {
+			var obj = Object.assign({}, agent);
+			if (obj.default)
+			{
+				if (obj.default.model) obj.model = obj.default.model;
+				if (obj.default.model_name) obj.model_name = obj.default.model_name;
+				delete obj.default;
+			}
+			return obj;
+		});
+		await fs.writeFile(file_path, JSON.stringify(agents, null, 2));
+		
+		/* Write custom file */
+		file_path = path.join(this.getChatFolderPath(), "agents.json");
+		await fs.writeFile(file_path, JSON.stringify(this.agents, null, 2));
 	}
 	
 	
 	/**
 	 * Get agent by name
 	 */
-	getAgentByName(name)
+	getAgentByName(name, global)
 	{
-		if (!this.data.agents) return null;
-		var agent = this.data.agents.find((item) => item.name == name);
-		if (!agent) return null;
-		return ai.createAgent(agent, this);
+		if (global)
+		{
+			if (!this.data.agents) return null;
+			var agent = this.data.agents.find((item) => item.name == name);
+			if (!agent) return null;
+			return ai.createAgent(agent, this);
+		}
+		return null;
 	}
 	
 	
@@ -132,24 +231,58 @@ class Settings
 	 */
 	async saveAgent(id, item)
 	{
-		if (!this.data.agents) this.data.agents = [];
-		var index = this.data.agents.findIndex((agent) => agent.name == id);
-		if (index == -1) this.data.agents.push(item);
-		else this.data.agents[index] = item;
-		await this.saveData();
+		if (item.global)
+		{
+			if (!this.data.agents) this.data.agents = [];
+			var index = this.data.agents.findIndex((agent) => agent.name == id);
+			var data = item.getData();
+			delete data["default"];
+			delete data["global"];
+			if (index == -1) this.data.agents.push(data);
+			else this.data.agents[index] = data;
+			await this.saveData();
+		}
+		else
+		{
+			await this.loadLocalAgents();
+			var index = this.agents.findIndex((agent) => agent.name == id);
+			var data = item.getData();
+			delete data["default"];
+			delete data["global"];
+			if (index == -1) this.agents.push(data);
+			else 
+			{
+				var agent = this.agents[index];
+				agent.name = data.name;
+				agent.enable_rules = data.enable_rules;
+				agent.model = data.model;
+				agent.model_name = data.model_name;
+				agent.prompt = data.prompt;
+			}
+			await this.saveLocalAgents();
+		}
 	}
 	
 	
 	/**
 	 * Delete agent
 	 */
-	async deleteAgent(name)
+	async deleteAgent(name, global)
 	{
-		if (!this.data.agents) return;
-		
-		var index = this.data.agents.findIndex((agent) => agent.name == name);
-		if (index != -1) this.data.agents.splice(index, 1);
-		await this.saveData();
+		if (global)
+		{
+			if (!this.data.agents) return;
+			
+			var index = this.data.agents.findIndex((agent) => agent.name == name);
+			if (index != -1) this.data.agents.splice(index, 1);
+			await this.saveData();
+		}
+		else
+		{
+			var index = this.agents.findIndex((agent) => agent.name == name);
+			if (index != -1) this.agents.splice(index, 1);
+			await this.saveLocalAgents();
+		}
 	}
 	
 	
@@ -322,6 +455,8 @@ class Settings
 		catch (e){}
 		
 		files = files.filter(file => file.endsWith(".json"))
+			.filter(file => file != "agents.json")
+			.filter(file => file != "settings.json")
 			.map(file => path.basename(file, ".json"));
 		files.sort();
 		files = await Promise.all(files.map((file_name) => this.loadChatById(file_name)));
@@ -477,21 +612,23 @@ async function registerCommands(provider)
 		var items = settings.loadAgents();
 		return {
 			success: true,
-			items: items,
+			items: items.map(item => item.getData()),
 		};
 	});
 	
 	/* Save agent */
 	registry.register("save_agent", async ({id, item}) => {
-		await settings.saveAgent(id, item);
+		var agent = new ai.Agent();
+		agent.assign(item);
+		await settings.saveAgent(id, agent);
 		return {
 			success: true,
 		};
 	});
 	
 	/* Delete agent */
-	registry.register("delete_agent", async (id) => {
-		await settings.deleteAgent(id);
+	registry.register("delete_agent", async ({id, global}) => {
+		await settings.deleteAgent(id, global);
 		return {
 			success: true,
 		};
@@ -575,7 +712,7 @@ async function registerCommands(provider)
 	registry.register("send_message", async (message) => {
 		
 		/* Find agent by id */
-		var agent = settings.getAgentByName(message.agent);
+		var agent = settings.getAgentByName(message.agent, message.global);
 		if (!agent)
 		{
 			return {

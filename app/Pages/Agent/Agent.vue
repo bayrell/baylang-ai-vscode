@@ -46,17 +46,19 @@
 	<div class="agent_page">
 		<div class="buttons" v-show="!model.crud.show_save && !model.crud.show_delete">
 			<Button class="back" @click="layout.setPage('settings')">Back</Button>
-			<Button class="success" @click="model.crud.showAdd()">Add</Button>
+			<Button class="success" @click="showAdd(true)">Add global</Button>
+			<Button class="success" @click="showAdd(false)">Add project</Button>
 		</div>
 		<Crud :crud="model.crud">
 			<template v-slot:list>
 				<div class="page_title">
 					Agent list
 				</div>
-				<div v-for="item in items" :key="item.name"
+				<div v-for="item in items" :key="item.name + item.global ? ' global' : ''"
 					class="list_item"
 				>
 					<div class="list_item__name">{{ item.name }}</div>
+					<div class="list_item__type">{{ item.global ? "Global" : "Local" }}</div>
 					<div class="list_item__buttons">
 						<span @click="model.crud.showEdit(item.name)">[Edit]</span>
 						<span @click="model.crud.showDelete(item.name)">[Delete]</span>
@@ -64,7 +66,7 @@
 				</div>
 			</template>
 			<template v-slot:save_title>
-				{{ model.crud.isAdd() ? "Add model" : "Edit model" }}
+				{{ form_title }}
 			</template>
 			<template v-slot:save_content>
 				<Field name="name">
@@ -158,7 +160,13 @@ export default {
 					};
 				}
 			);
-			models.sort((a, b) => a.value.localeCompare(b.value));
+			models.sort(
+				(a, b) => {
+					if (a.global && !b.global) return -1;
+					if (!a.global && b.global) return 1;
+					return a.value.localeCompare(b.value);
+				}
+			);
 			return models;
 		},
 		model_names()
@@ -187,6 +195,32 @@ export default {
 			items.sort((a, b) => a.name.localeCompare(b.name));
 			return items;
 		},
+		form_title()
+		{
+			if (!this.model.form.item) return "";
+			if (this.model.crud.isAdd())
+			{
+				if (this.model.form.item.global)
+				{
+					return "Add global model";
+				}
+				else
+				{
+					return "Add local model";
+				}
+			}
+			else
+			{
+				if (this.model.form.item.global)
+				{
+					return "Edit global model";
+				}
+				else
+				{
+					return "Edit local model";
+				}
+			}
+		},
 	},
 	mounted()
 	{
@@ -199,6 +233,11 @@ export default {
 			this.reload_result.setWaitMessage();
 			var result = await this.layout.models_page.reloadModels(this.model.form.item.model);
 			this.reload_result.setApiResult(result);
+		},
+		showAdd(global)
+		{
+			this.model.crud.showAdd();
+			this.model.setGlobal(global);
 		}
 	},
 }

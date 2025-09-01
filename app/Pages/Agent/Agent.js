@@ -37,6 +37,15 @@ class Agent
 	
 	
 	/**
+	 * Set global
+	 */
+	setGlobal(global)
+	{
+		this.form.item.global = global;
+	}
+	
+	
+	/**
 	 * Load
 	 */
 	async load()
@@ -44,6 +53,7 @@ class Agent
 		var result = await this.layout.api.call("load_agents");
 		if (!result.isSuccess()) return;
 		
+		this.items = [];
 		for (var i=0; i<result.response.items.length; i++)
 		{
 			var item = result.response.items[i];
@@ -65,6 +75,9 @@ class Agent
 		{
 			this.items.push(item);
 		}
+		
+		/* Reload models */
+		this.load();
 		
 		return result;
 	}
@@ -91,6 +104,9 @@ class Agent
 			this.items[index] = this.form.getItem();
 		}
 		
+		/* Reload models */
+		this.load();
+		
 		return result;
 	}
 	
@@ -109,11 +125,16 @@ class Agent
 		}
 		
 		/* Delete item */
-		var result = await this.layout.api.call("delete_agent", this.form.pk);
+		var result = await this.layout.api.call("delete_agent",
+			{id: this.form.pk, global: this.form.item.global}
+		);
 		if (result.isSuccess())
 		{
 			this.items.splice(index, 1);
 		}
+		
+		/* Reload models */
+		this.load();
 		
 		return result;
 	}

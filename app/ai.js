@@ -111,7 +111,12 @@ export class Agent
 	constructor()
 	{
 		this.name = "";
+		this.global = true;
 		this.enable_rules = true;
+		this.default = {
+			model: "",
+			model_name: "",
+		};
 		this.model = null;
 		this.model_name = "";
 		this.prompt = "";
@@ -123,11 +128,30 @@ export class Agent
 	 */
 	assign(data)
 	{
-		this.name = data.name || "";
-		this.enable_rules = data.enable_rules || "1";
-		this.model = data.model || "";
-		this.model_name = data.model_name || "";
-		this.prompt = data.prompt || "";
+		if (data.name) this.name = data.name;
+		if (data.global != undefined) this.global = data.global;
+		if (data.enable_rules) this.enable_rules = data.enable_rules;
+		if (data.default) this.default = data.default;
+		if (data.model) this.model = data.model;
+		if (data.model_name) this.model_name = data.model_name;
+		if (data.prompt) this.prompt = data.prompt;
+	}
+	
+	
+	/**
+	 * Returns data
+	 */
+	getData()
+	{
+		return {
+			name: this.name,
+			global: this.global,
+			enable_rules: this.enable_rules,
+			default: this.default,
+			model: this.model,
+			model_name: this.model_name,
+			prompt: this.prompt,
+		};
 	}
 	
 	
@@ -946,7 +970,7 @@ export class Client
 	{
 		if (!this.agent.model)
 		{
-			await this.callback("error", new Error("Agent not found"));
+			await this.callback("error", new Error("Model not found"));
 			return;
 		}
 		if (!this.agent.model_name)
