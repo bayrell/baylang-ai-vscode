@@ -169,8 +169,6 @@ export default {
 			);
 			models.sort(
 				(a, b) => {
-					if (a.global && !b.global) return -1;
-					if (!a.global && b.global) return 1;
 					return a.value.localeCompare(b.value);
 				}
 			);
@@ -199,7 +197,11 @@ export default {
 		items()
 		{
 			var items = this.model.items.slice();
-			items.sort((a, b) => a.name.localeCompare(b.name));
+			items.sort((a, b) => {
+				if (a.global && !b.global) return -1;
+				if (!a.global && b.global) return 1;
+				return a.name.localeCompare(b.name)
+			});
 			return items;
 		},
 		form_title()
