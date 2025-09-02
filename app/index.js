@@ -192,6 +192,13 @@ class Settings
 			await fs.mkdir(folder_path, { recursive: true });
 		}
 		
+		/* Create chat folder if does not exists */
+		var chat_folder_path = this.getChatFolderPath();
+		if (!await fileExists(chat_folder_path))
+		{
+			await fs.mkdir(chat_folder_path, { recursive: true });
+		}
+		
 		/* Write project file */
 		var agents = this.agents.map((agent) => {
 			var obj = Object.assign({}, agent);
