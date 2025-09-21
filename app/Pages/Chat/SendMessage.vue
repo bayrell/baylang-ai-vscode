@@ -13,9 +13,8 @@
 		gap: 5px;
 		cursor: pointer;
 		font-size: 12px;
-		background-color: var(--vscode-editorGroupHeader-tabsBackground, #cecece);
+		background-color: var(--tab-color);
 		border-radius: 5px;
-		color: var(--vscode-foreground, black);
 		padding: 3px 5px;
 	}
 	&__file_remove{
@@ -42,9 +41,6 @@
 		}
 		button{
 			cursor: pointer;
-			background-color: var(--vscode-button-background, #0e639c);
-			color: var(--vscode-button-foreground, white);
-			border: 1px var(--vscode-button-border, var(--border-color)) solid;
 		}
 	}
 }

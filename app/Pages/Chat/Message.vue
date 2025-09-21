@@ -7,7 +7,6 @@
 }
 :deep(.chat_message_text){
 	overflow-wrap: break-word;
-	color: var(--vscode-foreground, black);
 	p {
 		margin: 0;
 		margin-bottom: 1em;

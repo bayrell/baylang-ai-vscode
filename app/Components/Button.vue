@@ -10,7 +10,6 @@
 	font-family: var(--vscode-font-family, sans-serif);
 	white-space: nowrap;
 	user-select: none;
-	min-width: 70px;
 	outline: none;
 	&:hover{
 		opacity: 0.9;

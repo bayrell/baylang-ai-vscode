@@ -31,7 +31,6 @@
 		user-select: none;
 		padding: 5px 10px;
 		border-bottom: 1px var(--border-color) solid;
-		color: var(--vscode-foreground, black);
 	}
 	&__item:hover{
 		background-color: var(--hover-color);
@@ -60,7 +59,6 @@
 :global(body.vscode-dark){
 	.chat_list__item:hover{
 		background-color: var(--vscode-button-background);
-		color: var(--vscode-button-foreground, white);
 	}
 	.chat_list__button, .chat_list__name{
 		img{

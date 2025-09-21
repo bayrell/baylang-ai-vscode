@@ -4,7 +4,7 @@
 	background-color: var(--vscode-input-background, white);
 	border: 1px solid var(--border-color);
 	border-radius: 5px;
-	color: var(--vscode-input-foreground, black);
+	color: var(--input-color);
 	outline: 0;
 	width: 100%;
 	&::placeholder{
