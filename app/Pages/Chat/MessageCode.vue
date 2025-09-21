@@ -5,10 +5,11 @@
 		margin: 0;
 		padding: 10px;
 		tab-size: 2;
-		background-color: var(--hover-color);
+		background-color: var(--vscode-textCodeBlock-background, var(--hover-color));
 		border-radius: 5px;
 		overflow-x: auto;
 		text-align: left;
+		color: var(--vscode-editor-foreground, inherit);
 		position: relative;
 		white-space: pre-wrap;
 		word-wrap: break-word;

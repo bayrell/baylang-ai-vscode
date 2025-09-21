@@ -1,11 +1,18 @@
 <style lang="scss" scoped>
 .input{
 	padding: 8px;
-	background-color: white;
+	background-color: var(--vscode-input-background, white);
 	border: 1px solid var(--border-color);
 	border-radius: 5px;
+	color: var(--vscode-input-foreground, black);
 	outline: 0;
 	width: 100%;
+	&::placeholder{
+		color: var(--vscode-input-placeholderForeground, #a6a6a6);
+	}
+	&:focus{
+		border-color: var(--vscode-focusBorder, var(--border-color));
+	}
 }
 textarea.input{
 	min-height: 50px;

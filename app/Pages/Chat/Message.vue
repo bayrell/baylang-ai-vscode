@@ -7,6 +7,7 @@
 }
 :deep(.chat_message_text){
 	overflow-wrap: break-word;
+	color: var(--vscode-foreground, black);
 	p {
 		margin: 0;
 		margin-bottom: 1em;
@@ -34,19 +35,19 @@
 		}
 	}
 	blockquote {
-		border-left: 4px solid #ccc;
+		border-left: 4px solid var(--vscode-textBlockQuote-border, #ccc);
 		padding-left: 10px;
-		color: #666;
+		color: var(--vscode-foreground, #666);
 		margin: 1em 0;
 	}
 	code {
-		background-color: #f0f0f0;
+		background-color: var(--vscode-textCodeBlock-background, #f0f0f0);
 		padding: 2px 4px;
 		border-radius: 3px;
 		font-family: monospace;
 	}
 	pre {
-		background-color: #f0f0f0;
+		background-color: var(--vscode-textCodeBlock-background, #f0f0f0);
 		padding: 10px;
 		border-radius: 5px;
 		overflow-x: auto;
@@ -62,12 +63,12 @@
 		font-style: italic;
 	}
 	a {
-		color: #007bff;
+		color: var(--vscode-textLink-foreground, #007bff);
 		text-decoration: underline;
 	}
 	hr {
 		border: none;
-		border-top: 1px solid #000;
+		border-top: 1px solid var(--vscode-editorWidget-border, #000);
 		margin: 1em 0;
 	}
 	table {
@@ -75,12 +76,12 @@
 		border-collapse: collapse;
 		margin-bottom: 1em;
 		th, td {
-			border: 1px solid #ddd;
+			border: 1px solid var(--vscode-editorWidget-border, #ddd);
 			padding: 8px;
 			text-align: left;
 		}
 		th {
-			background-color: #f2f2f2;
+			background-color: var(--vscode-list-hoverBackground, #f2f2f2);
 			font-weight: bold;
 		}
 	}

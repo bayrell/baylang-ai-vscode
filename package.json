@@ -4,7 +4,7 @@
 	"displayName": "BayLang AI",
 	"description": "BayLang AI. Chat bot",
 	"publisher": "BAYRELL",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"main": "dist/index.cjs",
 	"author": "Ildar Bikmamatov <ildar@bayrell.org>",
 	"license": "Apache-2.0",
@@ -14,6 +14,21 @@
 		"type": "git",
 		"url": "https://github.com/bayrell/baylang-ai-vscode"
 	},
+	"keywords": [
+		"ai",
+		"artificial intelligence",
+		"assistant",
+		"bay lang",
+		"baylang",
+		"chat",
+		"chatbot",
+		"code assistant",
+		"code generation",
+		"developer tools",
+		"explanation",
+		"programming",
+		"refactoring"
+	],
 	"scripts": {
 		"vsce": "./node_modules/.bin/vsce",
 		"test": "./node_modules/.bin/jasmine --random=false --config=./jasmine.js",

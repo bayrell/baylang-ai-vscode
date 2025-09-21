@@ -53,6 +53,34 @@ export function getFileExtension(filename)
 }
 
 /**
+ * Read response
+ */
+export async function getResponseMessage(response)
+{
+	try
+	{
+		const errorData = await response.json();
+		if (errorData.message) return errorData.message;
+		return JSON.stringify(errorData);
+	}
+	catch
+	{
+		const text = await response.text();
+		if (text) return text;
+	}
+	return "";
+}
+
+/**
+ * Returns error response message
+ */
+export async function getErrorResponse(response)
+{
+	return response.status + " " + response.statusText + "\n" +
+		await getResponseMessage(response);
+}
+
+/**
  * Fetch + stream
  */
 export async function fetchEventSource(url, {
@@ -78,7 +106,7 @@ export async function fetchEventSource(url, {
 		{
 			if (onerror)
 			{
-				await onerror(new Error(`Bad response: ${response.statusText}`));
+				await onerror(new Error(await getErrorResponse(response)));
 			}
 			return;
 		}

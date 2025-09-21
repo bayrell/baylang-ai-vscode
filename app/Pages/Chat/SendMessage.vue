@@ -13,9 +13,13 @@
 		gap: 5px;
 		cursor: pointer;
 		font-size: 12px;
-		background-color: #cecece;
+		background-color: var(--vscode-editorGroupHeader-tabsBackground, #cecece);
 		border-radius: 5px;
+		color: var(--vscode-foreground, black);
 		padding: 3px 5px;
+	}
+	&__file_remove{
+		color: var(--vscode-foreground, black);
 	}
 	&__text{
 		display: flex;
@@ -28,6 +32,9 @@
 		input{
 			flex: 1;
 			border-right: 0;
+			background-color: var(--vscode-input-background, white);
+			color: var(--vscode-input-foreground, black);
+			border: 1px var(--border-color) solid;
 		}
 		input[name=message]{
 			min-height: 75px;
@@ -35,6 +42,9 @@
 		}
 		button{
 			cursor: pointer;
+			background-color: var(--vscode-button-background, #0e639c);
+			color: var(--vscode-button-foreground, white);
+			border: 1px var(--vscode-button-border, var(--border-color)) solid;
 		}
 	}
 }

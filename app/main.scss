@@ -6,9 +6,23 @@ body *{ box-sizing: border-box; }
 	--secondary-color: #5c6370;
 	--danger-color: #e00000;
 	--success-color: #388600;
+	--success-hover-background: #368100;
 	--gray-color: #6b7280;
+	--text-color: #333;
 }
 .page_title{
 	margin-top: 5px;
 	margin-bottom: 10px;
+	color: var(--vscode-foreground, var(--text-color));
+}
+body.vscode-dark{
+	--border-color: var(--vscode-editorGroup-border, #333);
+	--hover-color: var(--vscode-list-hoverBackground, #3a3a3a);
+	--primary-color: var(--vscode-button-background, #0e639c);
+	--secondary-color: var(--vscode-button-secondaryBackground, #6c757d);
+	--danger-color: var(--vscode-errorForeground, #cf6679);
+	--success-color: var(--vscode-terminal-ansiGreen, #28a745);
+	--success-hover-background: #23943d;
+	--gray-color: var(--vscode-button-secondaryBackground, #6c757d);
+	--text-color: var(--vscode-foreground, #cccccc);
 }

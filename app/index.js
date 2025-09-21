@@ -912,6 +912,11 @@ class BayLangViewProvider
 	{
 		const getLink = (uri) =>
 			panel.webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, uri));
+		const getHighLightCSS = () => {
+			if (vscode.window.activeColorTheme.kind == vscode.ColorThemeKind.Dark)
+				return getLink("dist/github-dark.min.css");
+			return getLink("dist/github.min.css");
+		};
 		return `
 		<!DOCTYPE html>
 		<html lang="en">
@@ -919,6 +924,7 @@ class BayLangViewProvider
 			<meta charset="UTF-8">
 			<title>BayLang AI</title>
 			<link href="${getLink("dist/main.css")}" rel="stylesheet" />
+			<link href="${getHighLightCSS()}" rel="stylesheet" />
 		</head>
 		<body>
 			<div class="app"></div>

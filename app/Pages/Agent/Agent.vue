@@ -64,7 +64,7 @@
 					<div class="list_item__name">{{ item.name }}</div>
 					<div class="list_item__type">{{ item.global ? "Global" : "Local" }}</div>
 					<div class="list_item__buttons">
-						<span @click="model.crud.showEdit(item.name)">[Edit]</span>
+						<span @click="model.crud.showEdit(item.name); reload_result.clear();">[Edit]</span>
 						<span @click="model.crud.showDelete(item.name)">[Delete]</span>
 					</div>
 				</div>

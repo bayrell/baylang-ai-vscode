@@ -1,5 +1,5 @@
 import { minimatch } from "minimatch";
-import { htmlUnescape, urlJoin, fetchEventSource, getFileExtension } from "./lib.js";
+import { htmlUnescape, urlJoin, fetchEventSource, getErrorResponse } from "./lib.js";
 
 export class Model
 {
@@ -60,7 +60,7 @@ export class OpenAIModel extends Model
 			});
 			if (!response.ok)
 			{
-				throw new Error("Bad response: " + response.statusText);
+				throw new Error(await getErrorResponse(response));
 			}
 			
 			var response_data = await response.json();
@@ -87,6 +87,14 @@ export class GeminiModel extends OpenAIModel
 	}
 }
 
+export class GrokModel extends OpenAIModel
+{
+	getUrl(path)
+	{
+		return urlJoin("https://api.x.ai/v1/", path);
+	}
+}
+
 export class OllamaModel extends OpenAIModel
 {
 	getUrl(path)
@@ -101,6 +109,8 @@ export function createModel(data)
 	var model = null;
 	if (data.type == "gemini") model = new GeminiModel();
 	else if (data.type == "ollama") model = new OllamaModel();
+	else if (data.type == "openai") model = new OpenAIModel();
+	else if (data.type == "grok") model = new GrokModel();
 	else model = new Model();
 	model.assign(data);
 	return model;
@@ -1098,7 +1108,7 @@ export class Question
 		client.setCallback(async (type, data) => {
 			if (type == "error")
 			{
-				console.log("Ошибка:", data);
+				console.log(data);
 				this.agent_message.addChunk("Error: " + data.message);
 				await this.settings.saveChat(this.chat);
 				this.provider.sendMessage(new UpdateChatEvent(this.chat, this.agent_message));

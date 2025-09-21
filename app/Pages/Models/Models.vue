@@ -143,13 +143,14 @@ export default {
 		{
 			return [
 				{"key": "gemini", "value": "Gemini"},
+				{"key": "grok", "value": "Grok"},
 				{"key": "ollama", "value": "Ollama"},
 				{"key": "openai", "value": "OpenAI"},
 			];
 		},
 		isShowKey()
 		{
-			return ["gemini", "openai"].indexOf(this.model.form.item.type) != -1;
+			return ["gemini", "grok", "openai"].indexOf(this.model.form.item.type) != -1;
 		},
 		isShowUrl()
 		{

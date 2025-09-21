@@ -2,7 +2,6 @@ import { createApp, reactive } from "vue"
 import Chat from "./Pages/Layout.vue";
 import Layout from "./Pages/Layout.js";
 import "./main.scss";
-import 'highlight.js/styles/github.css';
 
 /* Register layout */
 const registerLayout = (layout) => {

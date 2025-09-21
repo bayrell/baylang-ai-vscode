@@ -18,7 +18,7 @@
 	&__items{
 		display: none;
 		position: absolute;
-		background: white;
+		background: var(--vscode-input-background, white);
 		border: 1px var(--border-color) solid;
 		z-index: 999;
 	}
@@ -31,6 +31,7 @@
 		user-select: none;
 		padding: 5px 10px;
 		border-bottom: 1px var(--border-color) solid;
+		color: var(--vscode-foreground, black);
 	}
 	&__item:hover{
 		background-color: var(--hover-color);
@@ -54,6 +55,17 @@
 	}
 	&.show .chat_list__items{
 		display: block;
+	}
+}
+:global(body.vscode-dark){
+	.chat_list__item:hover{
+		background-color: var(--vscode-button-background);
+		color: var(--vscode-button-foreground, white);
+	}
+	.chat_list__button, .chat_list__name{
+		img{
+			filter: invert(1);
+		}
 	}
 }
 </style>
