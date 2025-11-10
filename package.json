@@ -4,7 +4,7 @@
 	"displayName": "BayLang AI",
 	"description": "BayLang AI. Chat bot",
 	"publisher": "BAYRELL",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"main": "dist/index.cjs",
 	"author": "Ildar Bikmamatov <ildar@bayrell.org>",
 	"license": "Apache-2.0",

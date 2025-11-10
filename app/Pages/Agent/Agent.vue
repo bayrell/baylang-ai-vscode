@@ -180,12 +180,13 @@ export default {
 			var model = this.layout.models_page.findItemById(name);
 			if (!model) return [];
 			if (!model.models) return [];
-			return model.models.map(item => {
+			var models = model.models.map(item => {
 				return {
 					key: item.id,
 					value: item.id,
 				};
-			});
+			}).sort((a, b) => { return a.key.localeCompare(b.key); });
+			return models;
 		},
 		enable_rules()
 		{

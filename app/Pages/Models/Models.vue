@@ -141,16 +141,20 @@ export default {
 	{
 		getModels()
 		{
-			return [
+			var arr = [
 				{"key": "gemini", "value": "Gemini"},
+				{"key": "openrouter", "value": "Open Router"},
 				{"key": "grok", "value": "Grok"},
 				{"key": "ollama", "value": "Ollama"},
 				{"key": "openai", "value": "OpenAI"},
 			];
+			arr.sort((a, b) => { return a.value.localeCompare(b.value); });
+			return arr;
 		},
 		isShowKey()
 		{
-			return ["gemini", "grok", "openai"].indexOf(this.model.form.item.type) != -1;
+			var arr = ["gemini", "openrouter", "grok", "openai"];
+			return arr.indexOf(this.model.form.item.type) != -1;
 		},
 		isShowUrl()
 		{

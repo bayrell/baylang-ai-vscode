@@ -39,7 +39,7 @@
 		}*/
 	}
 	&--danger{
-		background-color: var(--vscode-inputValidation-errorBackground, var(--danger-color));
+		background-color: var(--danger-color);
 		color: var(--vscode-button-foreground, white);
 		border-color: var(--vscode-button-border, transparent);
 		/*&:hover{

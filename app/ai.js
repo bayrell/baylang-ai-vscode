@@ -34,7 +34,8 @@ export class OpenAIModel extends Model
 {
 	getUrl(path)
 	{
-		return urlJoin("https://api.openai.com/v1/", path);
+		var url = this.settings.url != "" ? this.settings.url : "https://api.openai.com/v1/";
+		return urlJoin(url, path);
 	}
 	
 	
@@ -79,6 +80,14 @@ export class OpenAIModel extends Model
 	}
 }
 
+export class OpenRouterModel extends OpenAIModel
+{
+	getUrl(path)
+	{
+		return urlJoin("https://openrouter.ai/api/v1", path);
+	}
+}
+
 export class GeminiModel extends OpenAIModel
 {
 	getUrl(path)
@@ -108,6 +117,7 @@ export function createModel(data)
 {
 	var model = null;
 	if (data.type == "gemini") model = new GeminiModel();
+	else if (data.type == "openrouter") model = new OpenRouterModel();
 	else if (data.type == "ollama") model = new OllamaModel();
 	else if (data.type == "openai") model = new OpenAIModel();
 	else if (data.type == "grok") model = new GrokModel();
