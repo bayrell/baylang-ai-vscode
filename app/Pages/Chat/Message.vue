@@ -24,6 +24,7 @@
 	font-size: 1.2em;
 	padding: 5px;
 	box-sizing: content-box;
+	background-color: var(--vscode-editorWidget-background);
 	border: 1px var(--border-color) solid;
 	border-radius: 5px;
 	transition: opacity 0.2s ease-in-out;
