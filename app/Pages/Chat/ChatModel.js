@@ -232,8 +232,10 @@ class ChatModel
 	/**
 	 * Send message
 	 */
-	async sendMessage(chat_id, agent_id, message)
+	async sendMessage(chat_id, agent_id, message, lastMessageId)
 	{
+		if (lastMessageId == undefined) lastMessageId = null;
+		
 		var agent = this.layout.agent_page.items[agent_id];
 		if (!agent) return;
 		
@@ -248,14 +250,26 @@ class ChatModel
 		await this.updateFiles(chat);
 		
 		/* Create message */
-		var item = new ChatMessage();
-		item.id = chat.messages.length + 1;
-		item.sender = "user";
-		item.addFiles(chat.files);
-		item.setContent(message);
+		var item = null;
+		if (message)
+		{
+			item = new ChatMessage();
+			item.id = chat.messages.length + 1;
+			item.sender = "user";
+			item.setContent(message);
+			
+			/* Add message to history */
+			chat.addMessage(item);
+		}
 		
-		/* Add message to history */
-		chat.addMessage(item);
+		/* Remove last messages */
+		if (lastMessageId)
+		{
+			var index = chat.messages.findIndex((message) => { return message.id == lastMessageId });
+			if (index >= 0) chat.messages.splice(index + 1);
+		}
+		
+		/* Select item */
 		this.selectItem(chat.id);
 		
 		/* Find new chat */
@@ -273,7 +287,9 @@ class ChatModel
 			agent: agent.name,
 			global: agent.global,
 			name: chat.title,
-			content: item.content,
+			content: item ? item.content : null,
+			lastMessageId: lastMessageId,
+			files: JSON.stringify(chat.files),
 		});
 		if (!result.isSuccess())
 		{

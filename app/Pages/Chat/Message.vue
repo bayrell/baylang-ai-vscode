@@ -1,8 +1,39 @@
 <style lang="scss" scoped>
 .chat_message{
+	position: relative;
 	line-height: 1.39;
+	margin-bottom: 15px;
 	&__line{
 		margin-bottom: 15px;
+		&:last-child{
+			margin-bottom: 0px;
+		}
+	}
+}
+.chat_message_icons{
+	position: absolute;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	margin-top: 5px;
+	right: 5px;
+	top: 5px;
+}
+.chat_message_icon{
+	cursor: pointer;
+	font-size: 1.2em;
+	padding: 5px;
+	box-sizing: content-box;
+	border: 1px var(--border-color) solid;
+	border-radius: 5px;
+	transition: opacity 0.2s ease-in-out;
+	width: 16px;
+	height: 16px;
+	&:hover {
+		background-color: var(--hover-color);
+	}
+	&.disabled{
+		opacity: 0.3;
 	}
 }
 :deep(.chat_message_text){
@@ -86,12 +117,19 @@
 	}
 }
 .chat_main__message--human{
-	text-align: right;
+	border-radius: 10px;
+	/*box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+	border: 1px var(--border-color) solid;
+	border-radius: 10px;*/
+	padding: 10px 15px;
+	margin-left: auto;
+	margin-right: 0;
+	max-width: 70%;
 }
 </style>
 
 <template>
-	<div class="chat_message" :class="getClassMessage()">
+	<div class="chat_message" :class="getClassMessage()" v-if="this.message.sender=='agent'">
 		<div v-for="item in lines" :key="item" class="chat_message__line">
 			<MessageCode
 				v-if="item.block == 'code'"
@@ -104,6 +142,25 @@
 			<div v-if="item.block == 'text' && !item.html" 
 				class="chat_message_text"
 			>{{ item.content }}</div>
+		</div>
+	</div>
+	<div class="chat_message" :class="getClassMessage()" v-else>
+		<div class="chat_message_lines">
+			<div v-for="item in lines" :key="item" class="chat_message__line">
+				<div v-if="item.block == 'code'" class="chat_message_text">
+					```<br/>{{ item.content }}<br/>```
+				</div>
+				<div v-if="item.block == 'text'" class="chat_message_text">
+					{{ item.content }}
+				</div>
+			</div>
+		</div>
+		<div class="chat_message_icons">
+			<span class="chat_message_icon"
+				:class="{'disabled': this.disableResend}" @click="resendMessage"
+			>
+				<img :src="this.layout.getImage('refresh.svg')" />
+			</span>
 		</div>
 	</div>
 </template>
@@ -120,6 +177,11 @@ export default {
 		message: {
 			type: Object,
 		}
+	},
+	data: function(){
+		return {
+			disableResend: false,
+		};
 	},
 	computed:
 	{
@@ -142,7 +204,26 @@ export default {
 			if (this.message.sender == "agent") return "chat_main__message--assistant";
 			else if (this.message.sender == "user") return "chat_main__message--human";
 			return "";
-		}
+		},
+		getUserMessage()
+		{
+			var content = this.lines.map((item) => item.content);
+			return content.join("\n\n");
+		},
+		resendMessage()
+		{
+			var agent = this.layout.agent_page.items[this.model.current_agent_id];
+			if (!agent) return;
+			if (this.disableResend) return;
+			this.disableResend = true;
+			setTimeout(()=>{ this.disableResend = false; }, 10000);
+			this.model.sendMessage(
+				this.model.current_chat_id,
+				this.model.current_agent_id,
+				null,
+				this.message.id
+			);
+		},
 	},
 };
 </script>

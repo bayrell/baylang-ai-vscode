@@ -59,7 +59,7 @@
 			</template>
 			<template v-slot:save_content>
 				<Field name="name">
-					<label for="name">Name</label>
+					<label for="name">File name</label>
 					<Input
 						name="name"
 						v-model="model.form.item.name"

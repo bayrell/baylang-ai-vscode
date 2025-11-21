@@ -118,6 +118,8 @@ export default {
 	{
 		sendMessage()
 		{
+			var agent = this.layout.agent_page.items[this.model.current_agent_id];
+			if (!agent) return;
 			this.model.sendMessage(
 				this.model.current_chat_id,
 				this.model.current_agent_id,

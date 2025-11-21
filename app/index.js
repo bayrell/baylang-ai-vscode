@@ -743,6 +743,7 @@ async function registerCommands(provider)
 		question.agent = agent;
 		question.provider = provider;
 		question.settings = settings;
+		question.folderPath = settings.workspaceFolderPath;
 		
 		/* Load chat by id */
 		question.chat = await settings.loadChatById(message.id);
@@ -754,9 +755,22 @@ async function registerCommands(provider)
 			provider.sendMessage(new ai.CreateChatEvent(question.chat));
 		}
 		
+		/* Add files */
+		var files = JSON.parse(message.files);
+		question.addFiles(files);
+		
+		/* Remove chat history */
+		if (message.lastMessageId)
+		{
+			question.user_message = question.removeChatHistory(message.lastMessageId);
+		}
+		
 		/* Send question */
 		var send_question = async () => {
-			await question.addUserMessage(message.content);
+			if (message.content && !message.lastMessageId)
+			{
+				await question.addUserMessage(message.content);
+			}
 			await question.addAgentMessage();
 			await settings.saveChat(question.chat);
 			await question.updateRules();

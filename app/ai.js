@@ -1,3 +1,4 @@
+import { relative } from "path";
 import { minimatch } from "minimatch";
 import { htmlUnescape, urlJoin, fetchEventSource, getErrorResponse } from "./lib.js";
 
@@ -812,6 +813,16 @@ export class Rule
 		content.push(this.content);
 		return content.join("\n");
 	}
+	
+	
+	/**
+	 * Returns rule content
+	 */
+	getRuleContent()
+	{
+		if (!this.description) return this.content;
+		return this.description + "\n\n" + this.content;
+	}
 }
 
 
@@ -829,12 +840,11 @@ export function createRule(item)
 /**
  * Returns true if file matching
  */
-export function ruleMatching(rule, message)
+export function ruleMatching(rule, files)
 {
 	if (!rule.rules) return true;
-	for (var item of message.content)
+	for (var item of files)
 	{
-		if (!(item instanceof FileItem)) continue;
 		if (rule.matchFile(item.filename)) return true;
 	}
 	return false;
@@ -929,6 +939,7 @@ export class PromptBuilder
                 `<system>${prompt}</system>` +
                 `<system>%rules%</system>` +
                 `<system>%history%</system>` +
+				`<system>%files%</system>` +
                 `<user>%query%</user>`;
         }
 		
@@ -1045,6 +1056,8 @@ export class Question
 		this.user_message = null;
 		this.chat = null;
 		this.provider = null;
+		this.folderPath = null;
+		this.files = [];
 		this.rules = [];
 		this.settings = null;
 	}
@@ -1075,6 +1088,35 @@ export class Question
 	
 	
 	/**
+	 * Add files
+	 */
+	addFiles(files)
+	{
+		this.files = files;
+		for (var i=0; i<files.length; i++)
+		{
+			this.files[i].filename = relative(this.folderPath, this.files[i].path);
+		}
+	}
+	
+	
+	/**
+	 * Remove chat history
+	 */
+	removeChatHistory(message_id)
+	{
+		var user_message = null;
+		var index = this.chat.messages.findIndex((message) => { return message.id == message_id });
+		if (index >= 0)
+		{
+			user_message = this.chat.messages[index];
+			this.chat.messages.splice(index + 1);
+		}
+		return user_message;
+	}
+	
+	
+	/**
 	 * Update rules
 	 */
 	async updateRules()
@@ -1085,7 +1127,7 @@ export class Question
 			return;
 		}
 		var rules = await this.settings.loadRules();
-		this.rules = filterRules(rules, this.user_message);
+		this.rules = filterRules(rules, this.files);
 	}
 	
 	
@@ -1102,7 +1144,13 @@ export class Question
 		return builder.getResult({
 			"query": this.user_message.getText(),
 			"history": history.join("\n\n"),
-			"rules": this.agent.enableRules() ? this.rules.map(rule => rule.content).join("\n\n") : "",
+			"files": this.files.map((file) => {
+				var item = new FileItem();
+				item.assign(file);
+				return item.getText();
+			}).join("\n\n"),
+			"rules": this.agent.enableRules() ?
+				this.rules.map(rule => rule.getRuleContent()).join("\n\n") : "",
 		});
 	}
 	
@@ -1146,6 +1194,18 @@ export class Question
 	
 	
 	/**
+	 * Debug prompt
+	 */
+	async debugPrompt(prompt)
+	{
+		console.log("Send prompt");
+		console.log(prompt);
+		this.agent_message.addChunk("Ok");
+		this.provider.sendMessage(new UpdateChatEvent(this.chat, this.agent_message));
+	}
+	
+	
+	/**
 	 * Send message
 	 */
 	async send()
@@ -1154,6 +1214,7 @@ export class Question
 		
 		var prompt = this.getPrompt();
 		await this.sendPrompt(prompt);
+		//await this.debugPrompt(prompt);
 		await this.settings.saveChat(this.chat);
 		
 		this.provider.sendMessage(new EndChatEvent(this.chat, this.agent_message));
