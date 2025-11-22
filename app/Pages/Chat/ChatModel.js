@@ -315,8 +315,11 @@ class ChatModel
 		var files = chat.getFiles();
 		
 		/* Read files */
-		files = await this.api.call("read_files", files);
-		chat.addFiles(files);
+		var result = await this.api.call("read_files", files);
+		if (result.isSuccess())
+		{
+			chat.addFiles(result.response.items);
+		}
 	}
 	
 	

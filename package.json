@@ -8,7 +8,7 @@
 	"main": "dist/index.cjs",
 	"author": "Ildar Bikmamatov <ildar@bayrell.org>",
 	"license": "Apache-2.0",
-	"homepage": "https://github.com/bayrell",
+	"homepage": "https://baylang.com/",
 	"extensionUri": "https://github.com/bayrell/baylang-ai-vscode",
 	"repository": {
 		"type": "git",

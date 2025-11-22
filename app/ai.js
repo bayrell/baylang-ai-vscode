@@ -1021,7 +1021,9 @@ export class Client
 			method: "POST",
 			headers: {
 				"Authorization": "Bearer " + this.agent.model.getKey(),
-				"Content-Type": "application/json"
+				"Content-Type": "application/json",
+				"HTTP-Referer": "https://baylang.com/",
+				"X-Title": "BayLang AI",
 			},
 			body: JSON.stringify({
 				model: this.agent.model_name,
