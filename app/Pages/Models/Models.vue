@@ -84,6 +84,7 @@
 				<Field name="key" v-if="isShowKey()">
 					<label for="name">API key</label>
 					<Input
+						type="password"
 						name="key"
 						v-model="model.form.item.settings.key"
 					/>

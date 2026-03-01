@@ -1,7 +1,8 @@
 import path from "path";
 import vscode from "vscode";
 import { promises as fs } from "fs";
-import { removeFirstSlash, removeLastSlash, fileExists, makeHash } from "../lib.js";
+import { removeFirstSlash, removeLastSlash } from "../lib.js";
+import { fileExists, makeHash } from "../api.js";
 import { Agent, createAgent } from "../Ai/Agent.js";
 import { Chat } from "../Ai/Chat.js";
 import { createModel } from "../Ai/Model.js";
