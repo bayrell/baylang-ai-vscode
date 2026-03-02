@@ -1,4 +1,4 @@
-import { urlJoin } from "../lib.js";
+import { urlJoin, getErrorResponse } from "../lib.js";
 
 export class Model
 {
@@ -7,14 +7,16 @@ export class Model
         this.type = "";
         this.name = "";
         this.models = [];
+        this.models_list = [];
         this.settings = {};
     }
     assign(data)
     {
-        this.type = data.type;
-        this.name = data.name;
-        this.models = data.models;
-        this.settings = data.settings;
+        this.type = data.type || "";
+        this.name = data.name || "";
+        this.models = data.models || [];
+        this.settings = data.settings || {};
+        this.list = data.list || [];
     }
     getKey()
     {

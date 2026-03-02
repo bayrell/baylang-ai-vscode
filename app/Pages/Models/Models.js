@@ -54,6 +54,43 @@ class Models
 	
 	
 	/**
+	 * Add model to list
+	 */
+	addListItem(model_name)
+	{
+		if (model_name == "") return;
+		
+		var item = this.form.item;
+		if (!item.list) item.list = [];
+		
+		var find = this.form.item.list.find(
+			(item) => { return item.key == model_name }
+		);
+		if (find) return;
+		
+		item.list.push({
+			"key": model_name,
+			"name": "",
+		});
+	}
+	
+	
+	/**
+	 * Remove list item
+	 */
+	removeListItem(model_name)
+	{
+		var index = this.form.item.list.findIndex(
+			(item) => { return item.key == model_name }
+		);
+		if (index == -1) return;
+		
+		/* Remove item by index */
+		this.form.item.list.splice(index);
+	}
+	
+	
+	/**
 	 * Load
 	 */
 	async load()

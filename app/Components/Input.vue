@@ -49,6 +49,7 @@ textarea.input{
 		v-bind="$attrs"
 		:id="name"
 		:name="name"
+		:autocomplete="autocomplete"
 		:value="modelValue"
 		:class="getInputClass()"
 		@input="$emit('update:modelValue', $event.target.value)"
@@ -59,6 +60,7 @@ textarea.input{
 			:type="current_password_type"
 			:id="name"
 			:name="name"
+			:autocomplete="autocomplete"
 			:value="modelValue"
 			:class="getInputClass()"
 			@input="$emit('update:modelValue', $event.target.value)"
@@ -120,6 +122,9 @@ export default {
 		selectMessage: {
 			type: String,
 			default: "Select value",
+		},
+		autocomplete: {
+			type: String,
 		},
 	},
 	emits: ["update:modelValue"],

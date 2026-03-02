@@ -37,6 +37,43 @@
 		}
 	}
 }
+.models_list .models_list_button{
+	padding-bottom: 0.5rem;
+}
+.models_list_message{
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100px;
+}
+.models_list_item{
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	position: relative;
+	padding-bottom: 0.5rem;
+	.models_list_key{
+		word-wrap: break-word;
+		width: 100px;
+	}
+	.models_list_name{
+		position: relative;
+		gap: 1;
+	}
+	.models_list_delete{
+		cursor: pointer;
+	}
+	input{
+		width: 100%;
+		background-color: var(--vscode-input-background, white);
+		border: 1px solid var(--border-color);
+		border-radius: 5px;
+		color: var(--input-color);
+		outline: 0;
+		padding: 4px;
+	}
+}
 </style>
 
 <template>
@@ -55,7 +92,7 @@
 				>
 					<div class="list_item__name">{{ item.name }}</div>
 					<div class="list_item__buttons">
-						<span @click="model.crud.showEdit(item.name)">[Edit]</span>
+						<span @click="model.crud.showEdit(item.name); this.reload_result.clear();">[Edit]</span>
 						<span @click="model.crud.showDelete(item.name)">[Delete]</span>
 					</div>
 				</div>
@@ -64,15 +101,16 @@
 				{{ model.crud.isAdd() ? "Add model" : "Edit model" }}
 			</template>
 			<template v-slot:save_content>
-				<Field name="name">
-					<label for="name">Name</label>
+				<Field name="model_name">
+					<label for="model_name">Name</label>
 					<Input
-						name="name"
+						name="model_name"
+						autocomplete="username"
 						v-model="model.form.item.name"
 					/>
 				</Field>
 				<Field name="model">
-					<label for="name">Type</label>
+					<label for="model">Type</label>
 					<Input
 						type="select"
 						name="type"
@@ -82,20 +120,50 @@
 					/>
 				</Field>
 				<Field name="key" v-if="isShowKey()">
-					<label for="name">API key</label>
+					<label for="key">API key</label>
 					<Input
 						type="password"
 						name="key"
+						autocomplete="new-password"
 						v-model="model.form.item.settings.key"
 					/>
 				</Field>
 				<Field name="url" v-if="isShowUrl()">
-					<label for="name">URL</label>
+					<label for="url">URL</label>
 					<Input
 						name="url"
 						v-model="model.form.item.settings.url"
 					/>
 				</Field>
+				<Field name="name" :error="reload_result"
+					v-if="model.form.pk != null"
+				>
+					<label for="name">Model list</label>
+					<FieldGroup>
+						<Input
+							type="select"
+							name="name"
+							v-model="select_model"
+							:options="model_options"
+						/>
+						<Button @click="reloadModels">Reload</Button>
+					</FieldGroup>
+				</Field>
+				<div class="models_list">
+					<div class="models_list_button">
+						<Button class="default small" @click="this.model.addListItem(this.select_model)">Add</Button>
+					</div>
+					<div v-for="item in models_list" class="models_list_item" :key="item.key">
+						<span class="models_list_key">{{ item.key }}</span>
+						<span class="models_list_name">
+							<input v-model="item.name" />
+						</span>
+						<span class="models_list_delete" @click="this.model.removeListItem(item.key)">[D]</span>
+					</div>
+					<div class="models_list_message" v-if="models_list.length == 0">
+						Add models to list for usage
+					</div>
+				</div>
 			</template>
 			<template v-slot:delete_message>
 				Delete item {{ model.form.item.name }}?
@@ -109,6 +177,8 @@ import Button from "@main/Components/Button.vue";
 import Crud from "@main/Components/Crud.vue";
 import Input from "@main/Components/Input.vue";
 import Field from "@main/Components/Form/Field.vue";
+import FieldGroup from "@main/Components/Form/FieldGroup.vue";
+import Result from "@main/Components/Form/Result.js";
 
 export default {
 	name: "Models",
@@ -117,9 +187,12 @@ export default {
 		Crud,
 		Input,
 		Field,
+		FieldGroup,
 	},
 	data(){
 		return {
+			reload_result: new Result(),
+			select_model: "",
 		};
 	},
 	computed: {
@@ -131,6 +204,25 @@ export default {
 		{
 			var items = this.model.items.slice();
 			items.sort((a, b) => a.name.localeCompare(b.name));
+			return items;
+		},
+		model_options()
+		{
+			if (!this.model.form.item) return [];
+			
+			var items = this.model.form.item.models;
+			if (!items) return [];
+			
+			return items.map((item) => { return {
+				"key": item.id,
+				"value": item.id,
+			}; }).sort((a, b) => { return a.key.localeCompare(b.key) });
+		},
+		models_list()
+		{
+			if (!this.model.form.item) return [];
+			var items = this.model.form.item.list;
+			if (!items) return [];
 			return items;
 		},
 	},
@@ -175,7 +267,13 @@ export default {
 				this.model.form.item.settings.url = "https://api.openai.com/v1/";
 			}
 			else this.model.form.item.settings.url = "";
-		}
+		},
+		async reloadModels()
+		{
+			this.reload_result.setWaitMessage();
+			var result = await this.model.reloadModels(this.model.form.pk);
+			this.reload_result.setApiResult(result);
+		},
 	},
 }
 </script>
