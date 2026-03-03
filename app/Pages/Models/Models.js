@@ -43,13 +43,31 @@ class Models
 	{
 		var model = this.findItemById(name);
 		if (!model) return null;
+		if (!model.type)
+		{
+			var result = new ApiResult();
+			result.code = -1;
+			result.message = "Choose model";
+			return result;
+		}
 		
 		var result = await this.layout.api.call("reload_models", name);
 		if (result.isSuccess())
 		{
+			var model = this.findItemById(name);
 			model.models = result.response.items;
 		}
 		return result;
+	}
+	
+	
+	/**
+	 * Refresh
+	 */
+	refresh()
+	{
+		var item = this.findItemById(this.form.pk);
+		if (item) this.form.setItem(item);
 	}
 	
 	
@@ -120,6 +138,7 @@ class Models
 			this.items.push(item);
 		}
 		
+		this.form.setPrimaryKey(this.getPrimaryKey(item));
 		return result;
 	}
 	

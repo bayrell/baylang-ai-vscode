@@ -135,9 +135,7 @@
 						v-model="model.form.item.settings.url"
 					/>
 				</Field>
-				<Field name="name" :error="reload_result"
-					v-if="model.form.pk != null"
-				>
+				<Field name="name" :error="reload_result">
 					<label for="name">Model list</label>
 					<FieldGroup>
 						<Input
@@ -270,9 +268,12 @@ export default {
 		},
 		async reloadModels()
 		{
+			if (this.model.form.pk === null) await this.model.add();
+			else this.model.save();
 			this.reload_result.setWaitMessage();
 			var result = await this.model.reloadModels(this.model.form.pk);
 			this.reload_result.setApiResult(result);
+			this.model.refresh();
 		},
 	},
 }
