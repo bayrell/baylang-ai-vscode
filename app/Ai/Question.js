@@ -78,6 +78,7 @@ export class Question
 		this.folderPath = null;
 		this.files = [];
 		this.rules = [];
+		this.max_iter = 5;
 		this.settings = null;
 		this.tools = null;
 		this.tools_history = [];
@@ -449,7 +450,7 @@ export class Question
 			await this.executeTools();
 			
 			count++;
-			if (count > 5) break;
+			if (count > this.max_iter) break;
 		}
 	}
 	

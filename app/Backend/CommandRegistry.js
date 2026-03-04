@@ -5,6 +5,7 @@ import { Chat, CreateChatEvent } from "../Ai/Chat.js";
 import { Question } from "../Ai/Question.js";
 import { Rule } from "../Ai/Rule.js";
 import { Tools } from "../Ai/Tool.js";
+import { RandomTool } from "../Tools/RandomTool.js";
 
 export class CommandRegistry
 {
@@ -70,6 +71,20 @@ export class CommandRegistry
 
 
 /**
+ * Register tools
+ */
+export async function registerTools(settings)
+{
+	var tools = new Tools();
+	
+	/* Create tools */
+	tools.add(new RandomTool());
+	
+	return tools;
+}
+
+
+/**
  * Register commands
  */
 export async function registerCommands(provider)
@@ -82,8 +97,7 @@ export async function registerCommands(provider)
 	await settings.loadData();
 	
 	/* Init tools */
-	var tools = new Tools();
-	await tools.load(settings);
+	var tools = await registerTools(this);
 	
 	/* Load chat */
 	registry.register("load_chat", async () => {

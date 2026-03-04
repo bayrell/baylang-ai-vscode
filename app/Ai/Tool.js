@@ -128,22 +128,10 @@ export class Tools
 	
 	
 	/**
-	 * Load tools
+	 * Add tool
 	 */
-	async load(settings)
+	add(tool)
 	{
-		var tool;
-		this.items = [];
-		
-		/* Random function */
-		tool = (new Tool())
-			.setName("random")
-			.setDescription("Generate random number beetween a and b")
-			.addProps("a", "integer", "First number", true)
-			.addProps("b", "integer", "Second number", true)
-			.setFunction((params) => {
-				return Math.round(Math.random() * (params.b - params.a) + params.a);
-			})
 		this.items.push(tool);
 	}
 	
