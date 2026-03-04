@@ -127,41 +127,65 @@
 	margin-right: 0;
 	max-width: 70%;
 }
+.chat_main__message--tool{
+	border: 1px var(--border-color) solid;
+	border-radius: 0.5rem;
+	padding: 1rem;
+	.tool_error{
+		color: red;
+	}
+}
 </style>
 
 <template>
-	<div class="chat_message" :class="getClassMessage()" v-if="this.message.sender=='agent'">
-		<div v-for="item in lines" :key="item" class="chat_message__line">
-			<MessageCode
-				v-if="item.block == 'code'"
-				:item="item"
-			/>
-			<div v-if="item.block == 'text' && item.html" 
-				class="chat_message_text"
-				v-html="item.html"
-			></div>
-			<div v-if="item.block == 'text' && !item.html" 
-				class="chat_message_text"
-			>{{ item.content }}</div>
-		</div>
-	</div>
-	<div class="chat_message" :class="getClassMessage()" v-else>
-		<div class="chat_message_lines">
+	<div class="chat_message">
+		<div :class="getClassMessage()" 
+			v-if="this.message.sender=='agent'"
+		>
 			<div v-for="item in lines" :key="item" class="chat_message__line">
-				<div v-if="item.block == 'code'" class="chat_message_text">
-					```<br/>{{ item.content }}<br/>```
-				</div>
-				<div v-if="item.block == 'text'" class="chat_message_text">
-					{{ item.content }}
-				</div>
+				<MessageCode
+					v-if="item.block == 'code'"
+					:item="item"
+				/>
+				<div v-if="item.block == 'text' && item.html" 
+					class="chat_message_text"
+					v-html="item.html"
+				></div>
+				<div v-if="item.block == 'text' && !item.html" 
+					class="chat_message_text"
+				>{{ item.content }}</div>
 			</div>
 		</div>
-		<div class="chat_message_icons">
-			<span class="chat_message_icon"
-				:class="{'disabled': this.disableResend}" @click="resendMessage"
-			>
-				<img :src="this.layout.getImage('refresh.svg')" />
-			</span>
+		<div :class="getClassMessage()"
+			v-if="this.message.sender=='tool' && this.model.show_tools"
+		>
+			<div class="tool_name">
+				Execute: {{ this.message.tool_name }}
+			</div>
+			<div class="tool_error" v-if="this.message.tool_error != ''">
+				Error: {{ this.message.tool_error }}
+			</div>
+		</div>
+		<div :class="getClassMessage()" 
+			v-if="this.message.sender=='user'"
+		>
+			<div class="chat_message_lines">
+				<div v-for="item in lines" :key="item" class="chat_message__line">
+					<div v-if="item.block == 'code'" class="chat_message_text">
+						```<br/>{{ item.content }}<br/>```
+					</div>
+					<div v-if="item.block == 'text'" class="chat_message_text">
+						{{ item.content }}
+					</div>
+				</div>
+			</div>
+			<div class="chat_message_icons">
+				<span class="chat_message_icon"
+					:class="{'disabled': this.disableResend}" @click="resendMessage"
+				>
+					<img :src="this.layout.getImage('refresh.svg')" />
+				</span>
+			</div>
 		</div>
 	</div>
 </template>
@@ -202,8 +226,18 @@ export default {
 	methods: {
 		getClassMessage()
 		{
-			if (this.message.sender == "agent") return "chat_main__message--assistant";
-			else if (this.message.sender == "user") return "chat_main__message--human";
+			if (this.message.sender == "agent")
+			{
+				return "chat_main__message--assistant";
+			}
+			else if (this.message.sender == "user")
+			{
+				return "chat_main__message--human";
+			}
+			else if (this.message.sender == "tool")
+			{
+				return "chat_main__message--tool";
+			}
 			return "";
 		},
 		getUserMessage()

@@ -9,6 +9,10 @@ class ChatMessage
 	content = [];
 	formated = false;
 	
+	/* Tools */
+	tool_name = "";
+	tool_answer = "";
+	
 	
 	/**
 	 * Assign
@@ -18,6 +22,20 @@ class ChatMessage
 		this.id = data.id;
 		this.sender = data.sender;
 		this.content = data.content;
+		this.tool_name = data.tool_name;
+		this.tool_error = data.tool_error;
+	}
+	
+	
+	/**
+	 * Update message
+	 */
+	updateMessage(data)
+	{
+		this.sender = data.sender;
+		this.content = data.content;
+		this.tool_name = data.tool_name;
+		this.tool_error = data.tool_error;
 	}
 	
 	

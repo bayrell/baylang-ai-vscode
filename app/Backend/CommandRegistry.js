@@ -2,8 +2,9 @@ import { promises as fs } from "fs";
 import { Settings } from "./Settings.js";
 import { Agent } from "../Ai/Agent.js";
 import { Chat, CreateChatEvent } from "../Ai/Chat.js";
-import { Question } from "../Ai/Client.js";
+import { Question } from "../Ai/Question.js";
 import { Rule } from "../Ai/Rule.js";
+import { Tools } from "../Ai/Tool.js";
 
 export class CommandRegistry
 {
@@ -74,8 +75,15 @@ export class CommandRegistry
 export async function registerCommands(provider)
 {
 	var registry = provider.registry;
+	var questions = [];
+	
+	/* Init settings */
 	var settings = new Settings(provider.globalStorageUri);
 	await settings.loadData();
+	
+	/* Init tools */
+	var tools = new Tools();
+	await tools.load(settings);
 	
 	/* Load chat */
 	registry.register("load_chat", async () => {
@@ -207,6 +215,8 @@ export async function registerCommands(provider)
 		question.provider = provider;
 		question.settings = settings;
 		question.folderPath = settings.workspaceFolderPath;
+		question.tools = tools;
+		questions.push(question);
 		
 		/* Find model */
 		question.model = settings.getModelByName(agent.model);
@@ -248,10 +258,32 @@ export async function registerCommands(provider)
 			await settings.saveChat(question.chat);
 			await question.updateRules();
 			await question.send();
+			
+			/* Remove question */
+			var index = questions.findIndex((item) => item == question);
+			questions.splice(index);
 		};
 		send_question();
 		
 		/* Returns result */
+		return {
+			success: true,
+		};
+	});
+	
+	/* Stop chat */
+	registry.register("stop_chat", async (chat_id) => {
+		var question = questions.find((item) => item.chat.id == chat_id);
+		if (!question)
+		{
+			return {
+				success: false,
+				message: "Chat not found",
+			}
+		}
+		
+		await question.stop();
+		
 		return {
 			success: true,
 		};

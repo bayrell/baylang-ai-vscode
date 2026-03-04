@@ -88,11 +88,10 @@ class Layout
 			if (!chat) return;
 			
 			chat.setTyping(false);
-			chat.updateMessage({
+			chat.updateMessage(Object.assign(message.payload.data, {
 				id: message.payload.message_id,
 				sender: message.payload.sender,
-				content: message.payload.content,
-			});
+			}));
 		}
 		else if (message.command == "start_chat" || message.command == "step_chat")
 		{
@@ -100,6 +99,7 @@ class Layout
 			var chat = this.chat_page.findChatById(chat_id);
 			if (!chat) return;
 			
+			chat.setWork(true);
 			chat.setTyping(true);
 		}
 		else if (message.command == "update_title")
@@ -116,6 +116,7 @@ class Layout
 			var chat = this.chat_page.findChatById(chat_id);
 			if (!chat) return;
 			
+			if (message.command == "end_chat") chat.setWork(false);
 			chat.setTyping(false);
 			chat.formatMessages(this);
 		}

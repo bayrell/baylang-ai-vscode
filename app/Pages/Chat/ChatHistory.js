@@ -8,6 +8,7 @@ class ChatHistory
 	files = [];
 	messages = [];
 	is_typing = false;
+	is_work = false;
 	
 	
 	/**
@@ -37,6 +38,24 @@ class ChatHistory
 	{
 		if (this.is_typing == value) return;
 		this.is_typing = value;
+	}
+	
+	
+	/**
+	 * Returns true if assistant is working
+	 */
+	isWorking()
+	{
+		return this.is_work;
+	}
+	
+	
+	/**
+	 * Set work
+	 */
+	setWork(value)
+	{
+		this.is_work = value;
 	}
 	
 	
@@ -162,7 +181,7 @@ class ChatHistory
 		}
 		else
 		{
-			item.content = message.content;
+			item.updateMessage(message);
 		}
 	}
 	

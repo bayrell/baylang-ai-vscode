@@ -376,3 +376,68 @@ export class Message
 		}
 	}
 }
+
+
+export class ToolMessage extends Message
+{
+	constructor()
+	{
+		super();
+		this.sender = "tool";
+		this.tool = null;
+		this.tool_id = "";
+		this.tool_name = "";
+		this.tool_answer = "";
+		this.tool_error = "";
+	}
+	
+	
+	/**
+	 * Assign data
+	 */
+	assign(data)
+	{
+		if (data.id) this.id = data.id;
+		if (data.tool_id) this.tool_id = data.tool_id;
+		if (data.tool_name) this.tool_name = data.tool_name;
+		if (data.tool_answer) this.tool_answer = data.tool_answer;
+		if (data.tool_error) this.tool_error = data.tool_error;
+	}
+	
+	
+	/**
+	 * Returns data
+	 */
+	getData()
+	{
+		return {
+			id: this.id,
+			sender: this.sender,
+			tool_id: this.tool_id,
+			tool_name: this.tool_name,
+			tool_answer: this.tool_answer,
+			tool_error: this.tool_error,
+		};
+	}
+	
+	
+	/**
+	 * Returns text
+	 */
+	getText()
+	{
+		return "Execute: " + this.tool_name;
+	}
+}
+
+/**
+ * Create message by data
+ */
+export function createMessage(data)
+{
+	var message = null;
+	if (data.sender == "tool") message = new ToolMessage();
+	else message = new Message();
+	message.assign(data);
+	return message;
+}

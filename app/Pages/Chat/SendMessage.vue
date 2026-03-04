@@ -66,7 +66,8 @@
 	</div>
 	<div class="send_message__text">
 		<Input type="textarea" name="message" v-model="message" />
-		<Button @click="sendMessage">Send</Button>
+		<Button @click="sendMessage" v-if="!chat || !chat.isWorking()">Send</Button>
+		<Button @click="stopChat" v-if="chat && chat.isWorking()">Stop</Button>
 	</div>
 </template>
 
@@ -113,6 +114,10 @@ export default {
 			
 			return chat.getFiles();
 		},
+		chat()
+		{
+			return this.model.getCurrentChat();
+		},
 	},
 	methods:
 	{
@@ -126,6 +131,10 @@ export default {
 				this.message
 			);
 			this.message = "";
+		},
+		stopChat()
+		{
+			this.model.stopChat();
 		},
 		getFileName,
 		removeFile(file)

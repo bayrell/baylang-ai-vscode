@@ -10,6 +10,16 @@ import path from "path";
 const isProduction = process.env.NODE_ENV === 'production';
 const compress = () => isProduction ? terser() : null;
 
+/* Options */
+const watchOptions = {
+	clearScreen: false,
+};
+const plugin = () => ({
+	generateBundle: () => {
+		setTimeout(() => {console.log("Ready")}, 200);
+	}
+});
+
 export default [
     {
 		input: 'app/main.js',
@@ -23,6 +33,7 @@ export default [
 			},
 		},
 		external: ['vue'],
+		watch: watchOptions,
 		plugins: [
 			alias({
 				entries: [
@@ -35,6 +46,7 @@ export default [
 			vue(),
 			compress(),
 			commonjs(),
+			plugin(),
 			nodeResolve({ preferBuiltins: true }),
 			replace({
 				preventAssignment: true,
@@ -57,6 +69,7 @@ export default [
 			sourcemap: true
 		},
 		external: ['vscode', 'path', 'fs', 'os', 'url'],
+		watch: watchOptions,
 		plugins: [
 			nodeResolve({ preferBuiltins: true }),
 			commonjs(),
@@ -64,6 +77,7 @@ export default [
 				preventAssignment: true,
 				'process.env.NODE_ENV': JSON.stringify(isProduction ? 'production' : 'development')
 			}),
+			plugin(),
 			compress()
 		]
 	}

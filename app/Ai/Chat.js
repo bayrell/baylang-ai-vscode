@@ -1,4 +1,4 @@
-import { Message } from "./Message.js";
+import { createMessage } from "./Message.js";
 
 export class ChatEvent
 {
@@ -69,6 +69,16 @@ export class EndChunkEvent extends ChatEvent
 	}
 }
 
+export class ToolEvent extends ChatEvent
+{
+	constructor(chat, tool)
+	{
+		super("tool_event");
+		this.data["chat_id"] = chat.id;
+		this.data["tool_name"] = tool.name;
+	}
+}
+
 export class UpdateChatEvent extends ChatEvent
 {
 	constructor(chat, message)
@@ -76,7 +86,7 @@ export class UpdateChatEvent extends ChatEvent
 		super("update_chat");
 		this.data["chat_id"] = chat.id;
 		this.data["message_id"] = message.id;
-		this.data["content"] = message.getData().content;
+		this.data["data"] = message.getData();
 		this.data["sender"] = message.sender;
 	}
 }
@@ -113,9 +123,7 @@ export class Chat
 		if (data.messages)
 		{
 			this.messages = data.messages.map((data) => {
-				var message = new Message();
-				message.assign(data);
-				return message;
+				return createMessage(data);
 			});
 		}
 	}

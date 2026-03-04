@@ -17,6 +17,7 @@ class ChatModel
 		this.is_drag = false;
 		this.show_dialog = "";
 		this.show_dialog_id = "";
+		this.show_tools = true;
 		this.loading = true;
 	}
 	
@@ -235,6 +236,10 @@ class ChatModel
 	async sendMessage(chat_id, agent_id, message, lastMessageId)
 	{
 		if (lastMessageId == undefined) lastMessageId = null;
+		if (lastMessageId == null && message == "")
+		{
+			return;
+		}
 		
 		var agent = this.layout.agent_page.items[agent_id];
 		if (!agent) return;
@@ -343,6 +348,19 @@ class ChatModel
 		
 		/* Success */
 		this.loading = false;
+	}
+	
+	
+	/**
+	 * Stop chat
+	 */
+	async stopChat()
+	{
+		var chat = this.getCurrentChat();
+		if (!chat) return;
+		
+		/* Send message */
+		await this.api.call("stop_chat", chat.id);
 	}
 	
 	
