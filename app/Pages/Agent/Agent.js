@@ -21,9 +21,9 @@ class Agent
 	/**
 	 * Find item by id
 	 */
-	findItemById(name)
+	findItemById(pk)
 	{
-		return this.items.find((item) => item.name == name);
+		return this.items.find((item) => item.name == pk.name && item.global == pk.global);
 	}
 	
 	
@@ -32,7 +32,7 @@ class Agent
 	 */
 	getPrimaryKey(item)
 	{
-		return item.name;
+		return { name: item.name, global: item.global };
 	}
 	
 	
@@ -57,6 +57,7 @@ class Agent
 		for (var i=0; i<result.response.items.length; i++)
 		{
 			var item = result.response.items[i];
+			item.pk = { name: item.name, global: item.global };
 			this.items.push(item);
 		}
 	}
@@ -88,7 +89,8 @@ class Agent
 	 */
 	async save()
 	{
-		var index = this.items.findIndex((item) => item.name == this.form.pk);
+		var index = this.items.findIndex((item) => item.name == this.form.pk.name &&
+			item.global == this.form.pk.global);
 		if (index == -1)
 		{
 			return new ApiResult({
@@ -98,7 +100,7 @@ class Agent
 		
 		/* Save item */
 		var item = this.form.getItem();
-		var result = await this.layout.api.call("save_agent", {id: this.form.pk, item});
+		var result = await this.layout.api.call("save_agent", {id: this.form.getPrimaryKey(), item});
 		if (result.isSuccess())
 		{
 			this.items[index] = this.form.getItem();
@@ -116,7 +118,8 @@ class Agent
 	 */
 	async delete()
 	{
-		var index = this.items.findIndex((item) => item.name == this.form.pk);
+		var index = this.items.findIndex((item) => item.name == this.form.pk.name &&
+			item.global == this.form.pk.global);
 		if (index == -1)
 		{
 			return new ApiResult({
@@ -125,9 +128,7 @@ class Agent
 		}
 		
 		/* Delete item */
-		var result = await this.layout.api.call("delete_agent",
-			{id: this.form.pk, global: this.form.item.global}
-		);
+		var result = await this.layout.api.call("delete_agent", this.form.getPrimaryKey());
 		if (result.isSuccess())
 		{
 			this.items.splice(index, 1);

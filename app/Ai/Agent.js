@@ -3,13 +3,10 @@ export class Agent
 	constructor()
 	{
 		this.name = "";
+		this.file_name = "";
 		this.global = true;
 		this.enable_rules = "1";
-		this.default = {
-			model: "",
-			model_name: "",
-		};
-		this.model = null;
+		this.model = "";
 		this.model_name = "";
 		this.prompt = "";
 	}
@@ -53,6 +50,15 @@ export class Agent
 	enableRules()
 	{
 		return this.enable_rules == "1";
+	}
+	
+	
+	/**
+	 * Set file name
+	 */
+	setFileName(value)
+	{
+		this.file_name = value;
 	}
 }
 

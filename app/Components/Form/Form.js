@@ -49,6 +49,15 @@ class Form
 	
 	
 	/**
+	 * Returns primary key
+	 */
+	getPrimaryKey()
+	{
+		return JSON.parse(JSON.stringify(this.pk));
+	}
+	
+	
+	/**
 	 * Returns item
 	 */
 	getItem()
