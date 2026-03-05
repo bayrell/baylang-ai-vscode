@@ -32,30 +32,52 @@ export class PromptBuilder
 	{
 		var messages = [];
 		
+		/* Add system rules */
 		this.addMessage(messages, "system", this.prompt);
 		this.addMessage(messages, "system", variables.rules);
+		
+		/* Add tools prompt */
+		if (variables.tools)
+		{
+			var content = variables.tools.items.map((tool) => tool.prompt).filter((item) => item != "");
+			this.addMessage(messages, "system", content.join("\n\n"));
+		}
+		
+		/* Add files and history */
 		this.addMessage(messages, "system", variables.history);
 		this.addMessage(messages, "system", variables.files);
+		
+		/* Add user message */
 		this.addMessage(messages, "user", variables.query);
 		
-		if (variables.tools && variables.tools.length > 0)
+		/* Add tools history */
+		if (variables.tools_history && variables.tools_history.length > 0)
 		{
 			messages.push({
 				role: "assistant",
-				tool_calls: variables.tools.map((tool) =>({
+				tool_calls: variables.tools_history.map((tool) =>({
 					type: "function",
 					id: tool.id,
 					function: tool.function,
 				})),
 			});
-			for (var i=0; i<variables.tools.length; i++)
+			for (var i=0; i<variables.tools_history.length; i++)
 			{
-				var tool = variables.tools[i];
+				var tool = variables.tools_history[i];
+				var content = "";
+				if (!tool.error)
+				{
+					content = JSON.stringify(tool.answer);
+				}
+				else
+				{
+					content = "Error: " + JSON.stringify(tool.error);
+				}
 				messages.push({
 					role: "tool",
 					tool_call_id: tool.id,
 					name: tool.function.name,
-					content: JSON.stringify(tool.answer),
+					content: content,
 				});
 			}
 		}
@@ -82,6 +104,7 @@ export class Question
 		this.settings = null;
 		this.tools = null;
 		this.tools_history = [];
+		this.debug = true;
 		this.is_work = true;
 	}
 	
@@ -201,7 +224,8 @@ export class Question
 			}).join("\n\n"),
 			"rules": this.agent.enableRules() ?
 				this.rules.map(rule => rule.getRuleContent()).join("\n\n") : "",
-			"tools": this.tools_history,
+			"tools": this.tools,
+			"tools_history": this.tools_history,
 		});
 	}
 	
@@ -233,8 +257,12 @@ export class Question
 	 */
 	async sendPrompt(prompt)
 	{
-		console.log("Send prompt");
-		console.log(prompt);
+		/* Show debug */
+		if (this.debug)
+		{
+			console.log("Send prompt");
+			console.log(prompt);
+		}
 		var tools = [];
 		var client = new Client(this.model, this.agent.model_name);
 		this.setClient(client);
@@ -352,6 +380,13 @@ export class Question
 			await this.sendError(new ErrorChatEvent(this.chat, e));
 		}
 		
+		/* Show debug */
+		if (this.debug)
+		{
+			console.log("Run tool: " + tool.name);
+			/*console.log(item);*/
+		}
+		
 		/* Save chat */
 		this.provider.sendMessage(new EndChunkEvent(this.chat, this.agent_message));
 		await this.settings.saveChat(this.chat);
@@ -430,6 +465,7 @@ export class Question
 		console.log(this.getPrompt());
 		this.agent_message.addChunk("Ok");
 		this.provider.sendMessage(new UpdateChatEvent(this.chat, this.agent_message));
+		this.provider.sendMessage(new EndChatEvent(this.chat, this.agent_message));
 	}
 	
 	

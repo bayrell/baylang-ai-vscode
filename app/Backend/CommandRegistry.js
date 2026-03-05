@@ -6,6 +6,11 @@ import { Question } from "../Ai/Question.js";
 import { Rule } from "../Ai/Rule.js";
 import { Tools } from "../Ai/Tool.js";
 import { RandomTool } from "../Tools/RandomTool.js";
+import { WriteFile } from "../Tools/WriteFile.js";
+import { ReadFile } from "../Tools/ReadFile.js";
+import { RenameFile } from "../Tools/RenameFile.js";
+import { DeleteFile } from "../Tools/DeleteFile.js";
+import { ListFiles } from "../Tools/ListFiles.js";
 
 export class CommandRegistry
 {
@@ -79,6 +84,11 @@ export async function registerTools(settings)
 	
 	/* Create tools */
 	tools.add(new RandomTool());
+	tools.add(new WriteFile(settings));
+	tools.add(new ReadFile(settings));
+	tools.add(new RenameFile(settings));
+	tools.add(new DeleteFile(settings));
+	tools.add(new ListFiles(settings));
 	
 	return tools;
 }
@@ -97,7 +107,7 @@ export async function registerCommands(provider)
 	await settings.loadData();
 	
 	/* Init tools */
-	var tools = await registerTools(this);
+	var tools = await registerTools(settings);
 	
 	/* Load chat */
 	registry.register("load_chat", async () => {

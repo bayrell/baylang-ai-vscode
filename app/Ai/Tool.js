@@ -6,6 +6,7 @@ export class Tool
 		this.name = "";
 		this.props = {};
 		this.description = "";
+		this.prompt = "";
 	}
 	
 	
@@ -63,6 +64,16 @@ export class Tool
 	setFunction(value)
 	{
 		this.f = value;
+		return this;
+	}
+	
+	
+	/**
+	 * Set prompt
+	 */
+	setPrompt(value)
+	{
+		this.value = value;
 		return this;
 	}
 	
@@ -133,6 +144,24 @@ export class Tools
 	add(tool)
 	{
 		this.items.push(tool);
+	}
+	
+	
+	/**
+	 * Returns tool by index
+	 */
+	get(index)
+	{
+		return this.items[index];
+	}
+	
+	
+	/**
+	 * Returns tools count
+	 */
+	count()
+	{
+		return this.items.length;
 	}
 	
 	

@@ -65,7 +65,7 @@
 		/>
 	</div>
 	<div class="send_message__text">
-		<Input type="textarea" name="message" v-model="message" />
+		<Input type="textarea" name="message" v-model="model.send_message" />
 		<Button @click="sendMessage" v-if="!chat || !chat.isWorking()">Send</Button>
 		<Button @click="stopChat" v-if="chat && chat.isWorking()">Stop</Button>
 	</div>
@@ -84,7 +84,6 @@ export default {
 	},
 	data: function(){
 		return {
-			message: "",
 		};
 	},
 	computed:
@@ -99,12 +98,18 @@ export default {
 			for (var i=0; i<this.layout.agent_page.items.length; i++)
 			{
 				var item = this.layout.agent_page.items[i];
+				var global_str = item.global ? " [Global]" : "";
 				items.push({
 					"key": i,
-					"value": item.name,
+					"value": item.name + global_str,
+					"global": item.global,
 				});
 			}
-			items.sort((a,b) => a.value.localeCompare(b.value));
+			items.sort((a,b) => {
+				/*if (a.global && !b.global) return -1;
+				if (!a.global && b.global) return 1;*/
+				return a.value.localeCompare(b.value);
+			});
 			return items;
 		},
 		files()
@@ -128,9 +133,9 @@ export default {
 			this.model.sendMessage(
 				this.model.current_chat_id,
 				this.model.current_agent_id,
-				this.message
+				this.model.send_message
 			);
-			this.message = "";
+			this.model.send_message = "";
 		},
 		stopChat()
 		{

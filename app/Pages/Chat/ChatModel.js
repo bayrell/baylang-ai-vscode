@@ -1,3 +1,4 @@
+import { getFileName } from "../../lib.js";
 import ChatHistory from "./ChatHistory.js";
 import ChatMessage from "./ChatMessage.js";
 
@@ -18,6 +19,7 @@ class ChatModel
 		this.show_dialog = "";
 		this.show_dialog_id = "";
 		this.show_tools = true;
+		this.send_message = "";
 		this.loading = true;
 	}
 	
@@ -402,6 +404,15 @@ class ChatModel
 			this.selectItem(chat.id);
 		}
 		chat.addFiles(files);
+		
+		/* Add files message */
+		for (var i=0; i<files.length; i++)
+		{
+			var file_name = getFileName(files[i].path);
+			var space = "";
+			if (this.send_message != "" && this.send_message[this.send_message.length - 1] != " ") space = " ";
+			this.send_message += space + file_name;
+		}
 		
 		/* Update files list */
 		await this.api.call("update_chat_files", {
