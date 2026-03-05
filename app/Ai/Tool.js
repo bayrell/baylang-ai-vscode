@@ -79,6 +79,15 @@ export class Tool
 	
 	
 	/**
+	 * Returns arguments text
+	 */
+	getArgumentsText(args)
+	{
+		return "";
+	}
+	
+	
+	/**
 	 * Returns props data
 	 */
 	getProps()

@@ -1,4 +1,5 @@
 import path from "path";
+import { promises as fs } from "fs";
 
 /**
  * Resolve file
@@ -7,7 +8,7 @@ export function resolve(file_path, workspace_path)
 {
 	const absolute_file_path = path.join(workspace_path, file_path);
 	const resolve_path = path.resolve(absolute_file_path);
-	if (!resolve_path.startsWith(workspace_path + path.sep))
+	if (!resolve_path.startsWith(workspace_path + path.sep) && workspace_path != resolve_path)
 	{
 		throw new Error("Attempted to write outside the workspace folder. Path: " + file_path);
 	}

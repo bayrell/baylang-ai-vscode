@@ -160,7 +160,7 @@
 			v-if="this.message.sender=='tool' && this.model.show_tools"
 		>
 			<div class="tool_name">
-				Execute: {{ this.message.tool_name }}
+				Execute: {{ this.message.tool_name + this.message.tool_arguments }}
 			</div>
 			<div class="tool_error" v-if="this.message.tool_error != ''">
 				Error: {{ this.message.tool_error }}

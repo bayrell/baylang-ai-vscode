@@ -16,12 +16,22 @@ export class ReadFile extends Tool
 	
 	
 	/**
+	 * Returns arguments text
+	 */
+	getArgumentsText(params)
+	{
+		const file_path = params ? params.path : "";
+		return "(" + JSON.stringify(file_path) + ")";
+	}
+	
+	
+	/**
 	 * Execute tool
 	 */
 	async execute(params)
 	{
 		/* Get params */
-		const file_path = params.path;
+		const file_path = params ? params.path : "";
 		if (!file_path)
 		{
 			throw new Error("File path not found")
@@ -38,7 +48,7 @@ export class ReadFile extends Tool
 		var content = "";
 		try
 		{
-			content = await fs.readFile(absolute_file_path);
+			content = await fs.readFile(absolute_file_path, { encoding: 'utf8' });
 		}
 		catch (error)
 		{

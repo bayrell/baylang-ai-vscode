@@ -22,6 +22,7 @@ class ChatMessage
 		this.id = data.id;
 		this.sender = data.sender;
 		this.content = data.content;
+		this.tool_arguments = data.tool_arguments;
 		this.tool_name = data.tool_name;
 		this.tool_error = data.tool_error;
 	}
@@ -34,6 +35,7 @@ class ChatMessage
 	{
 		this.sender = data.sender;
 		this.content = data.content;
+		this.tool_arguments = data.tool_arguments;
 		this.tool_name = data.tool_name;
 		this.tool_error = data.tool_error;
 	}

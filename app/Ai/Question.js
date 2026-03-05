@@ -100,7 +100,7 @@ export class Question
 		this.folderPath = null;
 		this.files = [];
 		this.rules = [];
-		this.max_iter = 5;
+		this.max_iter = 100;
 		this.settings = null;
 		this.tools = null;
 		this.tools_history = [];
@@ -264,6 +264,7 @@ export class Question
 			console.log(prompt);
 		}
 		var tools = [];
+		var tools_index = {};
 		var client = new Client(this.model, this.agent.model_name);
 		this.setClient(client);
 		client.prompt = prompt;
@@ -278,7 +279,23 @@ export class Question
 				for (var i=0; i<data.length; i++)
 				{
 					var item = data[i];
-					tools.push(item);
+					var index = item.index;
+					
+					if (tools_index[index] == undefined)
+					{
+						tools.push({
+							id: item.id,
+							function: item.function,
+							answer: null,
+							error: null,
+						});
+						tools_index[index] = tools.length - 1;
+					}
+					else
+					{
+						var elem = tools[tools_index[index]];
+						elem.function.arguments += item.function.arguments;
+					}
 				}
 			}
 			else if (type == "chunk")
@@ -297,25 +314,15 @@ export class Question
 		this.provider.sendMessage(new StepEvent(this.chat, this.agent_message));
 		await client.send();
 		
-		var tools_index = {};
+		if (this.debug && tools.length > 0)
+		{
+			console.log(tools);
+		}
+		
 		for (var i=0; i<tools.length; i++)
 		{
 			var item = tools[i];
 			var tool_name = item.function?.name;
-			
-			/* Skip tool without id */
-			if (!item.id || !tool_name)
-			{
-				var find = null;
-				if (item.index != undefined)
-				{
-					var index = tools_index[item.index];
-					find = index != undefined ? this.tools_history[index] : null;
-				}
-				var args = item.function?.arguments;
-				if (find && args) find.function.arguments = args;
-				continue;
-			}
 			
 			/* Find tool */
 			var tool = this.tools.findTool(tool_name);
@@ -324,14 +331,19 @@ export class Question
 				await this.sendError(new Error("Tool '" + tool_name + "' not found"));
 				continue;
 			}
-			this.tools_history.push({
-				tool: tool,
-				id: item.id,
-				function: item.function,
-				answer: null,
-				error: null,
-			});
-			tools_index[item.index] = this.tools_history.length - 1;
+			
+			/* Parse args */
+			var args = item.function?.arguments;
+				try
+			{
+				args = JSON.parse(args);
+			}
+			catch (e)
+			{
+				args = null;
+			}
+			
+			this.tools_history.push(Object.assign(item, { tool: tool, args: args }));
 		}
 	}
 	
@@ -350,31 +362,19 @@ export class Question
 			return;
 		}
 		
-		/* Parse arguments  */
-		var args = item.function?.arguments;
-		try
-		{
-			args = JSON.parse(args);
-		}
-		catch (e)
-		{
-			args = null;
-		}
-		
 		/* Get tool */
 		var tool = item.tool;
-		this.agent_message.tool_id = tool.id;
-		this.agent_message.tool_name = tool.name;
 		this.provider.sendMessage(new UpdateChatEvent(this.chat, this.agent_message));
 		
 		/* Execute tool */
 		try
 		{
-			item.answer = await tool.execute(args);
+			item.answer = await tool.execute(item.args);
 			this.agent_message.tool_answer = JSON.stringify(item.answer);
 		}
 		catch (e)
 		{
+			console.log(e);
 			item.error = e.message;
 			this.agent_message.tool_error = e.message;
 			await this.sendError(new ErrorChatEvent(this.chat, e));
@@ -384,7 +384,7 @@ export class Question
 		if (this.debug)
 		{
 			console.log("Run tool: " + tool.name);
-			/*console.log(item);*/
+			console.log(item.args);
 		}
 		
 		/* Save chat */
@@ -415,7 +415,7 @@ export class Question
 			
 			/* Create tool message */
 			this.addToolMessage();
-			this.agent_message.tool = item;
+			this.agent_message.setTool(item);
 			
 			/* Send update chat event */
 			this.provider.sendMessage(new UpdateChatEvent(this.chat, this.agent_message));

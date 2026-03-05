@@ -13,14 +13,25 @@ export class DeleteFile extends Tool
 		this.setPrompt("To remove files from the project, use the `delete_file` function. After deleting a file, only display a brief confirmation message on the screen.");
 		this.settings = settings;
 	}
-
+	
+	
+	/**
+	 * Returns arguments text
+	 */
+	getArgumentsText(params)
+	{
+		const file_path = params ? params.path : "";
+		return "(" + JSON.stringify(file_path) + ")";
+	}
+	
+	
 	/**
 	 * Execute
 	 */
 	async execute(params)
 	{
 		/* Get params */
-		const file_path = params.path;
+		const file_path = params ? params.path : "";
 		if (!file_path)
 		{
 			throw new Error("File path not provided for deletion.");

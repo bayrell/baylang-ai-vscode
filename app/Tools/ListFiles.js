@@ -1,6 +1,6 @@
 import { promises as fs } from "fs";
 import { Tool } from "../Ai/Tool.js";
-import { resolve } from "./Helper.js";
+import { resolve, readDirRecursive } from "./Helper.js";
 
 export class ListFiles extends Tool
 {
@@ -15,6 +15,18 @@ export class ListFiles extends Tool
 		this.settings = settings;
 	}
 	
+	
+	/**
+	 * Returns arguments text
+	 */
+	getArgumentsText(params)
+	{
+		let relative_dir_path = params ? params.path : "";
+		if (!relative_dir_path) relative_dir_path = "";
+		return "(" + JSON.stringify(relative_dir_path) + ")";
+	}
+	
+	
 	/**
 	 * Execute
 	 */
@@ -24,10 +36,11 @@ export class ListFiles extends Tool
 		 * Default to current working directory
 		   if not provided
 		 */
-		const relative_dir_path = params.path || "";
+		let relative_dir_path = params ? params.path : "";
+		if (!relative_dir_path) relative_dir_path = "";
 		
 		/* Ensure boolean type */
-		const recursive = params.recursive === true;
+		const recursive = params ? params.recursive === true : false;
 		
 		/* Get absolute dir path */
 		let absolute_dir_path;
@@ -37,7 +50,7 @@ export class ListFiles extends Tool
 		}
 		catch (error)
 		{
-			return `Error: Invalid path provided: ${relative_dir_path}. Details: ${error.message}`;
+			throw new Error(error.message);
 		}
 
 		/* Check if the path exists and is a directory */
@@ -53,9 +66,9 @@ export class ListFiles extends Tool
 		{
 			if (error.code === 'ENOENT')
 			{
-				return `Error: Directory not found at ${relative_dir_path}`;
+				throw new Error(`Error: Directory not found at ${relative_dir_path}`);
 			}
-			return `Error accessing path ${relative_dir_path}. Details: ${error.message}`;
+			throw new Error(`Error accessing path ${relative_dir_path}. Details: ${error.message}`);
 		}
 
 		let file_list = [];
@@ -68,7 +81,7 @@ export class ListFiles extends Tool
 		}
 		catch (error)
 		{
-			return `Error listing directory ${relative_dir_path}. Details: ${error.message}`;
+			throw new Error(`Error listing directory ${relative_dir_path}. Details: ${error.message}`);
 		}
 		
 		if (file_list.length === 0)

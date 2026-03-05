@@ -388,6 +388,7 @@ export class ToolMessage extends Message
 		this.tool_id = "";
 		this.tool_name = "";
 		this.tool_answer = "";
+		this.tool_arguments = "";
 		this.tool_error = "";
 	}
 	
@@ -401,6 +402,7 @@ export class ToolMessage extends Message
 		if (data.tool_id) this.tool_id = data.tool_id;
 		if (data.tool_name) this.tool_name = data.tool_name;
 		if (data.tool_answer) this.tool_answer = data.tool_answer;
+		if (data.tool_arguments) this.tool_arguments = data.tool_arguments;
 		if (data.tool_error) this.tool_error = data.tool_error;
 	}
 	
@@ -416,6 +418,7 @@ export class ToolMessage extends Message
 			tool_id: this.tool_id,
 			tool_name: this.tool_name,
 			tool_answer: this.tool_answer,
+			tool_arguments: this.tool_arguments,
 			tool_error: this.tool_error,
 		};
 	}
@@ -426,7 +429,22 @@ export class ToolMessage extends Message
 	 */
 	getText()
 	{
-		return "Execute: " + this.tool_name;
+		return "Execute: " + this.tool_arguments;
+	}
+	
+	
+	/**
+	 * Set tool
+	 */
+	setTool(item)
+	{
+		this.tool = item;
+		this.tool_id = item.tool.id;
+		this.tool_name = item.tool.name;
+		
+		/* Build tool message */
+		var message = item.tool.getArgumentsText(item.args);
+		this.tool_arguments = message;
 	}
 }
 

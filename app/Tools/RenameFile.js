@@ -18,13 +18,24 @@ export class RenameFile extends Tool
 	
 	
 	/**
+	 * Returns arguments text
+	 */
+	getArgumentsText(params)
+	{
+		const old_file_path = params ? params.old_path : "";
+		const new_file_path = params ? params.new_path : "";
+		return "(" + JSON.stringify(old_file_path) + ", " + JSON.stringify(new_file_path) + ")";
+	}
+	
+	
+	/**
 	 * Execute tool
 	 */
 	async execute(params)
 	{
 		/* Get params */
-		const old_file_path = params.old_path;
-		const new_file_path = params.new_path;
+		const old_file_path = params ? params.old_path : "";
+		const new_file_path = params ? params.new_path : "";
 		if (!old_file_path || typeof old_file_path !== "string")
 		{
 			throw new Error("File path not found")
