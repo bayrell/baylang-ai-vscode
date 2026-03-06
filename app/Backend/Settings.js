@@ -3,7 +3,7 @@ import vscode from "vscode";
 import { promises as fs } from "fs";
 import { removeFirstSlash, removeLastSlash } from "../lib.js";
 import { fileExists, makeHash } from "../api.js";
-import { Agent, createAgent } from "../Ai/Agent.js";
+import { Agent } from "../Ai/Agent.js";
 import { Chat } from "../Ai/Chat.js";
 import { createModel } from "../Ai/Model.js";
 import { Rule } from "../Ai/Rule.js";
@@ -198,6 +198,25 @@ export class Settings
 	
 	
 	/**
+	 * Filter agent modificators
+	 */
+	filterAgentModificators(agents)
+	{
+		for (var i=agents.length - 1; i>=0; i--)
+		{
+			var agent = agents[i];
+			var agent_name = agent.name;
+			var find = this.getAgentByName(agent_name, false);
+			if (!find)
+			{
+				agents.splice(i);
+			}
+		}
+		return agents;
+	}
+	
+	
+	/**
 	 * Save agent
 	 */
 	async saveAgent(pk, data)
@@ -216,16 +235,17 @@ export class Settings
 			
 			/* Get file name */
 			var folderPath = "";
-			var fileName = (new Date()).getTime();
+			var fileName = data.name.replace(" ", "");
 			if (data.global) folderPath = path.join(this.folderPath, "agents");
-			else
-			{
-				fileName = data.name;
-				folderPath = path.join(this.workspaceFolderPath, ".vscode", "agents");
-			}
+			else folderPath = path.join(this.workspaceFolderPath, ".vscode", "agents");
 			fileName = path.join(folderPath, fileName + ".json");
 			
-			/* Save file */
+			if (await fileExists(fileName))
+			{
+				fileName = path.join(folderPath, (new Date()).getTime() + ".json");
+			}
+			
+			/* Set file name */
 			await fs.mkdir(folderPath, { recursive: true });
 			agent.setFileName(fileName);
 		}
@@ -264,6 +284,7 @@ export class Settings
 			}
 			item.model = agent.model;
 			item.model_name = agent.model_name;
+			this.filterAgentModificators(agents);
 			await this.saveAgentsModificators(agentFile, agents);
 		}
 	}
@@ -297,9 +318,10 @@ export class Settings
 		{
 			var agentFile = path.join(this.getChatFolderPath(), "agents.json");
 			var agents = await this.loadAgentsModificators(agentFile);
-			var agentIndex = agents.find((item) => item.name == name);
+			var agentIndex = agents.find((item) => item.name == pk.name);
 			if (agentIndex >= 0) agents.splice(agentIndex);
-			await this.saveAgentsModificators(agentFile);
+			this.filterAgentModificators(agents);
+			await this.saveAgentsModificators(agentFile, agents);
 		}
 	}
 	
