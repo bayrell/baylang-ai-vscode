@@ -24,6 +24,7 @@
 		<!--<div class="item">MCP</div>-->
 		<div class="item" @click="layout.setPage('models')">Models</div>
 		<div class="item" @click="layout.setPage('rules')">Rules</div>
+		<div class="item" @click="layout.setPage('usage')">Usage</div>
 	</div>
 </template>
 

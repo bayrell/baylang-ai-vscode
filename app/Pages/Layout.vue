@@ -7,6 +7,7 @@
 	<Settings v-show="layout.page == 'settings'" />
 	<Models v-show="layout.page == 'models'" />
 	<Rules v-show="layout.page == 'rules'" />
+	<Usage v-show="layout.page == 'usage'" />
 </template>
 
 <script lang="js">
@@ -15,6 +16,7 @@ import Chat from "./Chat/Chat.vue";
 import Models from "./Models/Models.vue";
 import Rules from "./Rules/Rules.vue";
 import Settings from "./Settings/Settings.vue";
+import Usage from "./Usage/Usage.vue";
 
 export default {
 	name: "Layout",
@@ -23,7 +25,8 @@ export default {
 		Chat,
 		Models,
 		Rules,
-		Settings
+		Settings,
+		Usage
 	},
 }
 </script>

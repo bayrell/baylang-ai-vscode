@@ -116,11 +116,20 @@ class Models
 		var result = await this.layout.api.call("load_models");
 		if (!result.isSuccess()) return;
 		
+		this.items = [];
 		for (var i=0; i<result.response.items.length; i++)
 		{
 			var item = result.response.items[i];
 			this.items.push(item);
 		}
+	}
+	
+	
+	/**
+	 * Open page
+	 */
+	async open()
+	{
 	}
 	
 	

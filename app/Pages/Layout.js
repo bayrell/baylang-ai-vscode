@@ -5,6 +5,7 @@ import Models from "./Models/Models.js";
 import Rules from "./Rules/Rules.js";
 import MarkdownIt from 'markdown-it';
 import { markRaw } from "vue";
+import { Usage } from "./Usage/Usage.js";
 
 class Layout
 {
@@ -15,6 +16,8 @@ class Layout
 		this.chat_page = new ChatModel(this);
 		this.models_page = new Models(this);
 		this.rules_page = new Rules(this);
+		this.usage_page = new Usage(this);
+		this.current_page = null;
 		this.vscode = markRaw(acquireVsCodeApi());
 		this.image_url = "";
 		this.page = "chat";
@@ -38,6 +41,7 @@ class Layout
 		
 		/* Chat page */
 		this.chat_page.bind();
+		this.current_page = this.chat_page;
 	}
 	
 	
@@ -65,8 +69,13 @@ class Layout
 	setPage(page)
 	{
 		this.page = page;
-		if (page == "agent") this.agent_page.load();
-		else if (page == "rules") this.rules_page.load();
+		if (page == "agent") this.current_page = this.agent_page;
+		else if (page == "chat") this.current_page = this.chat_page;
+		else if (page == "models") this.current_page = this.models_page;
+		else if (page == "rules") this.current_page = this.rules_page;
+		else if (page == "usage") this.current_page = this.usage_page;
+		else if (page == "settings") this.current_page = null;
+		if (this.current_page) this.current_page.open();
 	}
 	
 	

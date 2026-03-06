@@ -104,6 +104,7 @@ export class Question
 		this.settings = null;
 		this.tools = null;
 		this.tools_history = [];
+		this.usage = null;
 		this.debug = true;
 		this.is_work = true;
 	}
@@ -308,6 +309,11 @@ export class Question
 					this.agent_message.trim();
 					await this.settings.saveChat(this.chat);
 					this.provider.sendMessage(new EndChunkEvent(this.chat, this.agent_message));
+				}
+				if (data.usage)
+				{
+					this.usage.add(data.usage);
+					await this.usage.save();
 				}
 			}
 		});

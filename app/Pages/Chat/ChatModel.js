@@ -125,6 +125,7 @@ class ChatModel
 	 */
 	getCurrentChat()
 	{
+		if (!this.current_chat_id) return null;
 		return this.findChatById(this.current_chat_id);
 	}
 	
@@ -197,7 +198,10 @@ class ChatModel
 		}
 		
 		/* Send message to backend */
-		this.api.call("delete_chat", chat_id);
+		if (chat_id > 0)
+		{
+			this.api.call("delete_chat", chat_id);
+		}
 	}
 	
 	
@@ -350,6 +354,14 @@ class ChatModel
 		
 		/* Success */
 		this.loading = false;
+	}
+	
+	
+	/**
+	 * Open page
+	 */
+	async open()
+	{
 	}
 	
 	

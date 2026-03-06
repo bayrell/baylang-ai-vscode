@@ -52,6 +52,15 @@ class Rules
 	
 	
 	/**
+	 * Open page
+	 */
+	async open()
+	{
+		await this.load();
+	}
+	
+	
+	/**
 	 * Add item
 	 */
 	async add()

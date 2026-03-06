@@ -472,9 +472,15 @@ export class Settings
 		}
 		catch (e){}
 		
+		const isCorrect = (file_name) => {
+			const file_info = path.parse(file_name);
+			const base_name = file_info.name;
+			if (!/^\d+$/.test(base_name)) return false;
+			if (file_info.ext != ".json") return false;
+			return true;
+		};
 		files = files.filter(file => file.endsWith(".json"))
-			.filter(file => file != "agents.json")
-			.filter(file => file != "settings.json")
+			.filter(isCorrect)
 			.map(file => path.basename(file, ".json"));
 		files.sort();
 		files = await Promise.all(files.map((file_name) => this.loadChatById(file_name)));

@@ -11,6 +11,7 @@ import { ReadFile } from "../Tools/ReadFile.js";
 import { RenameFile } from "../Tools/RenameFile.js";
 import { DeleteFile } from "../Tools/DeleteFile.js";
 import { ListFiles } from "../Tools/ListFiles.js";
+import { Usage } from "../Ai/Usage.js";
 
 export class CommandRegistry
 {
@@ -108,6 +109,10 @@ export async function registerCommands(provider)
 	
 	/* Init tools */
 	var tools = await registerTools(settings);
+	
+	/* Init usage */
+	var usage = new Usage(settings);
+	await usage.loadData();
 	
 	/* Load chat */
 	registry.register("load_chat", async () => {
@@ -240,6 +245,7 @@ export async function registerCommands(provider)
 		question.settings = settings;
 		question.folderPath = settings.workspaceFolderPath;
 		question.tools = tools;
+		question.usage = usage;
 		questions.push(question);
 		
 		/* Find model */
@@ -369,6 +375,15 @@ export async function registerCommands(provider)
 		return {
 			success: true,
 			items: result,
+		};
+	});
+	
+	/* Load usage */
+	registry.register("load_usage", async () => {
+		return {
+			success: true,
+			total: usage.total,
+			items: usage.items,
 		};
 	});
 }
