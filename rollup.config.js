@@ -11,9 +11,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 const compress = () => isProduction ? terser() : null;
 
 /* Options */
-const watchOptions = {
-	clearScreen: false,
-};
+const watchOptions = {};
 const plugin = () => ({
 	generateBundle: () => {
 		setTimeout(() => {console.log("Ready")}, 200);

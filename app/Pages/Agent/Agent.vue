@@ -86,7 +86,16 @@
 						type="select"
 						name="enable_rules"
 						v-model="model.form.item.enable_rules"
-						:options="enable_rules"
+						:options="boolean_options"
+					/>
+				</Field>
+				<Field name="enable_tools">
+					<label for="name">Enable tools</label>
+					<Input
+						type="select"
+						name="enable_tools"
+						v-model="model.form.item.enable_tools"
+						:options="boolean_options"
 					/>
 				</Field>
 				<div class="default_model_name" v-if="model.form.item.default && model.form.item.default.model">
@@ -188,7 +197,7 @@ export default {
 			}).sort((a, b) => { return a.key.localeCompare(b.key); });
 			return models;
 		},
-		enable_rules()
+		boolean_options()
 		{
 			return [
 				{ key: "0", value: "No" },

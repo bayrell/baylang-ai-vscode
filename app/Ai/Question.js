@@ -35,8 +35,11 @@ export class PromptBuilder
 		this.addMessage(messages, "system", this.prompt);
 		
 		/* Add rules */
-		var rules = variables.rules.map(rule => rule.getRuleContent());
-		if (rules.length > 0) this.addMessage(messages, "system", rules.join("\n\n"));
+		if (variables.rules)
+		{
+			var rules = variables.rules.map(rule => rule.getRuleContent());
+			if (rules.length > 0) this.addMessage(messages, "system", rules.join("\n\n"));
+		}
 		
 		/* Add tools prompt */
 		if (variables.tools)
@@ -47,7 +50,7 @@ export class PromptBuilder
 			;
 			if (content.length > 0)
 			{
-				this.addMessage(messages, "system", "Tools rules:\n\n" + content.join("\n\n"));
+				/*this.addMessage(messages, "system", "Tools rules:\n\n" + content.join("\n\n"));*/
 			}
 		}
 		
@@ -234,8 +237,8 @@ export class Question
 			"query": this.user_message.getText(),
 			"history": history.join("\n\n"),
 			"files": this.files,
-			"rules": this.agent.enableRules() ? this.rules : [],
-			"tools": this.tools,
+			"rules": this.agent.enableRules() ? this.rules : null,
+			"tools": this.agent.enableTools() ? this.tools : null,
 			"tools_history": this.tools_history,
 		});
 	}
