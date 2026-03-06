@@ -1,4 +1,3 @@
-import { relative } from "path";
 import { Client } from "./Client.js";
 import { StartChatEvent, UpdateChatEvent, ErrorChatEvent, StepEvent, EndChatEvent, EndChunkEvent } from "./Chat.js";
 import { Message, FileItem, ToolMessage } from "./Message.js";
@@ -8,7 +7,7 @@ export class PromptBuilder
 {
 	constructor(prompt)
 	{
-		this.prompt = prompt
+		this.prompt = prompt;
 	}
 	
 	
@@ -34,18 +33,34 @@ export class PromptBuilder
 		
 		/* Add system rules */
 		this.addMessage(messages, "system", this.prompt);
-		this.addMessage(messages, "system", variables.rules);
+		
+		/* Add rules */
+		var rules = variables.rules.map(rule => rule.getRuleContent());
+		if (rules.length > 0) this.addMessage(messages, "system", rules.join("\n\n"));
 		
 		/* Add tools prompt */
 		if (variables.tools)
 		{
-			var content = variables.tools.items.map((tool) => tool.prompt).filter((item) => item != "");
-			this.addMessage(messages, "system", content.join("\n\n"));
+			var content = variables.tools.items
+				.map((tool) => tool.prompt)
+				.filter((item) => item != "")
+			;
+			if (content.length > 0)
+			{
+				this.addMessage(messages, "system", "Tools rules:\n\n" + content.join("\n\n"));
+			}
 		}
 		
-		/* Add files and history */
+		/* Add history */
 		this.addMessage(messages, "system", variables.history);
-		this.addMessage(messages, "system", variables.files);
+		
+		/* Add files */
+		var files = variables.files.map((file) => {
+			var item = new FileItem();
+			item.assign(file);
+			return item.getText();
+		});
+		if (files.length > 0) this.addMessage(messages, "system", files.join("\n\n"));
 		
 		/* Add user message */
 		this.addMessage(messages, "user", variables.query);
@@ -153,7 +168,7 @@ export class Question
 		this.files = files;
 		for (var i=0; i<files.length; i++)
 		{
-			this.files[i].filename = relative(this.folderPath, this.files[i].path);
+			this.files[i].filename = this.files[i].name;
 		}
 	}
 	
@@ -218,13 +233,8 @@ export class Question
 		return builder.getResult({
 			"query": this.user_message.getText(),
 			"history": history.join("\n\n"),
-			"files": this.files.map((file) => {
-				var item = new FileItem();
-				item.assign(file);
-				return item.getText();
-			}).join("\n\n"),
-			"rules": this.agent.enableRules() ?
-				this.rules.map(rule => rule.getRuleContent()).join("\n\n") : "",
+			"files": this.files,
+			"rules": this.agent.enableRules() ? this.rules : [],
 			"tools": this.tools,
 			"tools_history": this.tools_history,
 		});
@@ -266,10 +276,14 @@ export class Question
 		}
 		var tools = [];
 		var tools_index = {};
+		
+		/* Create client */
 		var client = new Client(this.model, this.agent.model_name);
 		this.setClient(client);
 		client.prompt = prompt;
 		client.tools = this.tools;
+		
+		/* Client functions */
 		client.setCallback(async (type, data) => {
 			if (type == "error")
 			{
@@ -317,14 +331,18 @@ export class Question
 				}
 			}
 		});
+		
+		/* Send message */
 		this.provider.sendMessage(new StepEvent(this.chat, this.agent_message));
 		await client.send();
 		
+		/* Log tools */
 		if (this.debug && tools.length > 0)
 		{
 			console.log(tools);
 		}
 		
+		/* Add tools */
 		for (var i=0; i<tools.length; i++)
 		{
 			var item = tools[i];
@@ -371,6 +389,7 @@ export class Question
 		/* Get tool */
 		var tool = item.tool;
 		this.provider.sendMessage(new UpdateChatEvent(this.chat, this.agent_message));
+		this.provider.sendMessage(new StepEvent(this.chat, this.agent_message));
 		
 		/* Execute tool */
 		try

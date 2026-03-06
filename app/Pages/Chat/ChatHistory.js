@@ -77,6 +77,7 @@ class ChatHistory
 		for (var i=0; i<files.length; i++)
 		{
 			var file = files[i];
+			if (file.isDirectory) continue;
 			
 			/* Find file */
 			var index = this.findFile(file.path);

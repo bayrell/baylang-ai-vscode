@@ -420,7 +420,8 @@ class ChatModel
 		/* Add files message */
 		for (var i=0; i<files.length; i++)
 		{
-			var file_name = getFileName(files[i].path);
+			var file = files[i];
+			var file_name = file.isDirectory ? file.name : getFileName(file.name);
 			var space = "";
 			if (this.send_message != "" && this.send_message[this.send_message.length - 1] != " ") space = " ";
 			this.send_message += space + file_name;

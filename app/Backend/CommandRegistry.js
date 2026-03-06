@@ -12,6 +12,7 @@ import { RenameFile } from "../Tools/RenameFile.js";
 import { DeleteFile } from "../Tools/DeleteFile.js";
 import { ListFiles } from "../Tools/ListFiles.js";
 import { Usage } from "../Ai/Usage.js";
+import path from "path";
 
 export class CommandRegistry
 {
@@ -361,10 +362,17 @@ export async function registerCommands(provider)
 			var file_path = files[i];
 			try
 			{
-				var data = await fs.readFile(file_path, "utf8");
+				var data = "";
+				var stat = await fs.stat(file_path);
+				if (stat.isFile())
+				{
+					data = await fs.readFile(file_path, "utf8");
+				}
 				result.push({
 					path: file_path,
+					name: path.relative(settings.workspaceFolderPath, file_path),
 					content: data,
+					isDirectory: stat.isDirectory(),
 				});
 			}
 			catch (err)

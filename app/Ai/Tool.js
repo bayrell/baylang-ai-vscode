@@ -73,7 +73,7 @@ export class Tool
 	 */
 	setPrompt(value)
 	{
-		this.value = value;
+		this.prompt = value;
 		return this;
 	}
 	
