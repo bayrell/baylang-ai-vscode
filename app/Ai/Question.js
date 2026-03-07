@@ -112,6 +112,7 @@ export class Question
 		this.agent_message = null;
 		this.user_message = null;
 		this.model = null;
+		this.model_name = null;
 		this.chat = null;
 		this.client = null;
 		this.provider = null;
@@ -281,7 +282,7 @@ export class Question
 		var tools_index = {};
 		
 		/* Create client */
-		var client = new Client(this.model, this.agent.model_name);
+		var client = new Client(this.model, this.model_name);
 		this.setClient(client);
 		client.prompt = prompt;
 		client.tools = this.tools;
@@ -489,7 +490,8 @@ export class Question
 	 */
 	async debugPrompt()
 	{
-		console.log("Send prompt");
+		var model = this.model.name;
+		console.log("Send prompt to " + model + " " + this.model_name);
 		console.log(this.getPrompt());
 		this.agent_message.addChunk("Ok");
 		this.provider.sendMessage(new UpdateChatEvent(this.chat, this.agent_message));

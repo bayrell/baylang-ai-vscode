@@ -15,6 +15,7 @@ class ChatModel
 		this.chats = [];
 		this.current_agent_id = null;
 		this.current_chat_id = null;
+		this.current_model_key = null;
 		this.is_drag = false;
 		this.show_dialog = "";
 		this.show_dialog_id = "";
@@ -239,8 +240,12 @@ class ChatModel
 	/**
 	 * Send message
 	 */
-	async sendMessage(chat_id, agent_id, message, lastMessageId)
+	async sendMessage(params)
 	{
+		var { chat_id, agent_id, model, model_name, message, lastMessageId } = params;
+		if (model == undefined) model = null;
+		if (model_name == undefined) model_name = null;
+		if (message == undefined) message = "";
 		if (lastMessageId == undefined) lastMessageId = null;
 		if (lastMessageId == null && message == "")
 		{
@@ -296,6 +301,8 @@ class ChatModel
 		var result = await this.api.call("send_message", {
 			id: chat.id,
 			agent: agent.name,
+			model: model,
+			model_name: model_name,
 			global: agent.global,
 			name: chat.title,
 			content: item ? item.content : null,

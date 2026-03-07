@@ -252,12 +252,16 @@ export default {
 			if (this.disableResend) return;
 			this.disableResend = true;
 			setTimeout(()=>{ this.disableResend = false; }, 10000);
-			this.model.sendMessage(
-				this.model.current_chat_id,
-				this.model.current_agent_id,
-				null,
-				this.message.id
-			);
+			var model = this.layout.models_page.models
+				.find((item) => item.key == this.model.current_model_key);
+			this.model.sendMessage({
+				chat_id: this.model.current_chat_id,
+				agent_id: this.model.current_agent_id,
+				model: model ? model.model_name : "",
+				model_name: model ? model.model_id : "",
+				message: "",
+				lastMessageId: this.message.id
+			});
 		},
 	},
 };

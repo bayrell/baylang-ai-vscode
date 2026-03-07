@@ -20,27 +20,46 @@
 	&__file_remove{
 		color: var(--vscode-foreground, black);
 	}
-	&__text{
-		display: flex;
-		align-items: stretch;
-		input, button{
-			padding: 5px 10px;
-			border: 1px var(--border-color) solid;
-			border-radius: 0;
-		}
-		input{
-			flex: 1;
-			border-right: 0;
-			background-color: var(--vscode-input-background, white);
+	&__box{
+		background-color: var(--vscode-input-background, white);
 			color: var(--vscode-input-foreground, black);
-			border: 1px var(--border-color) solid;
+		border: 1px var(--border-color) solid;
+		border-radius: 5px;
+	}
+	&__tools{
+		display: flex;
+		position: relative;
+		&:deep(.select_list){
+			max-width: 50%;
 		}
-		input[name=message]{
-			min-height: 75px;
-			resize: vertical;
+	}
+	&__text{
+		position: relative;
+		&:deep(.texteditable){
+			padding: 8px;
+			min-height: 40px;
+			max-height: 90px;
+			overflow-y: auto;
+			resize: none;
+			border-width: 0;
+			outline: none;
 		}
-		button{
+		&:deep(.button){
 			cursor: pointer;
+			padding: 0.5rem 1rem;
+			border-radius: 1rem;
+		}
+	}
+	&__footer{
+		display: flex;
+		justify-content: flex-end;
+		padding: 0.5rem;
+	}
+	&__models{
+		flex: 1;
+		&:deep(.input){
+			width: auto;
+			border-width: 0;
 		}
 	}
 }
@@ -55,25 +74,38 @@
 			<span class="send_message__file_remove" @click.stop="removeFile(file)">x</span>
 		</div>
 	</div>
-	<div class="send_message__tools">
-		<Input
-			name="agent"
-			type="select"
-			v-model="model.current_agent_id"
-			selectMessage="Select agent"
-			:options="agents"
-		/>
-	</div>
-	<div class="send_message__text">
-		<Input type="textarea" name="message" v-model="model.send_message" />
-		<Button @click="sendMessage" v-if="!chat || !chat.isWorking()">Send</Button>
-		<Button @click="stopChat" v-if="chat && chat.isWorking()">Stop</Button>
+	<div class="send_message__box">
+		<div class="send_message__tools">
+			<SelectList
+				name="agent"
+				v-model="model.current_agent_id"
+				selectMessage="Select agent"
+				:options="agents"
+			/>
+			<SelectList
+				name="model"
+				v-model="model.current_model_key"
+				selectMessage="Default"
+				:options="models"
+			/>
+		</div>
+		<div class="send_message__text">
+			<TextEditable name="message" v-model="model.send_message" />
+			<div class="send_message__footer">
+				<div class="send_message__button">
+					<Button @click="sendMessage" v-if="!chat || !chat.isWorking()">Send</Button>
+					<Button @click="stopChat" v-if="chat && chat.isWorking()">Stop</Button>
+				</div>
+			</div>
+		</div>
 	</div>
 </template>
 
 <script lang="js">
 import Button from "@main/Components/Button.vue";
 import Input from "@main/Components/Input.vue";
+import SelectList from "@main/Components/SelectList.vue";
+import TextEditable from "@main/Components/TextEditable.vue";
 import { getFileName } from "@main/lib.js";
 
 export default {
@@ -81,9 +113,12 @@ export default {
 	components: {
 		Button,
 		Input,
+		SelectList,
+		TextEditable,
 	},
 	data: function(){
 		return {
+			current_model_id: null,
 		};
 	},
 	computed:
@@ -112,6 +147,10 @@ export default {
 			});
 			return items;
 		},
+		models()
+		{
+			return this.layout.models_page.models;
+		},
 		files()
 		{
 			var chat = this.model.getCurrentChat();
@@ -130,11 +169,14 @@ export default {
 		{
 			var agent = this.layout.agent_page.items[this.model.current_agent_id];
 			if (!agent) return;
-			this.model.sendMessage(
-				this.model.current_chat_id,
-				this.model.current_agent_id,
-				this.model.send_message
-			);
+			var model = this.models.find((item) => item.key == this.model.current_model_key);
+			this.model.sendMessage({
+				chat_id: this.model.current_chat_id,
+				agent_id: this.model.current_agent_id,
+				model: model ? model.model_name : "",
+				model_name: model ? model.model_id : "",
+				message: this.model.send_message
+			});
 			this.model.send_message = "";
 		},
 		stopChat()

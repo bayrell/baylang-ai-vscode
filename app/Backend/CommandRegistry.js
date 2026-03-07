@@ -250,7 +250,7 @@ export async function registerCommands(provider)
 		questions.push(question);
 		
 		/* Find model */
-		question.model = settings.getModelByName(agent.model);
+		question.model = settings.getModelByName(message.model ? message.model : agent.model);
 		if (!question.model)
 		{
 			return {
@@ -258,6 +258,9 @@ export async function registerCommands(provider)
 				message: "Model not found",
 			}
 		}
+		
+		/* Set model name */
+		question.model_name = message.model_name ? message.model_name : agent.model_name;
 		
 		/* Load chat by id */
 		question.chat = await settings.loadChatById(message.id);

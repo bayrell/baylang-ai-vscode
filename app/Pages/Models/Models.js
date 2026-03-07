@@ -9,6 +9,7 @@ class Models
 		this.layout = layout;
 		this.crud = new Crud(this);
 		this.items = [];
+		this.models = [];
 		this.form = new Form();
 		this.form.setDefault({
 			"name": "",
@@ -116,12 +117,16 @@ class Models
 		var result = await this.layout.api.call("load_models");
 		if (!result.isSuccess()) return;
 		
+		/* Update items */
 		this.items = [];
 		for (var i=0; i<result.response.items.length; i++)
 		{
 			var item = result.response.items[i];
 			this.items.push(item);
 		}
+		
+		/* Update models */
+		this.models = this.getModels();
 	}
 	
 	
@@ -130,6 +135,31 @@ class Models
 	 */
 	async open()
 	{
+	}
+	
+	
+	/**
+	 * Returns models
+	 */
+	getModels()
+	{
+		var result = [];
+		for (var i=0; i<this.items.length; i++)
+		{
+			var model = this.items[i];
+			if (!model.list) continue;
+			for (var j=0; j<model.list.length; j++)
+			{
+				var item = model.list[j];
+				result.push({
+					key: model.name + "/" + item.key,
+					value: item.name,
+					model_name: model.name,
+					model_id: item.key,
+				});
+			}
+		}
+		return result;
 	}
 	
 	
