@@ -20,6 +20,8 @@
 		position: absolute;
 		background: var(--vscode-input-background, white);
 		border: 1px var(--border-color) solid;
+		max-height: 400px;
+		overflow-y: auto;
 		z-index: 999;
 	}
 	&__item{
@@ -116,7 +118,9 @@ export default {
 		},
 		items()
 		{
-			return this.model.chats;
+			var chats = this.model.chats.slice();
+			chats.sort((a, b) => b.id - a.id);
+			return chats;
 		},
 		currentItem()
 		{

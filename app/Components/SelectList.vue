@@ -26,6 +26,8 @@
 		bottom: 0px;
 		margin-bottom: 40px;
 		min-width: 200px;
+		max-height: 400px;
+		overflow-y: auto;
 	}
 	&.show .select_list__items{
 		display: block;

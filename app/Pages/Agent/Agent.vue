@@ -47,7 +47,7 @@
 </style>
 
 <template>
-	<div class="agent_page">
+	<div class="agent_page page">
 		<div class="buttons" v-show="!model.crud.show_save && !model.crud.show_delete">
 			<Button class="back" @click="layout.setPage('settings')">Back</Button>
 			<Button class="success" @click="showAdd(true)">Add global</Button>
@@ -74,14 +74,14 @@
 			</template>
 			<template v-slot:save_content>
 				<Field name="name">
-					<label for="name">Name</label>
+					<div class="label">Name</div>
 					<Input
 						name="name"
 						v-model="model.form.item.name"
 					/>
 				</Field>
 				<Field name="enable_rules">
-					<label for="name">Enable rules</label>
+					<div class="label">Enable rules</div>
 					<Input
 						type="select"
 						name="enable_rules"
@@ -90,7 +90,7 @@
 					/>
 				</Field>
 				<Field name="enable_tools">
-					<label for="name">Enable tools</label>
+					<div class="label">Enable tools</div>
 					<Input
 						type="select"
 						name="enable_tools"
@@ -102,7 +102,7 @@
 					Default model {{ model.form.item.default.model }} ({{ model.form.item.default.model_name }})
 				</div>
 				<Field name="model">
-					<label for="name">Model</label>
+					<div class="label">Model</div>
 					<Input
 						type="select"
 						name="model"
@@ -110,12 +110,12 @@
 						:options="models"
 					/>
 				</Field>
-				<Field name="name" :error="reload_result">
-					<label for="name">Model name</label>
+				<Field name="model_name" :error="reload_result">
+					<div class="label">Model name</div>
 					<FieldGroup>
 						<Input
 							type="select"
-							name="name"
+							name="model_name"
 							v-model="model.form.item.model_name"
 							:options="model_names"
 						/>
@@ -123,7 +123,7 @@
 					</FieldGroup>
 				</Field>
 				<Field name="prompt">
-					<label for="prompt">Prompt</label>
+					<div class="label">Prompt</div>
 					<Input
 						type="textarea"
 						name="prompt"

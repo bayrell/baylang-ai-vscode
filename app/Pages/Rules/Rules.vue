@@ -34,7 +34,7 @@
 </style>
 
 <template>
-	<div class="rules_page">
+	<div class="rules_page page">
 		<div class="buttons" v-show="!model.crud.show_save && !model.crud.show_delete">
 			<Button class="back" @click="layout.setPage('settings')">Back</Button>
 			<Button class="success" @click="model.crud.showAdd()">Add</Button>
@@ -58,29 +58,29 @@
 				{{ model.crud.isAdd() ? "Add rule" : "Edit rule" }}
 			</template>
 			<template v-slot:save_content>
-				<Field name="name">
-					<label for="name">File name</label>
+				<Field name="file_name">
+					<div class="label">File name</div>
 					<Input
-						name="name"
+						name="file_name"
 						v-model="model.form.item.name"
 					/>
 				</Field>
 				<Field name="description">
-					<label for="name">Description</label>
+					<div class="label">Description</div>
 					<Input
 						name="description"
 						v-model="model.form.item.description"
 					/>
 				</Field>
 				<Field name="rules">
-					<label for="rules">Rule</label>
+					<div class="label">Rule</div>
 					<Input
 						name="rules"
 						v-model="model.form.item.rules"
 					/>
 				</Field>
 				<Field name="content">
-					<label for="rule">Content</label>
+					<div class="label">Content</div>
 					<Input
 						type="textarea"
 						name="content"

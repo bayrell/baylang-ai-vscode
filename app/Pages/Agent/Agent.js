@@ -68,6 +68,7 @@ class Agent
 	 */
 	async open()
 	{
+		this.crud.showList();
 		await this.load();
 	}
 	

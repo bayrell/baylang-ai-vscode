@@ -53,7 +53,7 @@
 </style>
 
 <template>
-	<div class="usage_page">
+	<div class="usage_page page">
 		<div class="buttons">
 			<Button class="back" @click="layout.setPage('settings')">Back</Button>
 		</div>

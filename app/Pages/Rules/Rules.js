@@ -56,6 +56,7 @@ class Rules
 	 */
 	async open()
 	{
+		this.crud.showList();
 		await this.load();
 	}
 	

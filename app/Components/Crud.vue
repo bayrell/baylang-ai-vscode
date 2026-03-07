@@ -14,7 +14,7 @@
 			<slot name="list"></slot>
 		</div>
 		<div class="save_item" v-show="crud.show_save">
-			<div class="page_title">
+			<div class="page_title save_title">
 				<slot name="save_title"></slot>
 			</div>
 			<div class="save_item_fields">

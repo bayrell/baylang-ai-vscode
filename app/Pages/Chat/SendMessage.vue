@@ -133,10 +133,9 @@ export default {
 			for (var i=0; i<this.layout.agent_page.items.length; i++)
 			{
 				var item = this.layout.agent_page.items[i];
-				var global_str = item.global ? " [Global]" : "";
 				items.push({
 					"key": i,
-					"value": item.name + global_str,
+					"value": item.name,
 					"global": item.global,
 				});
 			}

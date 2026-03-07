@@ -135,6 +135,7 @@ class Models
 	 */
 	async open()
 	{
+		this.crud.showList();
 	}
 	
 	

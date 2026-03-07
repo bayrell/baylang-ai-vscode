@@ -47,6 +47,11 @@ class Crud
 		this.model.form.setItem(item);
 		this.show_delete = true;
 	}
+	showList()
+	{
+		this.show_save = false;
+		this.show_delete = false;
+	}
 	async addItem()
 	{
 		var result = await this.model.add();

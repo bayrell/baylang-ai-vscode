@@ -77,7 +77,7 @@
 </style>
 
 <template>
-	<div class="models_page">
+	<div class="models_page page">
 		<div class="buttons" v-show="!model.crud.show_save && !model.crud.show_delete">
 			<Button class="back" @click="layout.setPage('settings')">Back</Button>
 			<Button class="success" @click="model.crud.showAdd()">Add</Button>
@@ -102,15 +102,15 @@
 			</template>
 			<template v-slot:save_content>
 				<Field name="model_name">
-					<label for="model_name">Name</label>
+					<div class="label">Name</div>
 					<Input
 						name="model_name"
 						autocomplete="username"
 						v-model="model.form.item.name"
 					/>
 				</Field>
-				<Field name="model">
-					<label for="model">Type</label>
+				<Field name="type">
+					<div class="label">Type</div>
 					<Input
 						type="select"
 						name="type"
@@ -120,7 +120,7 @@
 					/>
 				</Field>
 				<Field name="key" v-if="isShowKey()">
-					<label for="key">API key</label>
+					<div class="label">API key</div>
 					<Input
 						type="password"
 						name="key"
@@ -129,18 +129,18 @@
 					/>
 				</Field>
 				<Field name="url" v-if="isShowUrl()">
-					<label for="url">URL</label>
+					<div class="label">URL</div>
 					<Input
 						name="url"
 						v-model="model.form.item.settings.url"
 					/>
 				</Field>
-				<Field name="name" :error="reload_result">
-					<label for="name">Model list</label>
+				<Field name="select_model" :error="reload_result">
+					<div class="label">Model list</div>
 					<FieldGroup>
 						<Input
 							type="select"
-							name="name"
+							name="select_model"
 							v-model="select_model"
 							:options="model_options"
 						/>

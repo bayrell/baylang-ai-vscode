@@ -47,7 +47,6 @@ textarea.input{
 	<input
 		v-if="type == 'input'"
 		v-bind="$attrs"
-		:id="name"
 		:name="name"
 		:autocomplete="autocomplete"
 		:value="modelValue"
@@ -58,7 +57,6 @@ textarea.input{
 		<input
 			v-bind="$attrs"
 			:type="current_password_type"
-			:id="name"
 			:name="name"
 			:autocomplete="autocomplete"
 			:value="modelValue"
@@ -75,7 +73,6 @@ textarea.input{
 	<select
 		v-if="type == 'select'"
 		v-bind="$attrs"
-		:id="name"
 		:name="name"
 		:value="modelValue"
 		:class="getInputClass()"
@@ -91,7 +88,6 @@ textarea.input{
 	<textarea
 		v-if="type == 'textarea'"
 		v-bind="$attrs"
-		:id="name"
 		:name="name"
 		:value="modelValue"
 		:class="getInputClass()"
