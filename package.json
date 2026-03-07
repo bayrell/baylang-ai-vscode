@@ -14,6 +14,7 @@
 		"type": "git",
 		"url": "https://github.com/bayrell/baylang-ai-vscode"
 	},
+	"icon": "./favicon.png",
 	"keywords": [
 		"ai",
 		"artificial intelligence",
@@ -84,7 +85,8 @@
 				{
 					"type": "webview",
 					"id": "baylang-ai-view",
-					"name": "BayLang AI"
+					"name": "BayLang AI",
+					"icon": "baylang.png"
 				}
 			]
 		},
