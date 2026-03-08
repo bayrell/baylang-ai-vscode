@@ -79,6 +79,13 @@
 						v-model="model.form.item.rules"
 					/>
 				</Field>
+				<Field name="keywords">
+					<div class="label">Keywords</div>
+					<Input
+						name="keywords"
+						v-model="model.form.item.keywords"
+					/>
+				</Field>
 				<Field name="content">
 					<div class="label">Content</div>
 					<Input

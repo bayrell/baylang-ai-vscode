@@ -1,4 +1,5 @@
 import { minimatch } from "minimatch";
+import { splitItem } from "../lib.js";
 
 export class Rule
 {
@@ -6,8 +7,12 @@ export class Rule
 	{
 		this.name = "";
 		this.description = "";
+		this.disable = false;
+		this.global = false;
+		this.groups = "";
 		this.rules = "";
 		this.content = "";
+		this.keywords = "";
 	}
 	
 	
@@ -18,8 +23,12 @@ export class Rule
 	{
 		this.name = item.name || "";
 		this.description = item.description || "";
+		this.disable = item.disable || false;
+		this.global = item.global || false;
+		this.groups = item.groups || "";
 		this.rules = item.rules || "";
 		this.content = item.content;
+		this.keywords = item.keywords || "";
 	}
 	
 	
@@ -31,8 +40,12 @@ export class Rule
 		return {
 			name: this.name,
 			description: this.description,
+			disable: this.disable,
+			global: this.global,
+			groups: this.groups,
 			rules: this.rules,
 			content: this.content,
+			keywords: this.keywords,
 		};
 	}
 	
@@ -66,21 +79,12 @@ export class Rule
 	 */
 	matchFile(filename)
 	{
-		var rules = this.getRules();
+		var rules = splitItem(this.rules);
 		for (var rule of rules)
 		{
 			if (this.constructor.match(filename, rule)) return true;
 		}
 		return false;
-	}
-	
-	
-	/**
-	 * Returns rules
-	 */
-	getRules()
-	{
-		return this.rules.split(",").map(g => g.trim()).filter(g => g.length > 0);
 	}
 	
 	
@@ -91,6 +95,8 @@ export class Rule
 	{
 		this.rules = "";
 		this.description = "";
+		this.global = false;
+		this.keywords = "";
 		
 		var match = content.match(/^---\s*([\s\S]*?)\s*---\s*([\s\S]*)$/);
 		if (!match)
@@ -102,25 +108,35 @@ export class Rule
 		var lines = match[1].split("\n");
 		this.content = match[2].trim();
 		
+		const readLine = (line, key) =>
+		{
+			var value = key;
+			if (key == "alwaysApply") key = "global";
+			else if (key == "globs") key = "rules";
+			var match = line.match(new RegExp("^" + value + ":\s*(.*)$", "i"));
+			if (match)
+			{
+				this[key] = match[1].trim();
+				return true;
+			}
+			return false;
+		};
+		
 		for (var line of lines)
 		{
 			line = line.trim();
 			if (!line) continue;
 			
-			var description = line.match(/^description:\s*(.*)$/i);
-			if (description)
-			{
-				this.description = description[1].trim();
-				continue;
-			}
-			
-			var rules = line.match(/^globs:\s*(.*)$/i);
-			if (rules)
-			{
-				this.rules = rules[1].trim();
-				continue;
-			}
+			if (readLine(line, "description")) continue;
+			if (readLine(line, "globs")) continue;
+			if (readLine(line, "groups")) continue;
+			if (readLine(line, "alwaysApply")) continue;
+			if (readLine(line, "keywords")) continue;
+			if (readLine(line, "disable")) continue;
 		}
+		
+		this.disable = this.disable == "true";
+		this.global = this.global == "true";
 	}
 	
 	
@@ -136,9 +152,25 @@ export class Rule
 		{
 			content.push("description: " + this.description);
 		}
+		if (this.disable)
+		{
+			content.push("disable: true");
+		}
 		if (this.rules.length > 0)
 		{
 			content.push("globs: " + this.rules);
+		}
+		if (this.groups.length > 0)
+		{
+			content.push("groups: " + this.groups);
+		}
+		if (this.global)
+		{
+			content.push("alwaysApply: true");
+		}
+		if (this.keywords && this.keywords.length > 0)
+		{
+			content.push("keywords: " + this.keywords);
 		}
 		if (content.length > 1)
 		{
@@ -176,12 +208,25 @@ export function createRule(item)
 /**
  * Returns true if file matching
  */
-export function ruleMatching(rule, files)
+export function ruleMatching(rule, question)
 {
-	if (!rule.rules) return true;
-	for (var item of files)
+	if (rule.disable) return false;
+	if (rule.global) return true;
+	if (rule.rules)
 	{
-		if (rule.matchFile(item.name)) return true;
+		for (var item of question.files)
+		{
+			if (rule.matchFile(item.name)) return true;
+		}
+	}
+	if (rule.keywords)
+	{
+		var content = question.user_message.getText().toLowerCase();
+		var keywords = splitItem(rule.keywords);
+		for (var item of keywords)
+		{
+			if (content.indexOf(item) >= 0) return true;
+		}
 	}
 	return false;
 }
@@ -190,9 +235,9 @@ export function ruleMatching(rule, files)
 /**
  * Filter rules
  */
-export function filterRules(rules, message)
+export function filterRules(rules, question)
 {
 	return rules.filter(rule => {
-		return ruleMatching(rule, message);
+		return ruleMatching(rule, question);
 	});
 }

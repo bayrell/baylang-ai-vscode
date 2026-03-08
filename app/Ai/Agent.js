@@ -10,6 +10,7 @@ export class Agent
 		this.model = "";
 		this.model_name = "";
 		this.prompt = "";
+		this.rules = [];
 	}
 	
 	
@@ -26,6 +27,11 @@ export class Agent
 		if (data.model) this.model = data.model;
 		if (data.model_name) this.model_name = data.model_name;
 		if (data.prompt) this.prompt = data.prompt;
+		if (data.rules)
+		{
+			this.rules = data.rules;
+			this.rules.sort();
+		}
 	}
 	
 	
@@ -43,6 +49,7 @@ export class Agent
 			model: this.model,
 			model_name: this.model_name,
 			prompt: this.prompt,
+			rules: this.rules,
 		};
 	}
 	

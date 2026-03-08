@@ -6,6 +6,9 @@
 	border-radius: 5px;
 	color: var(--input-color);
 	outline: none;
+	&:focus{
+		border-color: var(--vscode-focusBorder);
+	}
 }
 </style>
 

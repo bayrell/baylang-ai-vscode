@@ -5,7 +5,7 @@
 		margin-bottom: 0px;
 	}
 }
-.field :deep(label){
+.field :deep(.label){
 	display: block;
 	margin-bottom: 5px;
 }

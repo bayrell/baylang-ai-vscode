@@ -2,8 +2,10 @@ import { promises as fs } from "fs";
 import { Client } from "./Client.js";
 import { StartChatEvent, UpdateChatEvent, ErrorChatEvent, StepEvent, EndChatEvent, EndChunkEvent } from "./Chat.js";
 import { Message, ToolMessage } from "./Message.js";
-import { filterRules } from "./Rule.js";
+import { filterRules, Rule } from "./Rule.js";
 import { getFileType, isTextFile, isImage, mkdir } from "../api.js";
+import { splitItem } from "../lib.js";
+import path from "path";
 
 export class PromptBuilder
 {
@@ -262,8 +264,52 @@ export class Question
 			this.rules = [];
 			return;
 		}
+		
+		/* Load rules */
 		var rules = await this.settings.loadRules();
-		this.rules = filterRules(rules, this.files);
+		this.rules = filterRules(rules, this);
+		
+		/* Find item */
+		const findRule = (rule) => {
+			return this.rules.find((item) => item.name == rule.name);
+		}
+		
+		/* Add rules */
+		if (this.agent.rules && this.agent.rules.length > 0)
+		{
+			for (var i=0; i<this.agent.rules.length; i++)
+			{
+				/* Get item */
+				var filename = this.agent.rules[i];
+				if (!filename) continue;
+				
+				/* Get rule name */
+				var fileinfo = path.parse(filename);
+				var rulename = fileinfo.name;
+				
+				/* Add groups */
+				if (filename[0] == "@")
+				{
+					var groupname = filename.substring(1);
+					var grouprules = rules.filter((item) => {
+						var groups = splitItem(item.groups);
+						return groups.indexOf(groupname) >= 0;
+					});
+					for (var j=0; j<grouprules.length; j++)
+					{
+						var rule = grouprules[j];
+						if (!rule.disable && !findRule(rule)) this.rules.push(rule);
+					}
+				}
+				
+				/* Add filename */
+				else
+				{
+					var rule = rules.find((item) => item.name == rulename && !item.disable);
+					if (rule && !findRule(rule)) this.rules.push(rule);
+				}
+			}
+		}
 	}
 	
 	
@@ -591,6 +637,14 @@ export class Question
 	{
 		this.provider.sendMessage(new StartChatEvent(this.chat, this.agent_message));
 		
+		/* Log message */
+		if (!this.debug)
+		{
+			console.log("Send prompt to " + model + " " + this.model_name);
+			console.log(this.getPrompt());
+		}
+		
+		/* Send message */
 		await this.sendTools();
 		//await this.debugPrompt();
 		await this.settings.saveChat(this.chat);

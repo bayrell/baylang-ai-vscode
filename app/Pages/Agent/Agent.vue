@@ -41,8 +41,31 @@
 	margin-top: 10px;
 	margin-bottom: 10px;
 }
-.agent_page :deep(.save_item textarea){
-	min-height: 200px;
+.agent_page :deep(.texteditable){
+	min-height: 48px;
+	max-height: 200px;
+	overflow-y: auto;
+}
+.rules{
+	&:deep(.button){
+		margin-bottom: 0.5rem;
+	}
+}
+.rules_item{
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	margin-bottom: 0.5rem;
+	&:deep(.input){
+		flex: 1;
+		width: auto;
+	}
+	img{
+		width: 16px;
+		height: 16px;
+		cursor: pointer;
+	}
 }
 </style>
 
@@ -124,11 +147,24 @@
 				</Field>
 				<Field name="prompt">
 					<div class="label">Prompt</div>
-					<Input
-						type="textarea"
+					<TextEditable
 						name="prompt"
 						v-model="model.form.item.prompt"
 					/>
+				</Field>
+				<Field name="rules">
+					<div class="label">Rules</div>
+					<div class="rules">
+						<Button class="default small" @click="this.model.addRule()">Add</Button>
+						<div class="rules_item"
+							v-for="(item, index) in model.form.item.rules"
+							:key="index"
+						>
+							<Input v-model="model.form.item.rules[index]" />
+							<img :src="this.layout.getImage('x.svg')"
+								@click="this.model.removeRule(index)" />
+						</div>
+					</div>
 				</Field>
 			</template>
 			<template v-slot:delete_message>
@@ -145,6 +181,7 @@ import Input from "@main/Components/Input.vue";
 import Field from "@main/Components/Form/Field.vue";
 import FieldGroup from "@main/Components/Form/FieldGroup.vue";
 import Result from "@main/Components/Form/Result.js";
+import TextEditable from "@main/Components/TextEditable.vue"
 
 export default {
 	name: "Agent",
@@ -154,6 +191,7 @@ export default {
 		Input,
 		Field,
 		FieldGroup,
+		TextEditable,
 	},
 	data(){
 		return {

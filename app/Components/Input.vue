@@ -105,7 +105,7 @@ export default {
 		},
 		name: {
 			type: String,
-			required: true,
+			default: "",
 		},
 		options: {
 			type: Array,

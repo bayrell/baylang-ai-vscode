@@ -74,6 +74,24 @@ class Agent
 	
 	
 	/**
+	 * Add rule
+	 */
+	addRule()
+	{
+		this.form.item.rules.push("");
+	}
+	
+	
+	/**
+	 * Remove rule
+	 */
+	removeRule(index)
+	{
+		this.form.item.rules.splice(index);
+	}
+	
+	
+	/**
 	 * Add item
 	 */
 	async add()
