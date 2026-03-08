@@ -115,7 +115,7 @@ export default {
 		},
 		selected: function()
 		{
-			if (!this.modelValue) return "";
+			if (this.modelValue === "") return "";
 			return this.options.find((item) => item.key == this.modelValue);
 		},
 		currentValue: function()

@@ -134,7 +134,7 @@ export default {
 			{
 				var item = this.layout.agent_page.items[i];
 				items.push({
-					"key": i,
+					"key": item.id,
 					"value": item.name,
 					"global": item.global,
 				});

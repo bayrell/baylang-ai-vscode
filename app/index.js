@@ -137,7 +137,7 @@ class BayLangViewProvider
 			<script>
 				startApp((app, layout) => {
 					console.log("Mount app");
-					app.mount(".app");
+					setTimeout(() => app.mount(".app"), 1);
 					layout.setImageUrl("${getLink("dist/images")}");
 					window.app = app;
 					window.layout = layout;

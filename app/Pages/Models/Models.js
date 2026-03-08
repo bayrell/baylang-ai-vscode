@@ -91,6 +91,7 @@ class Models
 			"key": model_name,
 			"name": "",
 		});
+		item.list.sort((a, b) => a.key.localeCompare(b.key));
 	}
 	
 	
@@ -105,7 +106,7 @@ class Models
 		if (index == -1) return;
 		
 		/* Remove item by index */
-		this.form.item.list.splice(index);
+		this.form.item.list.splice(index, 1);
 	}
 	
 	
@@ -126,6 +127,15 @@ class Models
 		}
 		
 		/* Update models */
+		this.updateModels();
+	}
+	
+	
+	/**
+	 * Update models
+	 */
+	updateModels()
+	{
 		this.models = this.getModels();
 	}
 	
@@ -176,6 +186,7 @@ class Models
 		if (result.isSuccess())
 		{
 			this.items.push(item);
+			this.updateModels();
 		}
 		
 		this.form.setPrimaryKey(this.getPrimaryKey(item));
@@ -202,6 +213,7 @@ class Models
 		if (result.isSuccess())
 		{
 			this.items[index] = this.form.getItem();
+			this.updateModels();
 		}
 		
 		return result;

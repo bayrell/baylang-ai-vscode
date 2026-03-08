@@ -154,7 +154,7 @@ export class Question
 		this.tools = null;
 		this.tools_history = [];
 		this.usage = null;
-		this.debug = true;
+		this.debug = false;
 		this.is_work = true;
 	}
 	
@@ -546,7 +546,7 @@ export class Question
 				var index = this.chat.messages.findIndex((message) => message == this.agent_message);
 				if (index >= 0)
 				{
-					this.chat.messages.splice(index);
+					this.chat.messages.splice(index, 1);
 				}
 			}
 			
@@ -640,8 +640,7 @@ export class Question
 		/* Log message */
 		if (!this.debug)
 		{
-			console.log("Send prompt to " + model + " " + this.model_name);
-			console.log(this.getPrompt());
+			console.log("Send prompt to " + this.model_name);
 		}
 		
 		/* Send message */

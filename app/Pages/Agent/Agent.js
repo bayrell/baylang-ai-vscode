@@ -58,7 +58,7 @@ class Agent
 		{
 			var item = result.response.items[i];
 			item.pk = { name: item.name, global: item.global };
-			this.items.push(item);
+			this.items.push(Object.assign(item, { "id": i }));
 		}
 	}
 	
@@ -87,7 +87,7 @@ class Agent
 	 */
 	removeRule(index)
 	{
-		this.form.item.rules.splice(index);
+		this.form.item.rules.splice(index, 1);
 	}
 	
 	

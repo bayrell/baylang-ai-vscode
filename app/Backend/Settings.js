@@ -209,7 +209,7 @@ export class Settings
 			var find = this.getAgentByName(agent_name, false);
 			if (!find)
 			{
-				agents.splice(i);
+				agents.splice(i, 1);
 			}
 		}
 		return agents;
@@ -302,7 +302,7 @@ export class Settings
 		
 		/* Remove agent */
 		var agent = this.agents[index];
-		this.agents.splice(index);
+		this.agents.splice(index, 1);
 		
 		/* Remove file */
 		try
@@ -319,7 +319,7 @@ export class Settings
 			var agentFile = path.join(this.getChatFolderPath(), "agents.json");
 			var agents = await this.loadAgentsModificators(agentFile);
 			var agentIndex = agents.find((item) => item.name == pk.name);
-			if (agentIndex >= 0) agents.splice(agentIndex);
+			if (agentIndex >= 0) agents.splice(agentIndex, 1);
 			this.filterAgentModificators(agents);
 			await this.saveAgentsModificators(agentFile, agents);
 		}
