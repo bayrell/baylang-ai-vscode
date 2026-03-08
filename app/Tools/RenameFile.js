@@ -10,8 +10,18 @@ export class RenameFile extends Tool
 		super();
 		this.setName("rename_file");
 		this.setDescription("Rename file or folder on disk by path in current project. File path is relative.");
-		this.addProps("old_path", "string", "Old file path in project", true);
-		this.addProps("new_path", "string", "New file path in project", true);
+		this.addProps({
+			key: "old_path",
+			type: "string",
+			description: "Old file path in project",
+			required: true,
+		});
+		this.addProps({
+			key: "new_path",
+			type: "string",
+			description: "New file path in project",
+			required: true,
+		})
 		this.setPrompt("Rename files or folders in the project or add content to it, use the `rename_file` function.");
 		this.settings = settings;
 	}

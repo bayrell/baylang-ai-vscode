@@ -9,8 +9,18 @@ export class ListFiles extends Tool
 		super();
 		this.setName("list_file");
 		this.setDescription("List files and directories in a given path. Can list recursively.");
-		this.addProps("path", "string", "The directory path to list. If not provided, lists current working directory.", false);
-		this.addProps("recursive", "boolean", "If true, lists files and directories recursively.", false);
+		this.addProps({
+			key: "path",
+			type: "string",
+			description: "The directory path to list. If not provided, lists current working directory.",
+			required: true,
+		})
+		this.addProps({
+			key: "recursive",
+			type: "boolean",
+			description: "If true, lists files and directories recursively.",
+			required: false,
+		})
 		this.setPrompt("To view the files and directories in a specific location, use the `list_file` function. You can specify a path to list, and optionally use the `recursive` flag to list contents of subdirectories as well.");
 		this.settings = settings;
 	}

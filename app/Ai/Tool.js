@@ -27,13 +27,9 @@ export class Tool
 	/**
 	 * Add props
 	 */
-	addProps(key, type, description, required)
+	addProps(params)
 	{
-		this.props[key] = {
-			type: type,
-			description: description,
-			required: required ? true : false,
-		};
+		this.props[params.key] = params;
 		return this;
 	}
 	
@@ -96,12 +92,12 @@ export class Tool
 		var required = [];
 		for (var key in this.props)
 		{
-			var item = this.props[key];
-			result[key] = {
-				type: item.type,
-				description: item.description,
-			};
-			if (item.required) required.push(key);
+			var item = Object.assign({}, this.props[key]);
+			var is_required = item.required ? item.required : false;
+			if (typeof item.required != "undefined") delete item.required;
+			if (typeof item.key != "undefined") delete item.key;
+			result[key] = item;
+			if (is_required) required.push(key);
 		}
 		return [result, required];
 	}

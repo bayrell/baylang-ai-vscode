@@ -7,8 +7,18 @@ export class RandomTool extends Tool
 		super();
 		this.setName("random");
 		this.setDescription("Generate random number beetwen a and b");
-		this.addProps("a", "integer", "First number", true);
-		this.addProps("b", "integer", "Second number", true);
+		this.addProps({
+			key: "a",
+			type: "integer",
+			description: "First number",
+			required: true
+		})
+		this.addProps({
+			key: "b",
+			type: "integer",
+			description: "Second number",
+			required: true,
+		})
 	}
 	
 	

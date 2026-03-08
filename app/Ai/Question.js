@@ -399,7 +399,7 @@ export class Question
 		try
 		{
 			item.answer = await tool.execute(item.args);
-			this.agent_message.tool_answer = JSON.stringify(item.answer);
+			this.agent_message.tool_answer = item.answer;
 		}
 		catch (e)
 		{
@@ -493,6 +493,7 @@ export class Question
 		var model = this.model.name;
 		console.log("Send prompt to " + model + " " + this.model_name);
 		console.log(this.getPrompt());
+		//console.log(this.tools.getData());
 		this.agent_message.addChunk("Ok");
 		this.provider.sendMessage(new UpdateChatEvent(this.chat, this.agent_message));
 		this.provider.sendMessage(new EndChatEvent(this.chat, this.agent_message));

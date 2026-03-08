@@ -131,8 +131,12 @@
 	border: 1px var(--border-color) solid;
 	border-radius: 0.5rem;
 	padding: 1rem;
+	.tool_name{
+		overflow-x: hidden;
+	}
 	.tool_error{
 		color: red;
+		word-wrap: break-word;
 	}
 }
 </style>

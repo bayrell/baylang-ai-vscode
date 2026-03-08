@@ -10,8 +10,18 @@ export class WriteFile extends Tool
 		super();
 		this.setName("write_file");
 		this.setDescription("Write file on disk by path in current project. File path is relative.");
-		this.addProps("path", "string", "File path in project", true);
-		this.addProps("content", "string", "File content", true);
+		this.addProps({
+			key: "path",
+			type: "string",
+			description: "File path in project",
+			required: true,
+		});
+		this.addProps({
+			key: "content",
+			type: "string",
+			description: "File content",
+			required: true,
+		})
 		this.setPrompt("To modify files within the project or add content to it, use the `write_file` function. If you are writing a file, only display a brief summary of the modifications you made on the screen.");
 		this.settings = settings;
 	}
