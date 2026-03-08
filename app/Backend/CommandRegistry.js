@@ -275,6 +275,7 @@ export async function registerCommands(provider)
 		/* Add files */
 		var files = JSON.parse(message.files);
 		question.addFiles(files);
+		await question.readFiles();
 		
 		/* Remove chat history */
 		if (message.lastMessageId)
@@ -365,16 +366,11 @@ export async function registerCommands(provider)
 			var file_path = files[i];
 			try
 			{
-				var data = "";
 				var stat = await fs.stat(file_path);
-				if (stat.isFile())
-				{
-					data = await fs.readFile(file_path, "utf8");
-				}
 				result.push({
 					path: file_path,
 					name: path.relative(settings.workspaceFolderPath, file_path),
-					content: data,
+					content: null,
 					isDirectory: stat.isDirectory(),
 				});
 			}

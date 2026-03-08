@@ -1,7 +1,9 @@
+import { promises as fs } from "fs";
 import { Client } from "./Client.js";
 import { StartChatEvent, UpdateChatEvent, ErrorChatEvent, StepEvent, EndChatEvent, EndChunkEvent } from "./Chat.js";
-import { Message, FileItem, ToolMessage } from "./Message.js";
+import { Message, ToolMessage } from "./Message.js";
 import { filterRules } from "./Rule.js";
+import { getFileType, isTextFile, isImage, mkdir } from "../api.js";
 
 export class PromptBuilder
 {
@@ -59,11 +61,37 @@ export class PromptBuilder
 		
 		/* Add files */
 		var files = variables.files.map((file) => {
-			var item = new FileItem();
-			item.assign(file);
-			return item.getText();
-		});
-		if (files.length > 0) this.addMessage(messages, "system", files.join("\n\n"));
+			if (file.error || !file.readed) return null;
+			if (file.isDirectory) return null;
+			if (isTextFile(file))
+			{
+				var file_prefix = "```";
+				return {
+					type: "text",
+					text: "Filename: " + file.name +
+						"\n" + file_prefix + file.content.toString("utf8") + file_prefix,
+				};
+			}
+			var base64Content = file.content.toString("base64");
+			var fileContent = "data:" + file.mime + ";base64," + base64Content;
+			if (isImage(file.mime))
+			{
+				return {
+					type: "image_url",
+					image_url: {
+						url: fileContent,
+					}
+				}
+			}
+			return {
+				type: "file",
+				file: {
+					filename: file.name,
+					file_data: fileContent,
+				}
+			};
+		}).filter((file) => file != null);
+		if (files.length > 0) this.addMessage(messages, "user", files);
 		
 		/* Add user message */
 		this.addMessage(messages, "user", variables.query);
@@ -169,10 +197,41 @@ export class Question
 	 */
 	addFiles(files)
 	{
-		this.files = files;
 		for (var i=0; i<files.length; i++)
 		{
-			this.files[i].filename = this.files[i].name;
+			var file = files[i];
+			var find = this.files.find((item) => item.name == file.name);
+			if (file.isDirectory || find) continue;
+			this.files.push(Object.assign(file, {
+				readed: false,
+				error: false,
+				mime: "application/octet-stream",
+				content: null,
+			}));
+		}
+	}
+	
+	
+	/**
+	 * Read files
+	 */
+	async readFiles()
+	{
+		for (var i=0; i<this.files.length; i++)
+		{
+			var file = this.files[i];
+			if (file.readed || file.error) continue;
+			try
+			{
+				file.mime = await getFileType(file.path);
+				file.content = await fs.readFile(file.path);
+				file.readed = true;
+				file.error = false;
+			}
+			catch (error)
+			{
+				file.error = error;
+			}
 		}
 	}
 	
@@ -285,7 +344,7 @@ export class Question
 		var client = new Client(this.model, this.model_name);
 		this.setClient(client);
 		client.prompt = prompt;
-		client.tools = this.tools;
+		client.tools = this.agent.enableTools() ? this.tools : null;
 		
 		/* Client functions */
 		client.setCallback(async (type, data) => {
@@ -320,8 +379,11 @@ export class Question
 			else if (type == "chunk")
 			{
 				var token = data.choices[0]?.delta?.content || "";
-				if (token != "") this.agent_message.addChunk(token);
-				this.provider.sendMessage(new UpdateChatEvent(this.chat, this.agent_message));
+				if (token != "")
+				{
+					this.agent_message.addChunk(token);
+					this.provider.sendMessage(new UpdateChatEvent(this.chat, this.agent_message));
+				}
 				if (data.choices[0]?.finish_reason == "stop")
 				{
 					this.agent_message.trim();

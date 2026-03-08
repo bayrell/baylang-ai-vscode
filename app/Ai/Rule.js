@@ -181,7 +181,7 @@ export function ruleMatching(rule, files)
 	if (!rule.rules) return true;
 	for (var item of files)
 	{
-		if (rule.matchFile(item.filename)) return true;
+		if (rule.matchFile(item.name)) return true;
 	}
 	return false;
 }
