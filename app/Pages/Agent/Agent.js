@@ -78,6 +78,7 @@ class Agent
 	 */
 	addRule()
 	{
+		if (!this.form.item.rules) this.form.item.rules = [];
 		this.form.item.rules.push("");
 	}
 	

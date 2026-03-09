@@ -65,7 +65,7 @@
 					<span class="usage_page__total_value">${{ model.total.cost ? model.total.cost.toFixed(4) : '0.0000' }}</span>
 				</div>
 				<div class="usage_page__total_item">
-					<span class="usage_page__total_label">Input Tokens:</span>
+					<span class="usage_page__total_label">Answer Tokens:</span>
 					<span class="usage_page__total_value">{{ this.getTokens(model.total.input_tokens) }}</span>
 				</div>
 				<div class="usage_page__total_item">
