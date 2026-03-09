@@ -18,17 +18,16 @@ export class Usage
 	{
 		if (!data) return;
 		
-		this.addTotal(stat);
-		this.addStat(stat);
+		this.addTotal(data);
+		this.addStat(data);
 	}
 	
 	
 	/**
-	 * Add total
+	 * Add data
 	 */
-	addTotal(data)
+	addItem(total, data)
 	{
-		var total = this.total;
 		if (!total.tokens) total.tokens = 0;
 		if (!total.input_tokens) total.input_tokens = 0;
 		if (!total.prompt_tokens) total.prompt_tokens = 0;
@@ -47,32 +46,33 @@ export class Usage
 	
 	
 	/**
+	 * Add total
+	 */
+	addTotal(data)
+	{
+		this.addItem(this.total, data);
+	}
+	
+	
+	/**
+	 * Returns current month
+	 */
+	getCurrentMonth()
+	{
+		var date = new Date();
+		return date.getFullYear() * 12 + date.getMonth();
+	}
+	
+	
+	/**
 	 * Add stat
 	 */
 	addStat(data)
 	{
-		var date = new Date();
-		var current = date.getFullYear() * 12 +
-			date.getMonth();
-		
+		var current = this.getCurrentMonth();
 		if (!this.items) this.items = {};
 		if (!this.items[current]) this.items[current] = {};
-		
-		var item = this.items[current];
-		if (!item.tokens) item.tokens = 0;
-		if (!item.prompt_tokens) item.prompt_tokens = 0;
-		if (!item.input_tokens) item.input_tokens = 0;
-		if (!item.cost) item.cost = 0;
-		if (data.total_tokens)
-		{
-			item.tokens += data.tokens;
-			if (data.prompt_tokens)
-			{
-				item.prompt_tokens += data.prompt_tokens;
-				item.input_tokens += data.total_tokens - data.prompt_tokens;
-			}
-		}
-		if (data.cost) item.cost += data.cost;
+		this.addItem(this.items[current], data);
 	}
 	
 	
