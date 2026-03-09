@@ -3,7 +3,7 @@ import { Client } from "./Client.js";
 import { StartChatEvent, UpdateChatEvent, ErrorChatEvent, StepEvent, EndChatEvent, EndChunkEvent } from "./Chat.js";
 import { Message, ToolMessage } from "./Message.js";
 import { filterRules, Rule } from "./Rule.js";
-import { getFileType, isTextFile, isImage, mkdir } from "../api.js";
+import { getFileType, isTextFile, isImage, fileExists } from "../api.js";
 import { splitItem } from "../lib.js";
 import path from "path";
 
@@ -305,7 +305,27 @@ export class Question
 				/* Add filename */
 				else
 				{
-					var rule = rules.find((item) => item.name == rulename && !item.disable);
+					var rule = null;
+					if (filename.substring(0, 2) == "./")
+					{
+						var filepath = path.resolve(this.folderPath, filename);
+						if (!await fileExists(filepath))
+							continue;
+						try
+						{
+							var content = await fs.readFile(filepath, "utf8");
+							rule = new Rule();
+							rule.name = filename;
+							rule.parseContent(content);
+						}
+						catch (error)
+						{
+						}
+					}
+					else
+					{
+						rule = rules.find((item) => item.name == rulename && !item.disable);
+					}
 					if (rule && !findRule(rule)) this.rules.push(rule);
 				}
 			}
@@ -641,6 +661,7 @@ export class Question
 		if (!this.debug)
 		{
 			console.log("Send prompt to " + this.model_name);
+			console.log(this.getPrompt());
 		}
 		
 		/* Send message */

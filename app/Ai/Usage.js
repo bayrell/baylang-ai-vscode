@@ -18,38 +18,38 @@ export class Usage
 	{
 		if (!data) return;
 		
+		this.addTotal(stat);
+		this.addStat(stat);
+	}
+	
+	
+	/**
+	 * Add total
+	 */
+	addTotal(data)
+	{
 		var total = this.total;
 		if (!total.tokens) total.tokens = 0;
 		if (!total.input_tokens) total.input_tokens = 0;
 		if (!total.prompt_tokens) total.prompt_tokens = 0;
 		if (!total.cost) total.cost = 0;
-		
-		var stat = {};
 		if (data.total_tokens)
 		{
 			total.tokens += data.total_tokens;
-			stat.tokens = data.total_tokens;
 			if (data.prompt_tokens)
 			{
 				total.prompt_tokens += data.prompt_tokens;
 				total.input_tokens += data.total_tokens - data.prompt_tokens;
-				stat.prompt_tokens = data.prompt_tokens;
-				stat.input_tokens = data.total_tokens - data.prompt_tokens;
 			}
 		}
-		if (data.cost)
-		{
-			total.cost += data.cost;
-			stat.cost = data.cost;
-		}
-		this.addStat(stat);
+		if (data.cost) total.cost += data.cost;
 	}
 	
 	
 	/**
 	 * Add stat
 	 */
-	addStat(stat)
+	addStat(data)
 	{
 		var date = new Date();
 		var current = date.getFullYear() * 12 +
@@ -63,10 +63,16 @@ export class Usage
 		if (!item.prompt_tokens) item.prompt_tokens = 0;
 		if (!item.input_tokens) item.input_tokens = 0;
 		if (!item.cost) item.cost = 0;
-		item.tokens += stat.tokens;
-		item.prompt_tokens += stat.prompt_tokens;
-		item.input_tokens += stat.input_tokens;
-		item.cost += stat.cost;
+		if (data.total_tokens)
+		{
+			item.tokens += data.tokens;
+			if (data.prompt_tokens)
+			{
+				item.prompt_tokens += data.prompt_tokens;
+				item.input_tokens += data.total_tokens - data.prompt_tokens;
+			}
+		}
+		if (data.cost) item.cost += data.cost;
 	}
 	
 	

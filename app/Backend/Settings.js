@@ -2,7 +2,7 @@ import path from "path";
 import vscode from "vscode";
 import { promises as fs } from "fs";
 import { removeFirstSlash, removeLastSlash } from "../lib.js";
-import { fileExists, makeHash } from "../api.js";
+import { fileExists, makeHash, makeFilePath } from "../api.js";
 import { Agent } from "../Ai/Agent.js";
 import { Chat } from "../Ai/Chat.js";
 import { createModel } from "../Ai/Model.js";
@@ -562,10 +562,14 @@ export class Settings
 	{
 		var folderPath = this.getChatFolderPath();
 		var filePath = path.join(folderPath, chat_id + ".json");
-		if (!fileExists(filePath)) return;
+		if (!await fileExists(filePath)) return;
 		try
 		{
-			fs.unlink(filePath);
+			var newPath = path.join(folderPath, "archive", chat_id + ".json");
+			await makeFilePath(newPath);
+			
+			/* Move file */
+			await fs.rename(filePath, newPath);
 		}
 		catch (e){}
 	}

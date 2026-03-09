@@ -82,6 +82,7 @@ const file_types = {
 	"gitignore": "text/plain",
 	"editorconfig": "text/plain",
 	"license": "text/plain",
+	"htaccess": "text/plain"
 };
 
 export function makeHash(item)
@@ -102,7 +103,7 @@ export async function fileExists(file_path)
 	}
 }
 
-export async function mkdir(file_name)
+export async function makeFilePath(file_name)
 {
 	const dir_name = path.dirname(file_name);
 	await fs.mkdir(dir_name, { recursive: true });
@@ -112,7 +113,7 @@ export async function getFileType(file_path)
 {
 	const file_extension = path.extname(file_path).substring(1);
 	if (file_types[file_extension]) return file_types[file_extension];
-	return "application/octet-stream";
+	return "text/plain";
 }
 
 export function isImage(mime)
