@@ -136,7 +136,9 @@ export function isTextFile(file)
 		"application/javascript",
 		"application/typescript",
 		"text/plain",
-		"text/html"
+		"text/html",
+		"text/css",
+		"text/markdown"
 	];
 	if (mime_types.indexOf(file.mime) >= 0) return true;
 	

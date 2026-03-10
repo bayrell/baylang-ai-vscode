@@ -109,6 +109,9 @@ export class Settings
 		try
 		{
 			var data = JSON.stringify(agents, null, 2);
+			
+			/* Save file */
+			await makeFilePath(agentFile);
 			await fs.writeFile(agentFile, data);
 		}
 		catch(e)
