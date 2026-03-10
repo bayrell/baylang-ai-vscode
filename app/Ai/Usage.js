@@ -31,6 +31,7 @@ export class Usage
 		if (!total.tokens) total.tokens = 0;
 		if (!total.input_tokens) total.input_tokens = 0;
 		if (!total.prompt_tokens) total.prompt_tokens = 0;
+		if (!total.cached_tokens) total.cached_tokens = 0;
 		if (!total.cost) total.cost = 0;
 		if (data.total_tokens)
 		{
@@ -39,6 +40,13 @@ export class Usage
 			{
 				total.prompt_tokens += data.prompt_tokens;
 				total.input_tokens += data.total_tokens - data.prompt_tokens;
+			}
+		}
+		if (data.prompt_tokens_details)
+		{
+			if (data.prompt_tokens_details.cached_tokens)
+			{
+				total.cached_tokens += data.prompt_tokens_details.cached_tokens
 			}
 		}
 		if (data.cost) total.cost += data.cost;

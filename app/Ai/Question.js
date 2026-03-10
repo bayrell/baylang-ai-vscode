@@ -18,13 +18,21 @@ export class PromptBuilder
 	/**
 	 * Add message
 	 */
-	addMessage(messages, tag, content)
+	addMessage(messages, tag, content, cache)
 	{
 		if (!content) return;
-		messages.push({
+		if (!cache) cache = true;
+		var obj = {
 			"role": tag,
 			"content": content,
-		});
+		};
+		if (cache)
+		{
+			obj["cache_control"] = {
+				"type": "ephemeral"
+			};
+		}
+		messages.push(obj);
 	}
 	
 	
@@ -54,7 +62,7 @@ export class PromptBuilder
 			;
 			if (content.length > 0)
 			{
-				/*this.addMessage(messages, "system", "Tools rules:\n\n" + content.join("\n\n"));*/
+				this.addMessage(messages, "system", "Tools rules:\n\n" + content.join("\n\n"));
 			}
 		}
 		
@@ -126,6 +134,10 @@ export class PromptBuilder
 					tool_call_id: tool.id,
 					name: tool.function.name,
 					content: content,
+					cache_control:
+					{
+						type: "ephemeral"
+					}
 				});
 			}
 		}

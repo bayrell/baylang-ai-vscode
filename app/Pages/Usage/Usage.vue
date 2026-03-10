@@ -70,11 +70,11 @@
 				</div>
 				<div class="usage_page__total_item">
 					<span class="usage_page__total_label">Prompt Tokens:</span>
-					<span class="usage_page__total_value">{{ this.getTokens(model.total.prompt_tokens) }}</span>
+					<span class="usage_page__total_value">{{ this.getTokens(model.total.prompt_tokens - this.toInt(model.total.cached_tokens)) }}</span>
 				</div>
 				<div class="usage_page__total_item">
 					<span class="usage_page__total_label">Total Tokens:</span>
-					<span class="usage_page__total_value">{{ this.getTokens(model.total.tokens) }}</span>
+					<span class="usage_page__total_value">{{ this.getTokens(model.total.tokens - this.toInt(model.total.cached_tokens)) }}</span>
 				</div>
 			</div>
 			<p class="usage_page__no-data" v-else>No total usage data available.</p>
@@ -95,7 +95,7 @@
 						{{ item.label }}
 					</td>
 					<td class="usage_page__value usage_page__value_tokens">
-						{{ this.getTokens(item.value.tokens) }}
+						{{ this.getTokens(item.value.tokens - this.toInt(item.value.cached_tokens)) }}
 					</td>
 					<td class="usage_page__value usage_page__value_cost">
 						${{ item.value.cost.toFixed(4) }}
@@ -142,6 +142,11 @@ export default {
 		},
 	},
 	methods: {
+		toInt(value)
+		{
+			if (value == undefined) return 0;
+			return !isNaN(value) ? value : 0;
+		},
 		getMonthName(month)
 		{
 			const names = [

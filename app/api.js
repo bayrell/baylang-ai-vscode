@@ -141,6 +141,7 @@ export function isTextFile(file)
 		"text/markdown"
 	];
 	if (mime_types.indexOf(file.mime) >= 0) return true;
+	if (file.indexOf("text/") == 0) return true;
 	
 	const extensions = [
 		"txt", "html", "htm", "css", "js", "json", "ts", "tsx", "jsx", "xml", "svg", "yml", "yaml", "vue", "ejs", "php", "py", "java", "bay", "c", "cpp", "h", "hpp", "go", "rb", "pl", "sh", "swift", "kt", "rs", "lua", "sql", "r", "cs", "fs", "vb", "log", "cfg", "ini", "env", "gitignore", "editorconfig", "license"
