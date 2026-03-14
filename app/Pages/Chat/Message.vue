@@ -243,6 +243,7 @@ export default {
 						"get_current_date",
 						"random",
 						"chat_history",
+						"read_chat_history",
 					];
 					const tool_name = this.message.tool_name;
 					if (names.indexOf(tool_name) >= 0)

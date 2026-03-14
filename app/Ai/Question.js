@@ -48,8 +48,17 @@ export class PromptBuilder
 		
 		/* Add system rules */
 		var lines = [];
+		
+		/* Add current date */
 		const current_date = new Date();
 		lines.push("Current date: " + current_date.toString());
+		
+		/* Add dialog continue message */
+		if (variables.tools_history && variables.tools_history.length > 0)
+		{
+			lines.push("Continue dialog. No need to greeting again");
+		}
+		
 		this.addMessage(messages, "system", lines);
 		
 		/* Add memory */

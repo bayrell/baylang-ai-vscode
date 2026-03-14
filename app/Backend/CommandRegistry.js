@@ -1,23 +1,11 @@
+import path from "path";
 import { promises as fs } from "fs";
 import { Settings } from "./Settings.js";
 import { Agent } from "../Ai/Agent.js";
-import { Chat, CreateChatEvent } from "../Ai/Chat.js";
-import { Question } from "../Ai/Question.js";
 import { Rule } from "../Ai/Rule.js";
-import { Tools } from "../Ai/Tool.js";
-import { RandomTool } from "../Tools/RandomTool.js";
-import { GetCurrentDate } from "../Tools/GetCurrentDate.js";
-import { WriteFile } from "../Tools/WriteFile.js";
-import { ReadFile } from "../Tools/ReadFile.js";
-import { RenameFile } from "../Tools/RenameFile.js";
-import { DeleteFile } from "../Tools/DeleteFile.js";
-import { ListFiles } from "../Tools/ListFiles.js";
-import { ChatHistory } from "../Tools/ChatHistory.js";
 import { Usage } from "../Ai/Usage.js";
-import path from "path";
-import { ReadMemory } from "../Tools/ReadMemory.js";
-import { UpdateMemory } from "../Tools/UpdateMemory.js";
-import { FindFileByName } from "../Tools/FindFileByName.js";
+import { registerTools } from "./Tools.js";
+import { registerSendMessage } from "./SendMessage.js";
 
 export class CommandRegistry
 {
@@ -83,46 +71,28 @@ export class CommandRegistry
 
 
 /**
- * Register tools
- */
-export async function registerTools(settings)
-{
-	var tools = new Tools();
-	
-	/* Create tools */
-	tools.add(new RandomTool());
-	tools.add(new WriteFile(settings));
-	tools.add(new ReadFile(settings));
-	tools.add(new RenameFile(settings));
-	tools.add(new DeleteFile(settings));
-	tools.add(new ListFiles(settings));
-	tools.add(new ChatHistory(settings));
-	tools.add(new ReadMemory(settings));
-	tools.add(new UpdateMemory(settings));
-	tools.add(new FindFileByName(settings));
-	
-	return tools;
-}
-
-
-/**
  * Register commands
  */
 export async function registerCommands(provider)
 {
 	var registry = provider.registry;
-	var questions = [];
 	
 	/* Init settings */
 	var settings = new Settings(provider.globalStorageUri);
 	await settings.loadData();
 	
 	/* Init tools */
-	var tools = await registerTools(settings);
+	settings.tools = await registerTools(settings);
 	
 	/* Init usage */
-	var usage = new Usage(settings);
-	await usage.loadData();
+	settings.usage = new Usage(settings);
+	settings.usage.loadData();
+	
+	/* Questions */
+	settings.questions = [];
+	
+	/* Register */
+	registerSendMessage(settings, provider);
 	
 	/* Load chat */
 	registry.register("load_chat", async () => {
@@ -235,89 +205,6 @@ export async function registerCommands(provider)
 		};
 	});
 	
-	/* Send message */
-	registry.register("send_message", async (message) => {
-		
-		/* Find agent by id */
-		var agent = settings.getAgentByName(message.agent, message.global);
-		if (!agent)
-		{
-			return {
-				success: false,
-				message: "Agent not found",
-			}
-		}
-		
-		/* Create question */
-		var question = new Question();
-		question.agent = agent;
-		question.provider = provider;
-		question.settings = settings;
-		question.folderPath = settings.workspaceFolderPath;
-		question.tools = tools;
-		question.usage = usage;
-		questions.push(question);
-		
-		/* Find model */
-		question.model = settings.getModelByName(message.model ? message.model : agent.model);
-		if (!question.model)
-		{
-			return {
-				success: false,
-				message: "Model not found",
-			}
-		}
-		
-		/* Set model name */
-		question.model_name = message.model_name ? message.model_name : agent.model_name;
-		
-		/* Load chat by id */
-		question.chat = await settings.loadChatById(message.id);
-		if (!question.chat)
-		{
-			question.chat = new Chat();
-			question.chat.id = message.id;
-			question.chat.name = message.name;
-			provider.sendMessage(new CreateChatEvent(question.chat));
-		}
-		
-		/* Add files */
-		var files = JSON.parse(message.files);
-		question.addFiles(files);
-		await question.readFiles();
-		
-		/* Read memory */
-		await question.readMemory();
-		
-		/* Remove chat history */
-		if (message.lastMessageId)
-		{
-			question.user_message = question.removeChatHistory(message.lastMessageId);
-		}
-		
-		/* Send question */
-		var send_question = async () => {
-			if (message.content && !message.lastMessageId)
-			{
-				await question.addUserMessage(message.content);
-			}
-			await question.addAgentMessage();
-			await settings.saveChat(question.chat);
-			await question.updateRules();
-			await question.send();
-			
-			/* Remove question */
-			var index = questions.findIndex((item) => item == question);
-			questions.splice(index);
-		};
-		send_question();
-		
-		/* Returns result */
-		return {
-			success: true,
-		};
-	});
-	
 	/* Stop chat */
 	registry.register("stop_chat", async (chat_id) => {
 		var question = questions.find((item) => item.chat.id == chat_id);
@@ -401,8 +288,8 @@ export async function registerCommands(provider)
 	registry.register("load_usage", async () => {
 		return {
 			success: true,
-			total: usage.total,
-			items: usage.items,
+			total: settings.usage.total,
+			items: settings.usage.items,
 		};
 	});
 }

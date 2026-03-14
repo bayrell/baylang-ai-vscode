@@ -28,7 +28,7 @@ export class ChatHistory extends Tool
 			description: "Chat content to save",
 			required: false,
 		});
-		this.setPrompt("Use `chat_history` tool to save, read, list, or delete chat history files. Save history in yyyy-mm-dd format. Append new chat. If dialog is long save and update history.");
+		this.setPrompt("Use `chat_history` tool to save, read, list, or delete chat history files. Save history in yyyy-mm-dd format. Append new chat. If dialog is long save and update history. Use markdown format for history.");
 		this.settings = settings;
 		this.historyFolder = ".vscode/history";
 	}
@@ -168,8 +168,7 @@ export class ChatHistory extends Tool
 				const file_path = path.join(history_path, file);
 				const stats = await fs.stat(file_path);
 				chats.push({
-					file_name: file,
-					path: file_path,
+					file_name: path.basename(file),
 					size: stats.size,
 					modified: stats.mtime,
 				});

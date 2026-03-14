@@ -1,4 +1,5 @@
 .vscode/history
+.vscode/rules/soul.rule
 dist/index.cjs
 dist/index.cjs.map
 dist/main.css
