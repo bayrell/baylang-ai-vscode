@@ -20,6 +20,7 @@ class ChatModel
 		this.show_dialog = "";
 		this.show_dialog_id = "";
 		this.show_tools = true;
+		this.show_memory_tools = false;
 		this.send_message = "";
 		this.loading = true;
 	}

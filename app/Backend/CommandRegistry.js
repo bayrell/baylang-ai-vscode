@@ -13,6 +13,8 @@ import { DeleteFile } from "../Tools/DeleteFile.js";
 import { ListFiles } from "../Tools/ListFiles.js";
 import { Usage } from "../Ai/Usage.js";
 import path from "path";
+import { ReadMemory } from "../Tools/ReadMemory.js";
+import { UpdateMemory } from "../Tools/UpdateMemory.js";
 
 export class CommandRegistry
 {
@@ -91,6 +93,8 @@ export async function registerTools(settings)
 	tools.add(new RenameFile(settings));
 	tools.add(new DeleteFile(settings));
 	tools.add(new ListFiles(settings));
+	tools.add(new ReadMemory(settings));
+	tools.add(new UpdateMemory(settings));
 	
 	return tools;
 }
@@ -276,6 +280,9 @@ export async function registerCommands(provider)
 		var files = JSON.parse(message.files);
 		question.addFiles(files);
 		await question.readFiles();
+		
+		/* Read memory */
+		await question.readMemory();
 		
 		/* Remove chat history */
 		if (message.lastMessageId)

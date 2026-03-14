@@ -161,7 +161,7 @@
 			</div>
 		</div>
 		<div :class="getClassMessage()"
-			v-if="this.message.sender=='tool' && this.model.show_tools"
+			v-if="this.message.sender=='tool' && this.isShow()"
 		>
 			<div class="tool_name">
 				Execute: {{ this.message.tool_name + this.message.tool_arguments }}
@@ -228,6 +228,23 @@ export default {
 		this.$emit("update");
 	},
 	methods: {
+		isShow()
+		{
+			if (this.message.sender == "tool")
+			{
+				if (!this.model.show_tools) return false;
+				
+				/* Hide memory tools */
+				if (!this.model.show_memory_tools)
+				{
+					if (this.message == "update_memory" && this.message == "read_memory")
+					{
+						return false;
+					}
+				}
+			}
+			return true;
+		},
 		getClassMessage()
 		{
 			if (this.message.sender == "agent")

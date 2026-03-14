@@ -46,6 +46,9 @@ export class PromptBuilder
 		/* Add system rules */
 		this.addMessage(messages, "system", this.prompt);
 		
+		/* Add memory */
+		if (variables.memory) this.addMessage(messages, "system", "Memory:\n" + variables.memory);
+		
 		/* Add rules */
 		if (variables.rules)
 		{
@@ -155,6 +158,7 @@ export class Question
 		this.user_message = null;
 		this.model = null;
 		this.model_name = null;
+		this.memory = null;
 		this.chat = null;
 		this.client = null;
 		this.provider = null;
@@ -246,6 +250,23 @@ export class Question
 			{
 				file.error = error;
 			}
+		}
+	}
+	
+	
+	/**
+	 * Read memory
+	 */
+	async readMemory()
+	{
+		this.memory = "";
+		const file_path = path.join(this.folderPath, ".vscode", "memory.md");
+		try
+		{
+			this.memory = await fs.readFile(file_path, "utf8");
+		}
+		catch (error)
+		{
 		}
 	}
 	
@@ -375,6 +396,7 @@ export class Question
 			"query": this.user_message.getText(),
 			"history": history.join("\n\n"),
 			"files": this.files,
+			"memory": this.memory,
 			"rules": this.agent.enableRules() ? this.rules : null,
 			"tools": this.agent.enableTools() ? this.tools : null,
 			"tools_history": this.tools_history,

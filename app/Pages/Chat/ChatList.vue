@@ -21,10 +21,12 @@
 		background: var(--vscode-input-background, white);
 		border: 1px var(--border-color) solid;
 		max-height: 400px;
+		width: calc(100% - 40px);
 		overflow-y: auto;
 		z-index: 999;
 	}
 	&__item{
+		position: relative;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -40,11 +42,17 @@
 	&__item:last-child{
 		border-bottom-width: 0px;
 	}
+	&__label{
+		overflow-x: hidden;
+		white-space: nowrap;
+		width: calc(100% - 45px);
+	}
 	&__buttons{
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		gap: 5px;
+		width: 40px;
 	}
 	&__button{
 		cursor: pointer;
@@ -84,7 +92,7 @@
 				<div class="chat_list__item" v-for="item in items" :key="item.id"
 					@click="selectItem(item.id)"
 				>
-					<div class="chat_list__label">{{ item.title }}</div>
+					<div class="chat_list__label"><span>{{ item.title }}</span></div>
 					<div class="chat_list__buttons">
 						<span class="chat_list__button" @click="onEdit($event, item.id)">
 							<img :src="layout.getImage('edit.svg')" />
