@@ -237,11 +237,23 @@ export default {
 				/* Hide memory tools */
 				if (!this.model.show_memory_tools)
 				{
-					if (this.message == "update_memory" && this.message == "read_memory")
+					const names = [
+						"update_memory",
+						"read_memory",
+						"get_current_date",
+						"random",
+						"chat_history",
+					];
+					const tool_name = this.message.tool_name;
+					if (names.indexOf(tool_name) >= 0)
 					{
 						return false;
 					}
 				}
+			}
+			else
+			{
+				if (this.message.getLines() == 0) return false;
 			}
 			return true;
 		},

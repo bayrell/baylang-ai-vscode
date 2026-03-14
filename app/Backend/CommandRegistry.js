@@ -6,15 +6,18 @@ import { Question } from "../Ai/Question.js";
 import { Rule } from "../Ai/Rule.js";
 import { Tools } from "../Ai/Tool.js";
 import { RandomTool } from "../Tools/RandomTool.js";
+import { GetCurrentDate } from "../Tools/GetCurrentDate.js";
 import { WriteFile } from "../Tools/WriteFile.js";
 import { ReadFile } from "../Tools/ReadFile.js";
 import { RenameFile } from "../Tools/RenameFile.js";
 import { DeleteFile } from "../Tools/DeleteFile.js";
 import { ListFiles } from "../Tools/ListFiles.js";
+import { ChatHistory } from "../Tools/ChatHistory.js";
 import { Usage } from "../Ai/Usage.js";
 import path from "path";
 import { ReadMemory } from "../Tools/ReadMemory.js";
 import { UpdateMemory } from "../Tools/UpdateMemory.js";
+import { FindFileByName } from "../Tools/FindFileByName.js";
 
 export class CommandRegistry
 {
@@ -93,8 +96,10 @@ export async function registerTools(settings)
 	tools.add(new RenameFile(settings));
 	tools.add(new DeleteFile(settings));
 	tools.add(new ListFiles(settings));
+	tools.add(new ChatHistory(settings));
 	tools.add(new ReadMemory(settings));
 	tools.add(new UpdateMemory(settings));
+	tools.add(new FindFileByName(settings));
 	
 	return tools;
 }

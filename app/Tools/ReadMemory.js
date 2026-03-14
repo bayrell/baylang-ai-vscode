@@ -27,7 +27,7 @@ export class ReadMemory extends Tool
 		var content = "";
 		try
 		{
-			content = await fs.readFile(absolute_file_path, content, "utf8");
+			content = await fs.readFile(absolute_file_path, "utf8");
 		}
 		catch (error)
 		{

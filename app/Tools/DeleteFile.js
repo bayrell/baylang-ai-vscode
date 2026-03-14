@@ -53,7 +53,7 @@ export class DeleteFile extends Tool
 			var file_name = file_path[i];
 			
 			/* Check file path and resolve to absolute path */
-			const absolute_file_path = "";
+			var absolute_file_path = "";
 			
 			try
 			{

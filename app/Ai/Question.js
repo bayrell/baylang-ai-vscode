@@ -46,6 +46,12 @@ export class PromptBuilder
 		/* Add system rules */
 		this.addMessage(messages, "system", this.prompt);
 		
+		/* Add system rules */
+		var lines = [];
+		const current_date = new Date();
+		lines.push("Current date: " + current_date.toString());
+		this.addMessage(messages, "system", lines);
+		
 		/* Add memory */
 		if (variables.memory) this.addMessage(messages, "system", "Memory:\n" + variables.memory);
 		
@@ -126,7 +132,12 @@ export class PromptBuilder
 				var content = "";
 				if (!tool.error)
 				{
-					content = JSON.stringify(tool.answer);
+					var answer = tool.answer;
+					if (typeof answer != "string")
+					{
+						answer = JSON.stringify(answer);
+					}
+					content = answer;
 				}
 				else
 				{
@@ -561,6 +572,11 @@ export class Question
 		try
 		{
 			item.answer = await tool.execute(item.args);
+			/* Convert object or array to string */
+			if (typeof item.answer === 'object' && item.answer !== null)
+			{
+				item.answer = JSON.stringify(item.answer);
+			}
 			this.agent_message.tool_answer = item.answer;
 		}
 		catch (e)
