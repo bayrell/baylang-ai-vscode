@@ -4,7 +4,7 @@ import { StartChatEvent, UpdateChatEvent, ErrorChatEvent, StepEvent, EndChatEven
 import { Message, ToolMessage } from "./Message.js";
 import { filterRules, Rule } from "./Rule.js";
 import { getFileType, isTextFile, isImage, fileExists } from "../api.js";
-import { splitItem } from "../lib.js";
+import { splitItem, getFileWithoutExtension } from "../lib.js";
 import path from "path";
 
 export class PromptBuilder
@@ -51,18 +51,42 @@ export class PromptBuilder
 		
 		/* Add current date */
 		const current_date = new Date();
-		lines.push("Current date: " + current_date.toString());
+		lines.push(`Current date: ${current_date.toString()}\n`);
+		
+		/* Add memory rules */
+		lines.push("Memory rules:");
+		lines.push("- Use `soul` memory for information about yourself.")
+		lines.push("- Use `main` memory for common information about project and system.")
+		lines.push("- Use `user` memory about user and his preferences.")
+		lines.push("- Use `project` memory for project details.")
+		lines.push("- Use `sessions` memory for current session and tasks.")
+		lines.push("- Use `temp` memory for temporary.")
+		lines.push("- Keep Memory Compressed: Remove redundant information, keep only essential facts")
+		lines.push("- Structure Information: Use clear headings and categories")
+		lines.push("- Periodic Cleanup: Review memory regularly, remove outdated information")
+		lines.push("- What to Keep: Project description, technologies, rules, active tasks, critical config")
+		lines.push("- What to Remove: Duplicate info, completed tasks, temporary notes, obsolete configs")
 		
 		/* Add dialog continue message */
 		if (variables.tools_history && variables.tools_history.length > 0)
 		{
+			lines.push("");
 			lines.push("Continue dialog. No need to greeting again");
 		}
 		
-		this.addMessage(messages, "system", lines);
+		this.addMessage(messages, "system", lines.join("\n"));
 		
 		/* Add memory */
-		if (variables.memory) this.addMessage(messages, "system", "Memory:\n" + variables.memory);
+		if (variables.memory && variables.memory.length > 0)
+		{
+			var memory_content = "";
+			for (var i=0; i<variables.memory.length; i++)
+			{
+				var mem = variables.memory[i];
+				memory_content += "Memory name: " + mem.name + "\n\n```" + mem.content + "```\n\n";
+			}
+			this.addMessage(messages, "system", memory_content);
+		}
 		
 		/* Add rules */
 		if (variables.rules)
@@ -178,7 +202,7 @@ export class Question
 		this.user_message = null;
 		this.model = null;
 		this.model_name = null;
-		this.memory = null;
+		this.memory = [];
 		this.chat = null;
 		this.client = null;
 		this.provider = null;
@@ -275,18 +299,50 @@ export class Question
 	
 	
 	/**
-	 * Read memory
+	 * Read memory files from .vscode/memory folder
 	 */
 	async readMemory()
 	{
-		this.memory = "";
-		const file_path = path.join(this.folderPath, ".vscode", "memory.md");
+		this.memory = [];
+		const folder_path = path.join(this.folderPath, ".vscode", "memory");
+		
 		try
 		{
-			this.memory = await fs.readFile(file_path, "utf8");
+			// Ensure directory exists
+			try {
+				await fs.access(folder_path);
+			} catch {
+				await fs.mkdir(folder_path, { recursive: true });
+				return;
+			}
+			
+			// Read all files from memory directory
+			const files = await fs.readdir(folder_path);
+			
+			// Filter only .md files
+			const file_list = files.filter(file => file.endsWith('.md'));
+			
+			// Read each memory file
+			for (const file_name of file_list)
+			{
+				const file_path = path.join(folder_path, file_name);
+				try
+				{
+					const content = await fs.readFile(file_path, "utf8");
+					this.memory.push({
+						name: getFileWithoutExtension(file_name),
+						content: content
+					});
+				}
+				catch (error)
+				{
+					console.error("Error reading memory file " + file_name + ":", error);
+				}
+			}
 		}
 		catch (error)
 		{
+			console.error("Error reading memory folder:", error);
 		}
 	}
 	

@@ -28,7 +28,7 @@ export class ChatHistory extends Tool
 			description: "Chat content to save",
 			required: false,
 		});
-		this.setPrompt("Use `chat_history` tool to save, read, list, or delete chat history files. Save history in yyyy-mm-dd format. Append new chat. If dialog is long save and update history. Use markdown format for history.");
+		this.setPrompt("Use `chat_history` tool to save, read, list, or delete chat history files. Save history in yyyy-mm-dd.txt format. Append new chat. If dialog is long save and update history. Use markdown format for history. Before save history check if filename is exists. If exists read history and append it.");
 		this.settings = settings;
 		this.historyFolder = ".vscode/history";
 	}
@@ -151,28 +151,46 @@ export class ChatHistory extends Tool
 
 
 	/**
-	 * List all chat history files
+	 * List all chat history files recursively
 	 */
-	async listChats(history_path)
+	async listChats(history_path, recursive = true)
 	{
 		try
 		{
 			// Create history folder if it doesn't exist
 			await fs.mkdir(history_path, { recursive: true });
 
-			const chat_files = await fs.readdir(history_path);
-
 			const chats = [];
-			for (const file of chat_files)
-			{
-				const file_path = path.join(history_path, file);
-				const stats = await fs.stat(file_path);
-				chats.push({
-					file_name: path.basename(file),
-					size: stats.size,
-					modified: stats.mtime,
-				});
-			}
+			
+			// Helper function to scan directory recursively
+			const scanDir = async (dir) => {
+				const entries = await fs.readdir(dir, { withFileTypes: true });
+				
+				for (const entry of entries)
+				{
+					const full_path = path.join(dir, entry.name);
+					const relative_path = path.relative(history_path, full_path);
+					
+					if (entry.isDirectory())
+					{
+						if (recursive)
+						{
+							await scanDir(full_path);
+						}
+						// Skip directories in results
+						continue;
+					}
+					
+					const stats = await fs.stat(full_path);
+					chats.push({
+						file_name: relative_path,
+						size: stats.size,
+						modified: stats.mtime,
+					});
+				}
+			};
+			
+			await scanDir(history_path);
 
 			return {
 				success: true,

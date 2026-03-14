@@ -51,6 +51,11 @@ export function getFileExtension(filename)
 	var arr = filename.split(".");
 	return arr.pop();
 }
+export function getFileWithoutExtension(filename)
+{
+	var arr = filename.split(".");
+	return arr.slice(0, -1).join(".");
+}
 export function splitItem(item)
 {
 	return item.split(",").map(g => g.trim()).filter(g => g.length > 0)
