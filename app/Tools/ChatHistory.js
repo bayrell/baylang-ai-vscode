@@ -28,7 +28,7 @@ export class ChatHistory extends Tool
 			description: "Chat content to save",
 			required: false,
 		});
-		this.setPrompt("Use `chat_history` tool to save, read, list, or delete chat history files. Save history in yyyy-mm-dd hour-minutes.txt format. Append new chat. If dialog is long save and update history. Use markdown format for history. Before save history check if filename is exists. If exists read history and append it.");
+		this.setPrompt("Use `chat_history` tool to save, read, list, or delete chat history files. Save history in yyyy-mm-dd h-i.txt format with leading numbers. Append new chat. If dialog is long save and update history. Use markdown format for history. Before save history check if filename is exists. If exists read history and append it.");
 		this.settings = settings;
 		this.historyFolder = ".vscode/history";
 	}

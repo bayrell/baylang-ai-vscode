@@ -8,7 +8,7 @@ import { ListFiles } from "../Tools/ListFiles.js";
 import { ReadMemory } from "../Tools/ReadMemory.js";
 import { UpdateMemory } from "../Tools/UpdateMemory.js";
 import { FindFileByName } from "../Tools/FindFileByName.js";
-import ChatHistory from "../Pages/Chat/ChatHistory.js";
+import { ChatHistory } from "../Tools/ChatHistory.js";
 import { ReadChatHistory } from "../Tools/ReadChatHistory.js";
 
 /**
