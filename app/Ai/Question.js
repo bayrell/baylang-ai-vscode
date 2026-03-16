@@ -54,9 +54,9 @@ export class PromptBuilder
 		lines.push(`Current date: ${current_date.toString()}\n`);
 		
 		/* Add memory rules */
-		lines.push("Memory rules:");
+		/*lines.push("Memory rules:");
 		lines.push("- Use `soul` memory for information about yourself.")
-		lines.push("- Use `main` memory for common information about project and system.")
+		lines.push("- Use `main` memory for common information about system.")
 		lines.push("- Use `user` memory about user and his preferences.")
 		lines.push("- Use `project` memory for project details.")
 		lines.push("- Use `sessions` memory for current session and tasks.")
@@ -65,13 +65,13 @@ export class PromptBuilder
 		lines.push("- Structure Information: Use clear headings and categories")
 		lines.push("- Periodic Cleanup: Review memory regularly, remove outdated information")
 		lines.push("- What to Keep: Project description, technologies, rules, active tasks, critical config")
-		lines.push("- What to Remove: Duplicate info, completed tasks, temporary notes, obsolete configs")
+		lines.push("- What to Remove: Duplicate info, completed tasks, temporary notes, obsolete configs")*/
 		
 		/* Add dialog continue message */
 		if (variables.tools_history && variables.tools_history.length > 0)
 		{
 			lines.push("");
-			lines.push("Continue dialog. No need to greeting again");
+			lines.push("Attention! Continue dialog. No need to greeting again. Immediately proceed to the result after running tools without repeated previous text. Repeated greetings are allowed only if the dialogue was interrupted for a long time");
 		}
 		
 		this.addMessage(messages, "system", lines.join("\n"));

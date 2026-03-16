@@ -44,6 +44,7 @@ export class ReadFile extends Tool
 		/* Get params */
 		const file_path = params ? params.path : [];
 		
+		if (typeof file_path == "string") file_path = [file_path];
 		if (!file_path || !Array.isArray(file_path) || file_path.length === 0)
 		{
 			throw new Error("No file paths provided for reading.");

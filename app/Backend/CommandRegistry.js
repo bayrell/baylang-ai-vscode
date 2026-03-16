@@ -207,7 +207,7 @@ export async function registerCommands(provider)
 	
 	/* Stop chat */
 	registry.register("stop_chat", async (chat_id) => {
-		var question = questions.find((item) => item.chat.id == chat_id);
+		var question = settings.questions.find((item) => item.chat.id == chat_id);
 		if (!question)
 		{
 			return {
