@@ -30,13 +30,6 @@ export function registerSendMessage(settings, provider)
 		
 		/* Find model */
 		question.model = settings.getModelByName(message.model ? message.model : agent.model);
-		if (!question.model)
-		{
-			return {
-				success: false,
-				message: "Model not found",
-			}
-		}
 		
 		/* Set model name */
 		question.model_name = message.model_name ? message.model_name : agent.model_name;
@@ -50,6 +43,7 @@ export function registerSendMessage(settings, provider)
 			question.chat.name = message.name;
 			provider.sendMessage(new CreateChatEvent(question.chat));
 		}
+		await question.initChat();
 		
 		/* Add files */
 		var files = JSON.parse(message.files);

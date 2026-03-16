@@ -71,7 +71,7 @@ export class PromptBuilder
 		if (variables.tools_history && variables.tools_history.length > 0)
 		{
 			lines.push("");
-			lines.push("Attention! Continue dialog. No need to greeting again. Immediately proceed to the result after running tools without repeated previous text. Repeated greetings are allowed only if the dialogue was interrupted for a long time");
+			lines.push("Attention! No need to greeting again. Immediately proceed to the result after running tools without repeated previous text. Repeated greetings are allowed only if the dialogue was interrupted for a long time");
 		}
 		
 		this.addMessage(messages, "system", lines.join("\n"));
@@ -215,6 +215,7 @@ export class Question
 		this.tools_history = [];
 		this.usage = null;
 		this.debug = false;
+		this.messages_count = 0;
 		this.is_work = true;
 	}
 	
@@ -364,6 +365,15 @@ export class Question
 	
 	
 	/**
+	 * Init chat
+	 */
+	initChat()
+	{
+		this.messages_count = this.chat.messages.length;
+	}
+	
+	
+	/**
 	 * Update rules
 	 */
 	async updateRules()
@@ -449,7 +459,7 @@ export class Question
 	{
 		var builder = new PromptBuilder(this.agent.prompt);
 		var history = [];
-		for (var i=0; i<this.chat.messages.length; i++)
+		for (var i=0; i<this.messages_count; i++)
 		{
 			var message = this.chat.messages[i];
 			if (message instanceof ToolMessage)
@@ -770,6 +780,12 @@ export class Question
 	 */
 	async send()
 	{
+		if (!this.model)
+		{
+			this.sendError(new Error("Model not found"));
+			return ;
+		}
+		
 		this.provider.sendMessage(new StartChatEvent(this.chat, this.agent_message));
 		
 		/* Log message */

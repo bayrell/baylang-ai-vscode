@@ -25,8 +25,8 @@ export async function registerTools(settings)
 	tools.add(new RenameFile(settings));
 	tools.add(new DeleteFile(settings));
 	tools.add(new ListFiles(settings));
-	tools.add(new ChatHistory(settings));
-	tools.add(new ReadChatHistory(settings));
+	/*tools.add(new ChatHistory(settings));
+	tools.add(new ReadChatHistory(settings));*/
 	tools.add(new ReadMemory(settings));
 	tools.add(new UpdateMemory(settings));
 	tools.add(new FindFileByName(settings));

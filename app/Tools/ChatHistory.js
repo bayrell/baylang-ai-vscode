@@ -28,7 +28,7 @@ export class ChatHistory extends Tool
 			description: "Chat content to save",
 			required: false,
 		});
-		this.setPrompt("Use `chat_history` tool to save, read, list, or delete chat history files. Save history in yyyy-mm-dd h-i.txt format with leading numbers. Append new chat. If dialog is long save and update history. Use markdown format for history. Before save history check if filename is exists. If exists read history and append it.");
+		this.setPrompt("Use `chat_history` tool to save, read, list, or delete chat history files. Save history in filename `yyyy-mm-dd h-i.txt` format with leading numbers. Append new chat. If dialog is long save and update history. Use markdown format for history. Before save history check if filename is exists. If exists read history and append it.");
 		this.settings = settings;
 		this.historyFolder = ".vscode/history";
 	}
@@ -100,11 +100,7 @@ export class ChatHistory extends Tool
 			const file_path = path.join(history_path, `${file_name}`);
 			await fs.writeFile(file_path, content, "utf8");
 
-			return {
-				success: true,
-				message: `Chat ${file_name} saved to history`,
-				path: file_path,
-			};
+			return `Chat ${file_name} saved to history`;
 		}
 		catch (error)
 		{
@@ -123,25 +119,9 @@ export class ChatHistory extends Tool
 			const file_path = path.join(history_path, `${file_name}`);
 
 			// Check if file exists
-			try
-			{
-				await fs.access(file_path, fs.constants.F_OK);
-			}
-			catch
-			{
-				return {
-					success: false,
-					message: `Chat history not found for file: ${file_name}`,
-				};
-			}
-
+			await fs.access(file_path, fs.constants.F_OK);
 			const content = await fs.readFile(file_path, "utf8");
-
-			return {
-				success: true,
-				content: content,
-				path: file_path,
-			};
+			return content;
 		}
 		catch (error)
 		{
@@ -215,24 +195,10 @@ export class ChatHistory extends Tool
 			const file_path = path.join(history_path, `${file_name}`);
 
 			// Check if file exists
-			try
-			{
-				await fs.access(file_path, fs.constants.F_OK);
-			}
-			catch
-			{
-				return {
-					success: false,
-					message: `Chat history not found for file: ${file_name}`,
-				};
-			}
-
+			await fs.access(file_path, fs.constants.F_OK);
 			await fs.unlink(file_path);
 
-			return {
-				success: true,
-				message: `Chat ${file_name} deleted from history`,
-			};
+			return `Chat ${file_name} deleted from history`;
 		}
 		catch (error)
 		{
