@@ -43,7 +43,6 @@ export function registerSendMessage(settings, provider)
 			question.chat.name = message.name;
 			provider.sendMessage(new CreateChatEvent(question.chat));
 		}
-		await question.initChat();
 		
 		/* Add files */
 		var files = JSON.parse(message.files);
@@ -65,9 +64,9 @@ export function registerSendMessage(settings, provider)
 			{
 				await question.addUserMessage(message.content);
 			}
-			await question.addAgentMessage();
-			await settings.saveChat(question.chat);
 			await question.updateRules();
+			await question.initChat();
+			await settings.saveChat(question.chat);
 			await question.send();
 			
 			/* Remove question */

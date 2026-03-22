@@ -1,6 +1,7 @@
 import { promises as fs } from "fs";
 import { Tool } from "../Ai/Tool.js";
 import { resolve } from "./Helper.js";
+import { FileObject } from "../Ai/FileObject.js";
 
 export class ReadFile extends Tool
 {
@@ -39,7 +40,7 @@ export class ReadFile extends Tool
 	 * @param {string[]} params.paths - An array of file paths to read.
 	 * @returns {Promise<object[]>} A promise that resolves to an array of objects, each containing file_name and content or an error message.
 	 */
-	async execute(params)
+	async execute(params, question)
 	{
 		/* Get params */
 		const file_path = params ? params.path : [];
@@ -53,52 +54,53 @@ export class ReadFile extends Tool
 		const results = [];
 		for (const file_name of file_path)
 		{
-			let absolute_file_path = "";
+			let file = new FileObject();
+			file.name = file_name;
 			try
 			{
 				/* Check file path and resolve to absolute path */
-				absolute_file_path = resolve(file_name, this.settings.workspaceFolderPath);
+				file.path = resolve(file_name, this.settings.workspaceFolderPath);
 				
 				/* Check if the file exists before attempting to read */
-				await fs.access(absolute_file_path, fs.constants.F_OK);
+				await fs.access(file.path, fs.constants.F_OK);
 				
 				/* Read file content */
-				const content = await fs.readFile(absolute_file_path, 'utf8');
-				results.push({
-					file_name: file_name,
-					content: content
-				});
+				await file.read();
 			}
 			catch (error)
 			{
 				if (error.code === 'ENOENT') // No Entry (file not found)
 				{
-					results.push({
-						file_name: file_name,
-						error: `Error: File not found at '${file_name}'.`
-					});
+					file.error = `File not found at '${file_name}'.`;
 				}
 				else
 				{
-					results.push({
-						file_name: file_name,
-						error: `Error: Could not read file at '${file_name}'. Details: ${error.message}`
-					});
+					file.error = `Could not read file at '${file_name}'. Details: ${error.message}`;
 				}
 			}
+			results.push(file);
 		}
 		
-		/* Format the output for the AI */
-		const formatted_output = results.map(result => {
-			if (result.error)
+		let files = [];
+		let formatted_output = [];
+		for (let i=0; i<results.length; i++)
+		{
+			let file = results[i];
+			if (file.error)
 			{
-				return `Error read ${result.file_name}: ${result.error}`;
+				formatted_output.push(`Error: ${file.error}`);
+				continue;
 			}
-			const file_prefix = "```";
-			return `File: ${result.file_name}\n` +
-				`${file_prefix}\n${result.content}\n${file_prefix}`;
-		});
+			if (file.isText())
+			{
+				formatted_output.push(file.getContent());
+				continue;
+			}
+			formatted_output.push(`Success read file: '${file.name}'`);
+			files.push(file);
+		}
 		
+		question.prompt.addFiles(files);
 		return formatted_output.join("\n\n");
 	}
 }

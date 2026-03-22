@@ -16,6 +16,7 @@ export class Settings
 		this.filePath = path.join(this.folderPath, "settings.json");
 		this.data = {};
 		this.agents = [];
+		this.tools = [];
 		this.workspaceFolderPath = "";
 		this.workspaceFolderHash = "";
 		if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0)

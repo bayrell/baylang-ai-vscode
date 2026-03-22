@@ -1,197 +1,14 @@
+import path from "path";
 import { promises as fs } from "fs";
 import { Client } from "./Client.js";
 import { StartChatEvent, UpdateChatEvent, ErrorChatEvent, StepEvent, EndChatEvent, EndChunkEvent } from "./Chat.js";
+import { FileObject } from "./FileObject.js";
 import { Message, ToolMessage } from "./Message.js";
 import { filterRules, Rule } from "./Rule.js";
-import { getFileType, isTextFile, isImage, fileExists } from "../api.js";
+import { fileExists } from "../api.js";
 import { splitItem, getFileWithoutExtension } from "../lib.js";
-import path from "path";
-
-export class PromptBuilder
-{
-	constructor(prompt)
-	{
-		this.prompt = prompt;
-	}
-	
-	
-	/**
-	 * Add message
-	 */
-	addMessage(messages, tag, content, cache)
-	{
-		if (!content) return;
-		if (!cache) cache = true;
-		var obj = {
-			"role": tag,
-			"content": content,
-		};
-		if (cache)
-		{
-			obj["cache_control"] = {
-				"type": "ephemeral"
-			};
-		}
-		messages.push(obj);
-	}
-	
-	
-	/**
-	 * Returns result
-	 */
-	getResult(variables)
-	{
-		var messages = [];
-		
-		/* Add system rules */
-		this.addMessage(messages, "system", this.prompt);
-		
-		/* Add system rules */
-		var lines = [];
-		
-		/* Add current date */
-		const current_date = new Date();
-		lines.push(`Current date: ${current_date.toString()}\n`);
-		
-		/* Add memory rules */
-		/*lines.push("Memory rules:");
-		lines.push("- Use `soul` memory for information about yourself.")
-		lines.push("- Use `main` memory for common information about system.")
-		lines.push("- Use `user` memory about user and his preferences.")
-		lines.push("- Use `project` memory for project details.")
-		lines.push("- Use `sessions` memory for current session and tasks.")
-		lines.push("- Use `temp` memory for temporary.")
-		lines.push("- Keep Memory Compressed: Remove redundant information, keep only essential facts")
-		lines.push("- Structure Information: Use clear headings and categories")
-		lines.push("- Periodic Cleanup: Review memory regularly, remove outdated information")
-		lines.push("- What to Keep: Project description, technologies, rules, active tasks, critical config")
-		lines.push("- What to Remove: Duplicate info, completed tasks, temporary notes, obsolete configs")*/
-		
-		/* Add dialog continue message */
-		if (variables.tools_history && variables.tools_history.length > 0)
-		{
-			lines.push("");
-			lines.push("Attention! No need to greeting again. Immediately proceed to the result after running tools without repeated previous text. Repeated greetings are allowed only if the dialogue was interrupted for a long time");
-		}
-		
-		this.addMessage(messages, "system", lines.join("\n"));
-		
-		/* Add memory */
-		if (variables.memory && variables.memory.length > 0)
-		{
-			var memory_content = "";
-			for (var i=0; i<variables.memory.length; i++)
-			{
-				var mem = variables.memory[i];
-				memory_content += "Memory name: " + mem.name + "\n\n```" + mem.content + "```\n\n";
-			}
-			this.addMessage(messages, "system", memory_content);
-		}
-		
-		/* Add rules */
-		if (variables.rules)
-		{
-			var rules = variables.rules.map(rule => rule.getRuleContent());
-			if (rules.length > 0) this.addMessage(messages, "system", rules.join("\n\n"));
-		}
-		
-		/* Add tools prompt */
-		if (variables.tools)
-		{
-			var content = variables.tools.items
-				.map((tool) => tool.prompt)
-				.filter((item) => item != "")
-			;
-			if (content.length > 0)
-			{
-				this.addMessage(messages, "system", "Tools rules:\n\n" + content.join("\n\n"));
-			}
-		}
-		
-		/* Add history */
-		this.addMessage(messages, "system", variables.history);
-		
-		/* Add files */
-		var files = variables.files.map((file) => {
-			if (file.error || !file.readed) return null;
-			if (file.isDirectory) return null;
-			if (isTextFile(file))
-			{
-				var file_prefix = "```";
-				return {
-					type: "text",
-					text: "Filename: " + file.name +
-						"\n" + file_prefix + file.content.toString("utf8") + file_prefix,
-				};
-			}
-			var base64Content = file.content.toString("base64");
-			var fileContent = "data:" + file.mime + ";base64," + base64Content;
-			if (isImage(file.mime))
-			{
-				return {
-					type: "image_url",
-					image_url: {
-						url: fileContent,
-					}
-				}
-			}
-			return {
-				type: "file",
-				file: {
-					filename: file.name,
-					file_data: fileContent,
-				}
-			};
-		}).filter((file) => file != null);
-		if (files.length > 0) this.addMessage(messages, "user", files);
-		
-		/* Add user message */
-		this.addMessage(messages, "user", variables.query);
-		
-		/* Add tools history */
-		if (variables.tools_history && variables.tools_history.length > 0)
-		{
-			messages.push({
-				role: "assistant",
-				tool_calls: variables.tools_history.map((tool) =>({
-					type: "function",
-					id: tool.id,
-					function: tool.function,
-				})),
-			});
-			for (var i=0; i<variables.tools_history.length; i++)
-			{
-				var tool = variables.tools_history[i];
-				var content = "";
-				if (!tool.error)
-				{
-					var answer = tool.answer;
-					if (typeof answer != "string")
-					{
-						answer = JSON.stringify(answer);
-					}
-					content = answer;
-				}
-				else
-				{
-					content = "Error: " + JSON.stringify(tool.error);
-				}
-				messages.push({
-					role: "tool",
-					tool_call_id: tool.id,
-					name: tool.function.name,
-					content: content,
-					cache_control:
-					{
-						type: "ephemeral"
-					}
-				});
-			}
-		}
-		
-		return messages;
-	}
-}
+import { PromptBuilder } from "./PromptBuilder.js";
+import { ToolResult } from "./ToolResult.js";
 
 export class Question
 {
@@ -202,6 +19,7 @@ export class Question
 		this.user_message = null;
 		this.model = null;
 		this.model_name = null;
+		this.prompt = null;
 		this.memory = [];
 		this.chat = null;
 		this.client = null;
@@ -265,12 +83,11 @@ export class Question
 			var file = files[i];
 			var find = this.files.find((item) => item.name == file.name);
 			if (file.isDirectory || find) continue;
-			this.files.push(Object.assign(file, {
-				readed: false,
-				error: false,
-				mime: "application/octet-stream",
-				content: null,
-			}));
+			
+			var obj = new FileObject();
+			obj.path = file.path;
+			obj.name = file.name;
+			this.files.push(obj);
 		}
 	}
 	
@@ -284,17 +101,9 @@ export class Question
 		{
 			var file = this.files[i];
 			if (file.readed || file.error) continue;
-			try
-			{
-				file.mime = await getFileType(file.path);
-				file.content = await fs.readFile(file.path);
-				file.readed = true;
-				file.error = false;
-			}
-			catch (error)
-			{
-				file.error = error;
-			}
+			
+			/* Read file */
+			await file.read();
 		}
 	}
 	
@@ -310,9 +119,12 @@ export class Question
 		try
 		{
 			// Ensure directory exists
-			try {
+			try
+			{
 				await fs.access(folder_path);
-			} catch {
+			}
+			catch
+			{
 				await fs.mkdir(folder_path, { recursive: true });
 				return;
 			}
@@ -367,9 +179,60 @@ export class Question
 	/**
 	 * Init chat
 	 */
-	initChat()
+	async initChat()
 	{
-		this.messages_count = this.chat.messages.length;
+		this.prompt = new PromptBuilder();
+		
+		/* Add prompt */
+		this.prompt.addMessage(this.agent.prompt);
+		
+		/* Add current date */
+		this.prompt.addCurrentDate();
+		
+		/* Add memory */
+		const memory_content = this.memory
+			.map((memory) => "Memory name: " + memory.name + "\n```" + memory.content + "```")
+		;
+		this.prompt.addMessage("system", memory_content);
+		
+		/* Add rules */
+		if (this.agent.enableRules())
+		{
+			const rules_content = this.rules
+				.map((rule) => rule.getRuleContent())
+			;
+			this.prompt.addMessage("system", rules_content);
+		}
+		
+		/* Add tools */
+		if (this.agent.enableTools())
+		{
+			const tools_content = this.tools.items
+				.map((tool) => tool.prompt)
+				.filter((tool) => tool != "")
+			;
+			this.prompt.addMessage("system", tools_content);
+		}
+		
+		/* Add history */
+		for (let i=0; i<this.chat.messages.length; i++)
+		{
+			let message = this.chat.messages[i];
+			if (message instanceof ToolMessage) continue;
+			if (message == this.user_message || message == this.agent_message) continue;
+			const sender = message.sender == "user" ? "user" : "assistant";
+			this.prompt.addMessage(sender, message.getText());
+		}
+		
+		/* Add files */
+		if (this.files.length > 0)
+		{
+			console.log(this.files.map(file => `${file.name}, ${file.error}`));
+			this.prompt.addFiles(this.files);
+		}
+		
+		/* Add user message */
+		this.prompt.addMessage("user", this.user_message.getText());
 	}
 	
 	
@@ -453,44 +316,6 @@ export class Question
 	
 	
 	/**
-	 * Returns prompt
-	 */
-	getPrompt()
-	{
-		var builder = new PromptBuilder(this.agent.prompt);
-		var history = [];
-		for (var i=0; i<this.messages_count; i++)
-		{
-			var message = this.chat.messages[i];
-			if (message instanceof ToolMessage)
-			{
-				var find = this.tools_history.find((item) => item == message.tool);
-				if (!find)
-				{
-					history.push("Execute: " + message.tool_name + "\nAnswer: " + message.tool_answer);
-				}
-			}
-			else if (message != null)
-			{
-				if (message != this.user_message && message != this.agent_message)
-				{
-					history.push(message.getName() + ":\n" + message.getText());
-				}
-			}
-		}
-		return builder.getResult({
-			"query": this.user_message.getText(),
-			"history": history.join("\n\n"),
-			"files": this.files,
-			"memory": this.memory,
-			"rules": this.agent.enableRules() ? this.rules : null,
-			"tools": this.agent.enableTools() ? this.tools : null,
-			"tools_history": this.tools_history,
-		});
-	}
-	
-	
-	/**
 	 * Set client
 	 */
 	setClient(client)
@@ -520,11 +345,16 @@ export class Question
 		/* Show debug */
 		if (this.debug)
 		{
-			console.log("Send prompt");
+			console.log("Send prompt to " + this.model_name);
 			console.log(prompt);
 		}
 		var tools = [];
 		var tools_index = {};
+		
+		if (this.agent_message == null || this.agent_message instanceof ToolMessage)
+		{
+			this.addAgentMessage();
+		}
 		
 		/* Create client */
 		var client = new Client(this.model, this.model_name);
@@ -547,18 +377,16 @@ export class Question
 					
 					if (tools_index[index] == undefined)
 					{
-						tools.push({
-							id: item.id,
-							function: item.function,
-							answer: null,
-							error: null,
-						});
+						var tool_result = new ToolResult();
+						tool_result.id = item.id;
+						tool_result.name = item.function?.name;
+						tools.push(tool_result);
 						tools_index[index] = tools.length - 1;
 					}
 					else
 					{
-						var elem = tools[tools_index[index]];
-						elem.function.arguments += item.function.arguments;
+						var tool_result = tools[tools_index[index]];
+						tool_result.arguments += item.function.arguments;
 					}
 				}
 			}
@@ -595,31 +423,28 @@ export class Question
 		}
 		
 		/* Add tools */
+		this.prompt.addTools(tools);
+		
+		/* Add tools */
+		this.tools_history = [];
 		for (var i=0; i<tools.length; i++)
 		{
-			var item = tools[i];
-			var tool_name = item.function?.name;
+			var tool_result = tools[i];
+			var tool_name = tool_result.name;
 			
 			/* Find tool */
-			var tool = this.tools.findTool(tool_name);
-			if (!tool)
+			tool_result.tool = this.tools.findTool(tool_name);
+			if (!tool_result.tool)
 			{
-				await this.sendError(new Error("Tool '" + tool_name + "' not found"));
+				tool_result.has_answer = true;
+				tool_result.error = "Tool '" + tool_name + "' not found";
+				await this.sendError(new Error(tool_result.error));
 				continue;
 			}
 			
 			/* Parse args */
-			var args = item.function?.arguments;
-				try
-			{
-				args = JSON.parse(args);
-			}
-			catch (e)
-			{
-				args = null;
-			}
-			
-			this.tools_history.push(Object.assign(item, { tool: tool, args: args }));
+			tool_result.parseArgs();
+			this.tools_history.push(tool_result);
 		}
 	}
 	
@@ -627,46 +452,44 @@ export class Question
 	/**
 	 * Execute tool
 	 */
-	async executeTool(item)
+	async executeTool(tool_result)
 	{
-		item.answer = null;
-		item.has_answer = true;
+		tool_result.answer = null;
+		tool_result.has_answer = true;
 		
 		/* Check tool */
-		if (item.tool == null)
+		if (tool_result.tool == null)
 		{
 			return;
 		}
 		
 		/* Get tool */
-		var tool = item.tool;
+		var tool = tool_result.tool;
 		this.provider.sendMessage(new UpdateChatEvent(this.chat, this.agent_message));
 		this.provider.sendMessage(new StepEvent(this.chat, this.agent_message));
 		
 		/* Execute tool */
 		try
 		{
-			item.answer = await tool.execute(item.args);
-			/* Convert object or array to string */
-			if (typeof item.answer === 'object' && item.answer !== null)
-			{
-				item.answer = JSON.stringify(item.answer);
-			}
-			this.agent_message.tool_answer = item.answer;
+			tool_result.answer = await tool.execute(tool_result.args, this);
+			this.agent_message.tool_answer = tool_result.getAnswer();
 		}
 		catch (e)
 		{
 			console.log(e);
-			item.error = e.message;
+			tool_result.error = e.message;
 			this.agent_message.tool_error = e.message;
 			await this.sendError(new ErrorChatEvent(this.chat, e));
 		}
+		
+		/* Add tool result */
+		this.prompt.addToolResult(tool_result);
 		
 		/* Show debug */
 		if (this.debug)
 		{
 			console.log("Run tool: " + tool.name);
-			console.log(item.args);
+			console.log(tool_result.args);
 		}
 		
 		/* Save chat */
@@ -682,8 +505,8 @@ export class Question
 	{
 		for (var i=0; i<this.tools_history.length; i++)
 		{
-			var item = this.tools_history[i];
-			if (item.has_answer) continue;
+			var tool_result = this.tools_history[i];
+			if (tool_result.has_answer) continue;
 			
 			/* Remove empty message */
 			if (this.agent_message && this.agent_message.content.length == 0)
@@ -697,17 +520,13 @@ export class Question
 			
 			/* Create tool message */
 			this.addToolMessage();
-			this.agent_message.setTool(item);
+			this.agent_message.setTool(tool_result);
 			
 			/* Send update chat event */
 			this.provider.sendMessage(new UpdateChatEvent(this.chat, this.agent_message));
 			
 			/* Execute tool */
-			await this.executeTool(item);
-		}
-		if (this.tools_history.length > 0)
-		{
-			this.addAgentMessage();
+			await this.executeTool(tool_result);
 		}
 	}
 	
@@ -744,9 +563,11 @@ export class Question
 	async debugPrompt()
 	{
 		var model = this.model.name;
-		console.log("Send prompt to " + model + " " + this.model_name);
-		console.log(this.getPrompt());
-		//console.log(this.tools.getData());
+		if (this.debug)
+		{
+			console.log("Send prompt to " + model + " " + this.model_name);
+			console.log(this.prompt.messages);
+		}
 		this.agent_message.addChunk("Ok");
 		this.provider.sendMessage(new UpdateChatEvent(this.chat, this.agent_message));
 		this.provider.sendMessage(new EndChatEvent(this.chat, this.agent_message));
@@ -762,8 +583,7 @@ export class Question
 		while (this.is_work)
 		{
 			/* Send message */
-			var prompt = this.getPrompt();
-			await this.sendPrompt(prompt);
+			await this.sendPrompt(this.prompt.messages);
 			
 			/* Execute tools */
 			if (!this.hasTools()) break;
@@ -786,13 +606,17 @@ export class Question
 			return ;
 		}
 		
+		if (this.agent_message == null)
+		{
+			this.addAgentMessage();
+		}
 		this.provider.sendMessage(new StartChatEvent(this.chat, this.agent_message));
 		
 		/* Log message */
 		if (!this.debug)
 		{
 			console.log("Send prompt to " + this.model_name);
-			console.log(this.getPrompt());
+			console.log(this.prompt.messages);
 		}
 		
 		/* Send message */

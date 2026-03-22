@@ -1,7 +1,6 @@
 import path from "path";
 import { promises as fs } from "fs";
 import { Tool } from "../Ai/Tool.js";
-import { resolve } from "./Helper.js";
 
 export class FindFileByName extends Tool
 {
