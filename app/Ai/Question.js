@@ -227,7 +227,15 @@ export class Question
 		/* Add files */
 		if (this.files.length > 0)
 		{
-			console.log(this.files.map(file => `${file.name}, ${file.error}`));
+			if (this.debug)
+			{
+				for (let i=0; i<this.files.length; i++)
+				{
+					let file = this.files[i];
+					console.log(`Send file: ${file.name}, error: ${file.error}`);
+					console.log(`Text: ${file.isText()}, Image: ${file.isImage()}`);
+				}
+			}
 			this.prompt.addFiles(this.files);
 		}
 		
@@ -415,6 +423,12 @@ export class Question
 		/* Send message */
 		this.provider.sendMessage(new StepEvent(this.chat, this.agent_message));
 		await client.send();
+		
+		/* End step */
+		if (this.debug)
+		{
+			console.log("End step");
+		}
 		
 		/* Log tools */
 		if (this.debug && tools.length > 0)

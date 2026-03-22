@@ -100,12 +100,11 @@ export class PromptBuilder
 		if (tools.length == 0) return;
 		this.messages.push({
 			role: "assistant",
-			content: null,
 			tool_calls: tools.map((tool) => {
 				return {
 					type: "function",
 					id: tool.id,
-					function: { name: tool.name, arguments: '' },
+					function: { name: tool.name, arguments: tool.arguments },
 				}
 			}),
 			cache_control: this.cache(),
