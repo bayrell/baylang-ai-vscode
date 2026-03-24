@@ -6,7 +6,7 @@ import { FileResult } from "./FileResult.js";
 import { Message, ToolMessage } from "./Message.js";
 import { filterRules, Rule } from "./Rule.js";
 import { fileExists } from "../api.js";
-import { splitItem, getFileWithoutExtension } from "../lib.js";
+import { splitItem, getFileWithoutExtension, delay } from "../lib.js";
 import { PromptBuilder } from "./PromptBuilder.js";
 import { ToolResult } from "./ToolResult.js";
 
@@ -384,7 +384,7 @@ export class Question
 	{
 		console.log(error);
 		
-		if (error instanceof AbortError) return;
+		if (error.name == "AbortError") return;
 		
 		this.agent_message.addChunk("Error: " + error.message);
 		await this.settings.saveChat(this.chat);
@@ -537,6 +537,8 @@ export class Question
 			var result = await this.sendPrompt(prompt);
 			if (result) return;
 			
+			/* Wait 2s */
+			await delay(2000);
 			count++;
 		}
 		

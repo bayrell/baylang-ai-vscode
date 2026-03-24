@@ -62,6 +62,14 @@ export function splitItem(item)
 }
 
 /**
+ * Delay ms
+ */
+export function delay(ms)
+{
+	return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
  * Read response
  */
 export async function getResponseMessage(response)
