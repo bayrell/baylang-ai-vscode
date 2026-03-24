@@ -13,7 +13,7 @@ export class Client
 		this.tools = null;
 		this.providers = "";
 		this.secure = false;
-		this.connection_timeout = 10000;
+		this.connection_timeout = 60000;
 	}
 	
 	

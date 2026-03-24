@@ -383,10 +383,6 @@ export class Question
 	 */
 	async sendError(error)
 	{
-		console.log(error);
-		
-		if (error.name == "AbortError") return;
-		
 		this.agent_message.addChunk("Error: " + error.message);
 		await this.settings.saveChat(this.chat);
 		this.provider.sendMessage(new UpdateChatEvent(this.chat, this.agent_message));
@@ -534,14 +530,15 @@ export class Question
 	 */
 	async sendPromptWithFallback(prompt)
 	{
-		var count = 0;
+		let count = 0;
 		while (this.is_work && count < this.fallback_count)
 		{
-			var result = await this.sendPrompt(prompt);
+			/* Send */
+			let result = await this.sendPrompt(prompt);
 			if (result) return;
 			
-			/* Wait 2s */
-			await delay(2000);
+			/* Wait */
+			if (count + 1 < this.fallback_count) await delay((Math.random() * 20 + 5) * 1000);
 			count++;
 		}
 		
