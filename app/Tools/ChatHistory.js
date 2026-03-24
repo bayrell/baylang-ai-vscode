@@ -125,7 +125,7 @@ export class ChatHistory extends Tool
 		}
 		catch (error)
 		{
-			throw new Error(`Failed to read chat history: ${error.message}`);
+			throw new Error(`Failed to read chat history: ${file_name}`);
 		}
 	}
 
