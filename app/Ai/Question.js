@@ -34,6 +34,7 @@ export class Question
 		this.settings = null;
 		this.tools = null;
 		this.tools_history = [];
+		this.last_error = null;
 		this.usage = null;
 		this.debug = false;
 		this.messages_count = 0;
@@ -428,7 +429,9 @@ export class Question
 			if (type == "error")
 			{
 				has_error = true;
-				this.sendError(data);
+				this.last_error = data;
+				console.log(data);
+				//this.sendError(data);
 			}
 			else if (type == "tool")
 			{
@@ -544,7 +547,7 @@ export class Question
 		
 		/* Stop work */
 		this.is_work = false;
-		this.sendError(new Error("Connection timeout"));
+		this.sendError(this.last_error ? this.last_error : new Error("Connection timeout"));
 	}
 	
 	
