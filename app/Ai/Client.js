@@ -11,6 +11,8 @@ export class Client
 		this.source = null;
 		this.signal = new AbortController();
 		this.tools = null;
+		this.providers = "";
+		this.secure = false;
 	}
 	
 	
@@ -46,6 +48,7 @@ export class Client
 			return;
 		}
 		
+		/* Create body */
 		var body = {
 			model: this.model_id,
 			messages: this.prompt,
@@ -53,6 +56,29 @@ export class Client
 			tool_choice: "auto",
 			stream: true
 		};
+		
+		/* Add provider */
+		var has_provider = false;
+		var provider = {};
+		if (this.providers)
+		{
+			var providers = this.providers.split(",").map((s) => s.trim()).filter((s) => s != "");
+			if (providers.length > 0)
+			{
+				provider["only"] = providers;
+				has_provider = true;
+			}
+		}
+		
+		/* Add data secure */
+		if (this.secure)
+		{
+			provider["data_collection"] = "deny";
+			has_provider = true;
+		}
+		
+		/* Add to body */
+		if (has_provider) body["provider"] = provider;
 		
 		var abort = this.signal;
 		await fetchEventSource(url, {

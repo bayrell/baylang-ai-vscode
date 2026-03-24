@@ -152,6 +152,22 @@
 						v-model="model.form.item.prompt"
 					/>
 				</Field>
+				<Field name="secure">
+					<div class="label">Secure data</div>
+					<Input
+						type="select"
+						name="secure"
+						v-model="model.form.item.secure"
+						:options="boolean_options"
+					/>
+				</Field>
+				<Field name="providers">
+					<div class="label">Providers</div>
+					<Input
+						name="providers"
+						v-model="model.form.item.providers"
+					/>
+				</Field>
 				<Field name="rules">
 					<div class="label">Rules</div>
 					<div class="rules">

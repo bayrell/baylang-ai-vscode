@@ -11,6 +11,8 @@ export class Agent
 		this.model_name = "";
 		this.prompt = "";
 		this.rules = [];
+		this.providers = "";
+		this.secure = false;
 	}
 	
 	
@@ -27,6 +29,8 @@ export class Agent
 		if (data.model) this.model = data.model;
 		if (data.model_name) this.model_name = data.model_name;
 		if (data.prompt) this.prompt = data.prompt;
+		if (data.providers != undefined) this.providers = data.providers;
+		if (data.secure != undefined) this.secure = data.secure;
 		if (data.rules)
 		{
 			this.rules = data.rules;
@@ -50,6 +54,8 @@ export class Agent
 			model_name: this.model_name,
 			prompt: this.prompt,
 			rules: this.rules,
+			providers: this.providers,
+			secure: this.secure,
 		};
 	}
 	

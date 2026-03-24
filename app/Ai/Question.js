@@ -410,9 +410,13 @@ export class Question
 		
 		/* Create client */
 		var client = new Client(this.model, this.model_name);
-		this.setClient(client);
 		client.prompt = prompt;
+		client.providers = this.agent.providers;
+		client.secure = this.agent.secure;
 		client.tools = this.agent.enableTools() ? this.tools : null;
+		
+		/* Setup client */
+		this.setClient(client);
 		
 		/* Client functions */
 		client.setCallback(async (type, data) => {
@@ -644,7 +648,7 @@ export class Question
 			await this.sendPrompt(this.prompt.messages);
 			
 			/* Execute tools */
-			if (!this.hasTools()) break;
+			if (!this.hasTools() || !this.is_work) break;
 			await this.executeTools();
 			
 			count++;
