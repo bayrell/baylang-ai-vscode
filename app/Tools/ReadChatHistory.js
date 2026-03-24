@@ -61,8 +61,9 @@ export class ReadChatHistory extends Tool
 					arr.push(content);
 					results.push(arr.join("\n"));
 				}
-				catch
+				catch (error)
 				{
+					results.push(`Error read history '${file_name}'. ${error.message}`);
 				}
 			}
 
