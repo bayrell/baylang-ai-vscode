@@ -54,6 +54,9 @@ export class PromptBuilder
 		const getFile = (file) =>
 		{
 			if (file.error || !file.readed) return null;
+			if (file.virtual) return null;
+			
+			/* Text file */
 			if (file.isText())
 			{
 				return {
@@ -61,6 +64,8 @@ export class PromptBuilder
 					text: file.getContent(),
 				};
 			}
+			
+			/* Image file */
 			var fileContent = file.getContent();
 			if (file.isImage())
 			{

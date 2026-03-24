@@ -2,7 +2,7 @@ import path from "path";
 import { promises as fs } from "fs";
 import { Client } from "./Client.js";
 import { StartChatEvent, UpdateChatEvent, ErrorChatEvent, StepEvent, EndChatEvent, EndChunkEvent } from "./Chat.js";
-import { FileObject } from "./FileObject.js";
+import { FileResult } from "./FileResult.js";
 import { Message, ToolMessage } from "./Message.js";
 import { filterRules, Rule } from "./Rule.js";
 import { fileExists } from "../api.js";
@@ -20,6 +20,7 @@ export class Question
 		this.model = null;
 		this.model_name = null;
 		this.prompt = null;
+		this.prompt_rules_index = -1;
 		this.memory = [];
 		this.chat = null;
 		this.client = null;
@@ -27,6 +28,7 @@ export class Question
 		this.folderPath = null;
 		this.files = [];
 		this.rules = [];
+		this.loaded_rules = null;
 		this.max_iter = 100;
 		this.settings = null;
 		this.tools = null;
@@ -76,7 +78,7 @@ export class Question
 	/**
 	 * Add files
 	 */
-	addFiles(files)
+	async addFiles(files)
 	{
 		for (var i=0; i<files.length; i++)
 		{
@@ -84,10 +86,22 @@ export class Question
 			var find = this.files.find((item) => item.name == file.name);
 			if (file.isDirectory || find) continue;
 			
-			var obj = new FileObject();
-			obj.path = file.path;
-			obj.name = file.name;
-			this.files.push(obj);
+			/* Add file */
+			if (file instanceof FileResult) this.files.push(file);
+			else
+			{
+				var obj = new FileResult();
+				obj.path = file.path;
+				obj.name = file.name;
+				this.files.push(obj);
+			}
+		}
+		
+		/* If has prompt */
+		if (this.prompt)
+		{
+			this.prompt.addFiles(files);
+			await this.updateRules();
 		}
 	}
 	
@@ -184,7 +198,7 @@ export class Question
 		this.prompt = new PromptBuilder();
 		
 		/* Add prompt */
-		this.prompt.addMessage(this.agent.prompt);
+		this.prompt.addMessage("system", this.agent.prompt);
 		
 		/* Add current date */
 		this.prompt.addCurrentDate();
@@ -202,6 +216,7 @@ export class Question
 				.map((rule) => rule.getRuleContent())
 			;
 			this.prompt.addMessage("system", rules_content);
+			this.prompt_rules_index = this.prompt.messages.length - 1;
 		}
 		
 		/* Add tools */
@@ -232,6 +247,7 @@ export class Question
 				for (let i=0; i<this.files.length; i++)
 				{
 					let file = this.files[i];
+					if (file.virtual) continue;
 					console.log(`Send file: ${file.name}, error: ${file.error}`);
 					console.log(`Text: ${file.isText()}, Image: ${file.isImage()}`);
 				}
@@ -245,24 +261,27 @@ export class Question
 	
 	
 	/**
-	 * Update rules
+	 * Update rules prompt
 	 */
-	async updateRules()
+	updateRulesPrompt()
 	{
-		if (!this.agent.enableRules())
-		{
-			this.rules = [];
-			return;
-		}
+		if (this.prompt_rules_index == -1) return;
+		const rules_content = this.rules
+			.map((rule) => rule.getRuleContent())
+		;
+		this.prompt.messages[this.prompt_rules_index].content = rules_content;
+	}
+	
+	
+	/**
+	 * Load rules
+	 */
+	async loadRules()
+	{
+		if (this.loaded_rules != null) return this.loaded_rules;
 		
-		/* Load rules */
-		var rules = await this.settings.loadRules();
-		this.rules = filterRules(rules, this);
-		
-		/* Find item */
-		const findRule = (rule) => {
-			return this.rules.find((item) => item.name == rule.name);
-		}
+		/* Load rules from settings */
+		this.loaded_rules = await this.settings.loadRules();
 		
 		/* Add rules */
 		if (this.agent.rules && this.agent.rules.length > 0)
@@ -281,14 +300,14 @@ export class Question
 				if (filename[0] == "@")
 				{
 					var groupname = filename.substring(1);
-					var grouprules = rules.filter((item) => {
+					var grouprules = this.loaded_rules.filter((item) => {
 						var groups = splitItem(item.groups);
 						return groups.indexOf(groupname) >= 0;
 					});
 					for (var j=0; j<grouprules.length; j++)
 					{
 						var rule = grouprules[j];
-						if (!rule.disable && !findRule(rule)) this.rules.push(rule);
+						if (!rule.disable) rule.global = true;
 					}
 				}
 				
@@ -307,6 +326,7 @@ export class Question
 							rule = new Rule();
 							rule.name = filename;
 							rule.parseContent(content);
+							this.loaded_rules.push(rule);
 						}
 						catch (error)
 						{
@@ -314,12 +334,36 @@ export class Question
 					}
 					else
 					{
-						rule = rules.find((item) => item.name == rulename && !item.disable);
+						rule = this.loaded_rules
+							.find((item) => item.name == rulename && !item.disable)
+						;
 					}
-					if (rule && !findRule(rule)) this.rules.push(rule);
+					if (rule) rule.global = true;
 				}
 			}
 		}
+		
+		return this.loaded_rules;
+	}
+	
+	
+	/**
+	 * Update rules
+	 */
+	async updateRules()
+	{
+		if (!this.agent.enableRules())
+		{
+			this.rules = [];
+			return;
+		}
+		
+		/* Load rules */
+		var rules = await this.loadRules();
+		this.rules = filterRules(rules, this);
+		
+		/* Update prompt */
+		this.updateRulesPrompt();
 	}
 	
 	

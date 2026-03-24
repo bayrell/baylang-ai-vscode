@@ -46,7 +46,7 @@ export function registerSendMessage(settings, provider)
 		
 		/* Add files */
 		var files = JSON.parse(message.files);
-		question.addFiles(files);
+		await question.addFiles(files);
 		await question.readFiles();
 		
 		/* Read memory */

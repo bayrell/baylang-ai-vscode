@@ -11,6 +11,7 @@ import { FindFileByName } from "../Tools/FindFileByName.js";
 import { ChatHistory } from "../Tools/ChatHistory.js";
 import { ReadChatHistory } from "../Tools/ReadChatHistory.js";
 
+
 /**
  * Register tools
  */

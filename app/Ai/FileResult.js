@@ -1,7 +1,7 @@
 import { promises as fs } from "fs";
 import { getFileType, isTextFile, isImage, fileExists } from "../api";
 
-export class FileObject
+export class FileResult
 {
 	constructor()
 	{
@@ -10,6 +10,7 @@ export class FileObject
 		this.content = null;
 		this.readed = false;
 		this.error = false;
+		this.virtual = false;
 		this.mime = "application/octet-stream";
 	}
 	

@@ -1,7 +1,7 @@
 import { promises as fs } from "fs";
 import { Tool } from "../Ai/Tool.js";
 import { resolve } from "./Helper.js";
-import { FileObject } from "../Ai/FileObject.js";
+import { FileResult } from "../Ai/FileResult.js";
 
 export class ReadFile extends Tool
 {
@@ -45,16 +45,18 @@ export class ReadFile extends Tool
 		/* Get params */
 		const file_path = params ? params.path : [];
 		
+		/* Check params */
 		if (typeof file_path == "string") file_path = [file_path];
 		if (!file_path || !Array.isArray(file_path) || file_path.length === 0)
 		{
 			throw new Error("No file paths provided for reading.");
 		}
 		
+		/* Read files */
 		const results = [];
 		for (const file_name of file_path)
 		{
-			let file = new FileObject();
+			let file = new FileResult();
 			file.name = file_name;
 			try
 			{
@@ -81,6 +83,7 @@ export class ReadFile extends Tool
 			results.push(file);
 		}
 		
+		/* Format output */
 		let files = [];
 		let formatted_output = [];
 		for (let i=0; i<results.length; i++)
@@ -94,13 +97,14 @@ export class ReadFile extends Tool
 			if (file.isText())
 			{
 				formatted_output.push(file.getContent());
-				continue;
+				file.virtual = true;
 			}
-			formatted_output.push(`Success read file: '${file.name}'`);
+			else formatted_output.push(`Success read file: '${file.name}'`);
 			files.push(file);
 		}
 		
-		question.prompt.addFiles(files);
+		/* Add files */
+		await question.addFiles(files);
 		return formatted_output.join("\n\n");
 	}
 }
