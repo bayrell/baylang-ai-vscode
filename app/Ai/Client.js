@@ -13,6 +13,7 @@ export class Client
 		this.tools = null;
 		this.providers = "";
 		this.secure = false;
+		this.connection_timeout = 10000;
 	}
 	
 	
@@ -80,7 +81,20 @@ export class Client
 		/* Add to body */
 		if (has_provider) body["provider"] = provider;
 		
-		var abort = this.signal;
+		/* Save signal */
+		let abort = this.signal;
+		let has_messages = false;
+		
+		/* Create time */
+		let timer_id = null;
+		if (this.connection_timeout > 0)
+		{
+			timer_id = setTimeout(() => {
+				if (has_messages) return;
+				abort.abort();
+			}, this.connection_timeout);
+		}
+		
 		await fetchEventSource(url, {
 			method: "POST",
 			headers: {
@@ -95,6 +109,7 @@ export class Client
 				await this.callback("open");
 			},
 			onmessage: async (data) => {
+				has_messages = true;
 				if (data == "[DONE]") return;
 				try
 				{
@@ -115,5 +130,10 @@ export class Client
 				await this.callback("error", error);
 			},
 		});
+		
+		if (timer_id)
+		{
+			clearTimeout(timer_id);
+		}
 	}
 }

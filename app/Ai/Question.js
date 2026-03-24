@@ -30,6 +30,7 @@ export class Question
 		this.rules = [];
 		this.loaded_rules = null;
 		this.max_iter = 100;
+		this.fallback_count = 5;
 		this.settings = null;
 		this.tools = null;
 		this.tools_history = [];
@@ -382,6 +383,9 @@ export class Question
 	async sendError(error)
 	{
 		console.log(error);
+		
+		if (error instanceof AbortError) return;
+		
 		this.agent_message.addChunk("Error: " + error.message);
 		await this.settings.saveChat(this.chat);
 		this.provider.sendMessage(new UpdateChatEvent(this.chat, this.agent_message));
@@ -419,9 +423,11 @@ export class Question
 		this.setClient(client);
 		
 		/* Client functions */
+		let has_error = false;
 		client.setCallback(async (type, data) => {
 			if (type == "error")
 			{
+				has_error = true;
 				this.sendError(data);
 			}
 			else if (type == "tool")
@@ -472,11 +478,17 @@ export class Question
 		this.provider.sendMessage(new StepEvent(this.chat, this.agent_message));
 		await client.send();
 		
+		/* Setup client */
+		this.setClient(null);
+		
 		/* End step */
 		if (this.debug)
 		{
 			console.log("End step");
 		}
+		
+		/* If has error */
+		if (has_error) return false;
 		
 		/* Log tools */
 		if (this.debug && tools.length > 0)
@@ -508,6 +520,29 @@ export class Question
 			tool_result.parseArgs();
 			this.tools_history.push(tool_result);
 		}
+		
+		/* Success */
+		return true;
+	}
+	
+	
+	/**
+	 * Send prompt with fallback
+	 */
+	async sendPromptWithFallback(prompt)
+	{
+		var count = 0;
+		while (this.is_work && count < this.fallback_count)
+		{
+			var result = await this.sendPrompt(prompt);
+			if (result) return;
+			
+			count++;
+		}
+		
+		/* Stop work */
+		this.is_work = false;
+		this.sendError(new Error("Connection timeout"));
 	}
 	
 	
@@ -567,6 +602,9 @@ export class Question
 	{
 		for (var i=0; i<this.tools_history.length; i++)
 		{
+			if (!this.is_work) break;
+			
+			/* Get tool */
 			var tool_result = this.tools_history[i];
 			if (tool_result.has_answer) continue;
 			
@@ -645,7 +683,7 @@ export class Question
 		while (this.is_work)
 		{
 			/* Send message */
-			await this.sendPrompt(this.prompt.messages);
+			await this.sendPromptWithFallback(this.prompt.messages);
 			
 			/* Execute tools */
 			if (!this.hasTools() || !this.is_work) break;
