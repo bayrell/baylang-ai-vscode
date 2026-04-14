@@ -9,6 +9,8 @@ export class Agent
 		this.enable_tools = "0";
 		this.model = "";
 		this.model_name = "";
+		this.memory = "";
+		this.memory_token = "";
 		this.prompt = "";
 		this.rules = [];
 		this.providers = "";
@@ -28,6 +30,8 @@ export class Agent
 		if (data.default) this.default = data.default;
 		if (data.model) this.model = data.model;
 		if (data.model_name) this.model_name = data.model_name;
+		if (data.memory) this.memory = data.memory;
+		if (data.memory_token) this.memory_token = data.memory_token;
 		if (data.prompt) this.prompt = data.prompt;
 		if (data.providers != undefined) this.providers = data.providers;
 		if (data.secure != undefined) this.secure = data.secure;
@@ -52,6 +56,8 @@ export class Agent
 			default: this.default,
 			model: this.model,
 			model_name: this.model_name,
+			memory: this.memory,
+			memory_token: this.memory_token,
 			prompt: this.prompt,
 			rules: this.rules,
 			providers: this.providers,

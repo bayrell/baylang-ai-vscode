@@ -88,7 +88,9 @@ class Memory
 	 */
 	async save()
 	{
-		var index = this.items.findIndex((item) => item.name == this.form.pk);
+		var index = this.items.findIndex(
+			(item) => item.name == this.form.pk
+		);
 		if (index == -1)
 		{
 			return new ApiResult({
@@ -115,7 +117,9 @@ class Memory
 	 */
 	async delete()
 	{
-		var index = this.items.findIndex((item) => item.name == this.form.pk);
+		var index = this.items.findIndex(
+			(item) => item.name == this.form.pk
+		);
 		if (index == -1)
 		{
 			return new ApiResult({

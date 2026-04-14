@@ -168,6 +168,22 @@
 						v-model="model.form.item.providers"
 					/>
 				</Field>
+				<Field name="memory">
+					<div class="label">Memory</div>
+					<Input
+						type="select"
+						name="memory"
+						v-model="model.form.item.memory"
+						:options="memory_options"
+					/>
+				</Field>
+				<Field name="token">
+					<div class="label">Token</div>
+					<Input
+						name="token"
+						v-model="model.form.item.memory_token"
+					/>
+				</Field>
 				<Field name="rules">
 					<div class="label">Rules</div>
 					<div class="rules">
@@ -257,6 +273,19 @@ export default {
 				{ key: "0", value: "No" },
 				{ key: "1", value: "Yes" },
 			]
+		},
+		memory_options()
+		{
+			var items = this.layout.memory_page.items.slice()
+				.map((item) => {
+					return {
+						key: item.name,
+						value: item.name,
+					};
+				})
+			;
+			items.sort((a, b) => a.name.localeCompare(b.name));
+			return items;
 		},
 		items()
 		{

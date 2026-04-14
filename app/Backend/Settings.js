@@ -184,6 +184,8 @@ export class Settings
 					agent.assign({
 						model: data.model,
 						model_name: data.model_name,
+						memory: data.memory,
+						memory_token: data.memory_token,
 					});
 				}
 			}
@@ -267,6 +269,8 @@ export class Settings
 			{
 				delete data.model;
 				delete data.model_name;
+				delete data.memory;
+				delete data.memory_token;
 			}
 			
 			/* Convert data */
@@ -283,11 +287,16 @@ export class Settings
 			var item = agents.find((item) => item.name == agent.name);
 			if (!item)
 			{
-				item = { name: agent.name, global: agent.global };
+				item = {
+					name: agent.name,
+					global: agent.global,
+				};
 				agents.push(item);
 			}
 			item.model = agent.model;
 			item.model_name = agent.model_name;
+			item.memory = agent.memory;
+			item.memory_token = agent.memory_token;
 			this.filterAgentModificators(agents);
 			await this.saveAgentsModificators(agentFile, agents);
 		}
