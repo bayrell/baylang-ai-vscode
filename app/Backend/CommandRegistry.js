@@ -177,6 +177,31 @@ export async function registerCommands(provider)
 		};
 	});
 	
+	/* Load memory */
+	registry.register("load_memory", async () => {
+		var items = settings.loadMemory();
+		return {
+			success: true,
+			items: items,
+		};
+	});
+	
+	/* Save memory */
+	registry.register("save_memory", async ({id, item}) => {
+		await settings.saveMemory(id, item);
+		return {
+			success: true,
+		};
+	});
+	
+	/* Delete memory */
+	registry.register("delete_memory", async (id) => {
+		await settings.deleteMemory(id);
+		return {
+			success: true,
+		};
+	});
+	
 	/* Load rules */
 	registry.register("load_rules", async () => {
 		var items = await settings.loadRules();

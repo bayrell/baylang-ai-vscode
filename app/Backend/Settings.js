@@ -378,6 +378,41 @@ export class Settings
 	
 	
 	/**
+	 * Load memory
+	 */
+	loadMemory()
+	{
+		return this.data.memory ? this.data.memory : []
+	}
+	
+	
+	/**
+	 * Save memory
+	 */
+	async saveMemory(id, item)
+	{
+		if (!this.data.memory) this.data.memory = [];
+		var index = this.data.memory.findIndex((agent) => agent.name == id);
+		if (index == -1) this.data.memory.push(item);
+		else this.data.memory[index] = item;
+		await this.saveData();
+	}
+	
+	
+	/**
+	 * Delete memory
+	 */
+	async deleteMemory(name)
+	{
+		if (!this.data.memory) return;
+		
+		var index = this.data.memory.findIndex((item) => item.name == name);
+		if (index != -1) this.data.memory.splice(index, 1);
+		await this.saveData();
+	}
+	
+	
+	/**
 	 * Load rules
 	 */
 	async loadRules()

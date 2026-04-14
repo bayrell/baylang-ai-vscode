@@ -43,7 +43,7 @@ export class ReadFile extends Tool
 	async execute(params, question)
 	{
 		/* Get params */
-		const file_path = params ? params.path : [];
+		let file_path = params ? params.path : [];
 		
 		/* Check params */
 		if (typeof file_path == "string") file_path = [file_path];

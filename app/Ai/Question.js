@@ -421,6 +421,7 @@ export class Question
 		
 		/* Client functions */
 		let has_error = false;
+		let is_new = true;
 		client.setCallback(async (type, data) => {
 			if (type == "error")
 			{
@@ -431,6 +432,8 @@ export class Question
 			}
 			else if (type == "tool")
 			{
+				if (!is_new) this.provider.sendMessage(new StepEvent(this.chat, this.agent_message));
+				is_new = true;
 				for (var i=0; i<data.length; i++)
 				{
 					var item = data[i];
@@ -453,6 +456,7 @@ export class Question
 			}
 			else if (type == "chunk")
 			{
+				is_new = false;
 				var token = data.choices[0]?.delta?.content || "";
 				if (token != "")
 				{

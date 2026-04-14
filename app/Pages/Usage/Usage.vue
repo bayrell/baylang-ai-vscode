@@ -1,5 +1,6 @@
 <style lang="scss">
 .usage_page{
+	padding-top: 5px;
 	&__title {
 		font-size: 1.8em;
 		font-weight: bold;
