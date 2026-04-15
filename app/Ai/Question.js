@@ -211,10 +211,19 @@ export class Question
 			];
 			if (this.discovery.categories)
 			{
-				discovery_content.push(
-					"Notebook categories list:\n" +
-					readDiscovery(this.discovery.categories)
-				);
+				let arr = ["android", "public", "private", "public_user"];
+				for (let i=0; i<arr.length; i++)
+				{
+					let category_type = arr[i];
+					let items = this.discovery.categories.filter((item) => item.type == category_type);
+					if (items.length > 0)
+					{
+						discovery_content.push(
+							"Notebook " + category_type + " categories list:\n" +
+							readDiscovery(items)
+						);
+					}
+				}
 			}
 			
 			/* Tags list */
