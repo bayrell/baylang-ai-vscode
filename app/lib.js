@@ -61,6 +61,18 @@ export function splitItem(item)
 	return item.split(",").map(g => g.trim()).filter(g => g.length > 0)
 }
 
+/* Pad2 */
+export function pad2(value)
+{
+	return value < 10 ? ("0" + value) : value;
+}
+
+/* Convert to date */
+export function toDate(date)
+{
+	return date.y + "-" + pad2(date.m) + "-" + pad2(date.d) + " " + pad2(date.h) + ":" + pad2(date.i) + ":" + pad2(date.s);
+}
+
 /**
  * Delay ms
  */

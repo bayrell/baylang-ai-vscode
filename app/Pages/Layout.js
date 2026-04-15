@@ -87,10 +87,23 @@ class Layout
 	 */
 	async runTool(name, data)
 	{
+		var agent_id = this.chat_page.current_agent_id;
+		var agent = this.agent_page.items[agent_id];
+		if (!agent) return null;
+		
 		var result = await this.api.call(
-			"run_tool", {name, data}
+			"run_tool", {
+				name: name,
+				data: data,
+				agent: agent.name,
+				global: agent.global
+			}
 		);
-		return result;
+		if (result.code != 1)
+		{
+			return "Error: " + result.message;
+		}
+		return result.data.content;
 	}
 	
 	

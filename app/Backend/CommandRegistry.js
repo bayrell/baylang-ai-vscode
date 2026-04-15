@@ -5,6 +5,7 @@ import { Settings } from "./Settings.js";
 import { Agent } from "../Ai/Agent.js";
 import { Rule } from "../Ai/Rule.js";
 import { Usage } from "../Ai/Usage.js";
+import { Question } from "../Ai/Question.js";
 import { registerTools } from "./Tools.js";
 import { registerSendMessage } from "./SendMessage.js";
 
@@ -246,10 +247,29 @@ export async function registerCommands(provider)
 				message: "Tool not found",
 			};
 		}
-		let result = await tool.execute(data);
+		
+		let agent = settings.getAgentByName(
+			params.agent, params.global
+		);
+		var question = new Question();
+		question.agent = agent;
+		question.settings = settings;
+		
+		let content = "";
+		try
+		{
+			content = await tool.execute(data, question);
+		}
+		catch (e)
+		{
+			return {
+				success: false,
+				message: e.message,
+			};
+		}
 		return {
 			success: true,
-			data: result,
+			data: { content },
 		};
 	});
 	

@@ -5,11 +5,15 @@ import { ReadFile } from "../Tools/ReadFile.js";
 import { RenameFile } from "../Tools/RenameFile.js";
 import { DeleteFile } from "../Tools/DeleteFile.js";
 import { ListFiles } from "../Tools/ListFiles.js";
-import { ReadMemory } from "../Tools/ReadMemory.js";
-import { UpdateMemory } from "../Tools/UpdateMemory.js";
 import { FindFileByName } from "../Tools/FindFileByName.js";
-import { ChatHistory } from "../Tools/ChatHistory.js";
-import { ReadChatHistory } from "../Tools/ReadChatHistory.js";
+import { ReadMemory } from "../Tools/Memory/ReadMemory.js";
+import { UpdateMemory } from "../Tools/Memory/UpdateMemory.js";
+import { UpdateSoul } from "../Tools/Memory/UpdateSoul.js";
+import { DeleteMemory } from "../Tools/Memory/DeleteMemory.js";
+import { AddNote } from "../Tools/Memory/AddNote.js";
+import { SaveNote } from "../Tools/Memory/SaveNote.js";
+import { ReadNote } from "../Tools/Memory/ReadNote.js";
+import { SearchNote } from "../Tools/Memory/SearchNote.js";
 
 
 /**
@@ -29,10 +33,16 @@ export async function registerTools(settings)
 	tools.add(new FindFileByName(settings));
 	
 	/* Memory */
-	tools.add(new ChatHistory(settings));
-	tools.add(new ReadChatHistory(settings));
 	tools.add(new ReadMemory(settings));
 	tools.add(new UpdateMemory(settings));
+	tools.add(new UpdateSoul(settings));
+	tools.add(new DeleteMemory(settings));
+	
+	/* Notebook */
+	tools.add(new AddNote(settings));
+	tools.add(new SaveNote(settings));
+	tools.add(new ReadNote(settings));
+	tools.add(new SearchNote(settings));
 	
 	return tools;
 }
