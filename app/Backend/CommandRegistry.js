@@ -230,6 +230,25 @@ export async function registerCommands(provider)
 		};
 	});
 	
+	/* Run tool */
+	registry.register("run_tool", async (params) => {
+		let name = params.name;
+		let data = params.data;
+		let tool = settings.tools.findTool(name);
+		if (!tool)
+		{
+			return {
+				success: false,
+				message: "Tool not found",
+			};
+		}
+		let result = await tool.execute(data);
+		return {
+			success: true,
+			data: result,
+		};
+	});
+	
 	/* Stop chat */
 	registry.register("stop_chat", async (chat_id) => {
 		var question = settings.questions.find((item) => item.chat.id == chat_id);

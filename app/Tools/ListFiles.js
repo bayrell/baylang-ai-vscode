@@ -50,7 +50,8 @@ export class ListFiles extends Tool
 		if (!relative_dir_path) relative_dir_path = "";
 		
 		/* Ensure boolean type */
-		const recursive = params ? params.recursive === true : false;
+		const recursive = params && params.recursive ?
+			params.recursive === true : true;
 		
 		/* Get absolute dir path */
 		let absolute_dir_path;

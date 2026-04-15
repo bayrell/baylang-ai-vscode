@@ -1,5 +1,6 @@
 import path from "path";
 import { promises as fs } from "fs";
+import { minimatch } from "minimatch";
 import { Tool } from "../Ai/Tool.js";
 
 export class FindFileByName extends Tool
@@ -56,7 +57,8 @@ export class FindFileByName extends Tool
 			const search_results = await this.searchInDirectory(
 				this.settings.workspaceFolderPath,
 				file_pattern,
-				recursive
+				recursive,
+				""
 			);
 
 			return {
@@ -75,13 +77,16 @@ export class FindFileByName extends Tool
 	/**
 	 * Search for files matching pattern in directory recursively
 	 */
-	async searchInDirectory(directory, file_pattern, recursive)
+	async searchInDirectory(
+		directory, file_pattern, recursive, folder
+	)
 	{
 		const results = [];
 		const entries = await fs.readdir(directory, { withFileTypes: true });
 
 		for (const entry of entries)
 		{
+			const file_path = path.join(folder, entry.name);
 			const full_path = path.join(directory, entry.name);
 
 			if (entry.isDirectory())
@@ -97,15 +102,16 @@ export class FindFileByName extends Tool
 					const sub_results = await this.searchInDirectory(
 						full_path,
 						file_pattern,
-						recursive
+						recursive,
+						file_path
 					);
 					results.push(...sub_results);
 				}
 			}
 			else if (entry.isFile())
 			{
-				// Check if file matches pattern
-				if (this.matchesPattern(entry.name, file_pattern))
+				// Check if file matches pattern using minimatch
+				if (minimatch(file_path, file_pattern, { nocase: true, matchBase: true }))
 				{
 					results.push({
 						file_name: entry.name,
@@ -116,29 +122,5 @@ export class FindFileByName extends Tool
 		}
 
 		return results;
-	}
-
-
-	/**
-	 * Check if file name matches pattern
-	 * Supports patterns like *.txt, *.php, component_*.vue, etc.
-	 */
-	matchesPattern(file_name, pattern)
-	{
-		if (!pattern)
-		{
-			return true;
-		}
-
-		// Convert glob pattern to regex
-		// *.txt -> .*\.txt$
-		// component_*.vue -> component_.*\.vue$
-		// App.vue -> App\.vue$
-		const regex_pattern = pattern
-			.replace(/\./g, "\\.")
-			.replace(/\*/g, ".*");
-		const regex = new RegExp(`^${regex_pattern}$`, "i");
-		
-		return regex.test(file_name);
 	}
 }

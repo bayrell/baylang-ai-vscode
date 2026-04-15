@@ -83,6 +83,18 @@ class Layout
 	
 	
 	/**
+	 * Run tool
+	 */
+	async runTool(name, data)
+	{
+		var result = await this.api.call(
+			"run_tool", {name, data}
+		);
+		return result;
+	}
+	
+	
+	/**
 	 * On message
 	 */
 	onMessage(event)
