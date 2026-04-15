@@ -21,7 +21,7 @@ export class Question
 		this.model_name = null;
 		this.prompt = null;
 		this.prompt_rules_index = -1;
-		this.memory = [];
+		this.discovery = null;
 		this.chat = null;
 		this.client = null;
 		this.provider = null;
@@ -129,49 +129,13 @@ export class Question
 	 */
 	async readMemory()
 	{
-		this.memory = [];
-		const folder_path = path.join(this.folderPath, ".vscode", "memory");
+		this.discovery = null;
+		const response = await this.settings.memory
+			.discovery(this.agent);
 		
-		try
+		if (response.code == 1)
 		{
-			// Ensure directory exists
-			try
-			{
-				await fs.access(folder_path);
-			}
-			catch
-			{
-				await fs.mkdir(folder_path, { recursive: true });
-				return;
-			}
-			
-			// Read all files from memory directory
-			const files = await fs.readdir(folder_path);
-			
-			// Filter only .md files
-			const file_list = files.filter(file => file.endsWith('.md'));
-			
-			// Read each memory file
-			for (const file_name of file_list)
-			{
-				const file_path = path.join(folder_path, file_name);
-				try
-				{
-					const content = await fs.readFile(file_path, "utf8");
-					this.memory.push({
-						name: getFileWithoutExtension(file_name),
-						content: content
-					});
-				}
-				catch (error)
-				{
-					console.error("Error reading memory file " + file_name + ":", error);
-				}
-			}
-		}
-		catch (error)
-		{
-			console.error("Error reading memory folder:", error);
+			this.discovery = response.data;
 		}
 	}
 	
@@ -205,11 +169,71 @@ export class Question
 		/* Add current date */
 		this.prompt.addCurrentDate();
 		
-		/* Add memory */
-		const memory_content = this.memory
-			.map((memory) => "Memory name: " + memory.name + "\n```" + memory.content + "```")
-		;
-		this.prompt.addMessage("system", memory_content);
+		if (this.discovery)
+		{
+			const memory = [];
+			if (this.discovery.memory)
+			{
+				for (let name in this.discovery.memory)
+				{
+					memory.push({
+						name: name,
+						content: this.discovery.memory[name],
+					})
+				}
+			}
+			
+			/* Read discovery */
+			const readDiscovery = (items) =>
+			{
+				let arr = [];
+				for (let index in items)
+				{
+					arr.push({
+						name: items[index].name,
+						content: items[index].name + " - " + items[index].description,
+					})
+				}
+				arr.sort((a, b) => a.name.localeCompare(b.name));
+				return arr.map((item) => item.content).join("\n");
+			};
+			
+			/* Add memory */
+			const memory_prompt = "This is the context memory (RAM) that is sent with each request. Use it to store important information that is needed in every request.";
+			const memory_content = memory_prompt + "\n\n" +
+				memory.map((memory) => "Memory name: " + memory.name + "\n```" + memory.content + "```")
+			;
+			this.prompt.addMessage("system", memory_content);
+			
+			/* Category list */
+			let discovery_content = [
+				"Notebook is your memory of android. Notebook is an information storage. Unlike context memory, it is not sent with each request. You can search through it. Use categories and tags to work with the notebook."
+			];
+			if (this.discovery.categories)
+			{
+				discovery_content.push(
+					"Notebook categories list:\n" +
+					readDiscovery(this.discovery.categories)
+				);
+			}
+			
+			/* Tags list */
+			if (this.discovery.tags)
+			{
+				discovery_content.push(
+					"Notebook tags list:\n" +
+					readDiscovery(this.discovery.tags)
+				);
+			}
+			
+			/* Add message */
+			if (discovery_content.length > 0)
+			{
+				this.prompt.addMessage("system",
+					discovery_content.join("\n\n")
+				);
+			}
+		}
 		
 		/* Add rules */
 		if (this.agent.enableRules())

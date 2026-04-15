@@ -401,7 +401,7 @@ export class Settings
 	async saveMemory(id, item)
 	{
 		if (!this.data.memory) this.data.memory = [];
-		var index = this.data.memory.findIndex((agent) => agent.name == id);
+		var index = this.data.memory.findIndex((item) => item.name == id);
 		if (index == -1) this.data.memory.push(item);
 		else this.data.memory[index] = item;
 		await this.saveData();

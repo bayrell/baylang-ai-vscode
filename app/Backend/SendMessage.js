@@ -29,7 +29,9 @@ export function registerSendMessage(settings, provider)
 		settings.questions.push(question);
 		
 		/* Find model */
-		question.model = settings.getModelByName(message.model ? message.model : agent.model);
+		question.model = settings.getModelByName(
+			message.model ? message.model : agent.model
+		);
 		
 		/* Set model name */
 		question.model_name = message.model_name ? message.model_name : agent.model_name;

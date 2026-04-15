@@ -1,5 +1,6 @@
 import path from "path";
 import { promises as fs } from "fs";
+import { MemoryService } from "./MemoryService.js";
 import { Settings } from "./Settings.js";
 import { Agent } from "../Ai/Agent.js";
 import { Rule } from "../Ai/Rule.js";
@@ -90,6 +91,9 @@ export async function registerCommands(provider)
 	
 	/* Questions */
 	settings.questions = [];
+	
+	/* Memory service */
+	settings.memory = new MemoryService(settings);
 	
 	/* Register */
 	registerSendMessage(settings, provider);
