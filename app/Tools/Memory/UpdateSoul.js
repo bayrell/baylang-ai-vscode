@@ -19,6 +19,15 @@ export class UpdateSoul extends Tool
 	
 	
 	/**
+	 * Returns arguments
+	 */
+	getArgumentsText(params)
+	{
+		return "()";
+	}
+	
+	
+	/**
 	 * Execute
 	 */
 	async execute(params, question)

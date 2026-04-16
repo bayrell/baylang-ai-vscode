@@ -1,3 +1,4 @@
+import { ToolMessage } from "../Ai/Message.js";
 import { removeLastSlash, getErrorResponse } from "../lib.js";
 
 export class MemoryService
@@ -64,5 +65,36 @@ export class MemoryService
 		return await this.sendApi(
 			agent, "ai.discovery", "data"
 		);
+	}
+	
+	
+	/**
+	 * Save chat
+	 */
+	async saveChat(question)
+	{
+		let messages = question.chat.messages.map((message) => {
+			if (message instanceof ToolMessage)
+			{
+				let content = [];
+				content.push("Execute " + message.tool_name);
+				content.push("(" + message.tool_arguments + ")");
+				return {
+					id: message.id,
+					role: "tool",
+					content: content.join(""),
+				};
+			}
+			return {
+				id: message.id,
+				role: message.sender,
+				content: message.getText(),
+			}
+		});
+		await this.sendApi(question.agent, "ai.chat", "save", {
+			key: "chat_" + question.chat.id,
+			name: question.chat.name,
+			messages: messages,
+		});
 	}
 }

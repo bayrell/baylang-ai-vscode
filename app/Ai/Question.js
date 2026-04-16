@@ -762,6 +762,7 @@ export class Question
 		await this.sendTools();
 		//await this.debugPrompt();
 		await this.settings.saveChat(this.chat);
+		await this.settings.memory.saveChat(this);
 		
 		this.provider.sendMessage(new EndChatEvent(this.chat, this.agent_message));
 	}

@@ -19,6 +19,16 @@ export class ReadMemory extends Tool
 	
 	
 	/**
+	 * Returns arguments
+	 */
+	getArgumentsText(params)
+	{
+		const name = params.name;
+		return `(${name})`;
+	}
+	
+	
+	/**
 	 * Execute
 	 */
 	async execute(params, question)

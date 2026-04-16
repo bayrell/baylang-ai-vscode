@@ -17,6 +17,7 @@ export class Settings
 		this.data = {};
 		this.agents = [];
 		this.tools = [];
+		this.memory = null;
 		this.workspaceFolderPath = "";
 		this.workspaceFolderHash = "";
 		if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0)

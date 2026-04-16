@@ -31,6 +31,17 @@ export class UpdateMemory extends Tool
 	
 	
 	/**
+	 * Returns arguments
+	 */
+	getArgumentsText(params)
+	{
+		const name = params.name;
+		const command = params.command;
+		return `(${name}, ${command})`;
+	}
+	
+	
+	/**
 	 * Execute
 	 */
 	async execute(params, question)

@@ -23,6 +23,18 @@ export class SaveCategory extends Tool
 		this.settings = settings;
 	}
 	
+	
+	/**
+	 * Returns arguments
+	 */
+	getArgumentsText(params)
+	{
+		const name = params.name;
+		const description = params.description;
+		return `(${name}, ${description})`;
+	}
+	
+	
 	/**
 	 * Execute
 	 */

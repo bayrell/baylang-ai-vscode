@@ -50,6 +50,17 @@ export class SaveNote extends Tool
 	
 	
 	/**
+	 * Returns arguments
+	 */
+	getArgumentsText(params)
+	{
+		const category = params.category;
+		const title = params.title;
+		return `(${category}, ${title})`;
+	}
+	
+	
+	/**
 	 * Execute
 	 */
 	async execute(params, question)

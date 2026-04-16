@@ -45,6 +45,19 @@ export class SearchNote extends Tool
 	
 	
 	/**
+	 * Returns arguments
+	 */
+	getArgumentsText(params)
+	{
+		const category = params.category;
+		const query = params.query;
+		const tags = JSON.stringify(params.tags || []);
+		const page = params.page || 1;
+		return `(${category}, ${query}, ${tags}, ${page})`;
+	}
+	
+	
+	/**
 	 * Execute
 	 */
 	async execute(params, question)

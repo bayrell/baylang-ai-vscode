@@ -33,7 +33,7 @@ export class FindFileByName extends Tool
 	getArgumentsText(params)
 	{
 		const file_pattern = params ? params.file_pattern : "";
-		const recursive = params ? params.recursive : true;
+		const recursive = params ? params.recursive !== false : true;
 		
 		return `(${file_pattern}, recursive=${recursive})`;
 	}
@@ -45,7 +45,7 @@ export class FindFileByName extends Tool
 	async execute(params)
 	{
 		const file_pattern = params ? params.file_pattern : "";
-		const recursive = params ? params.recursive !== false : true; // Default to true
+		const recursive = params ? params.recursive !== false : true;
 
 		if (!file_pattern)
 		{

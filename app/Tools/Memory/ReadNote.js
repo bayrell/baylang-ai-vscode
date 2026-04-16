@@ -21,6 +21,16 @@ export class ReadNote extends Tool
 	
 	
 	/**
+	 * Returns arguments
+	 */
+	getArgumentsText(params)
+	{
+		const id = JSON.stringify(params.id);
+		return `(${id})`;
+	}
+	
+	
+	/**
 	 * Execute
 	 */
 	async execute(params, question)
