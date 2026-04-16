@@ -29,6 +29,15 @@ export class ReadMemory extends Tool
 	
 	
 	/**
+	 * Can use
+	 */
+	canUse(question)
+	{
+		return this.settings.memory.canUse(question.agent);
+	}
+	
+	
+	/**
 	 * Execute
 	 */
 	async execute(params, question)
@@ -37,7 +46,7 @@ export class ReadMemory extends Tool
 		{
 			throw new Error("Name does not exists");
 		}
-		const service = question.settings.memory;
+		const service = this.settings.memory;
 		const response = await service.sendApi(
 			question.agent, "ai.memory", "read", {
 				"category": params.name

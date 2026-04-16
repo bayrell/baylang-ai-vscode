@@ -58,13 +58,22 @@ export class SearchNote extends Tool
 	
 	
 	/**
+	 * Can use
+	 */
+	canUse(question)
+	{
+		return this.settings.memory.canUse(question.agent);
+	}
+	
+	
+	/**
 	 * Execute
 	 */
 	async execute(params, question)
 	{
 		if (!params) params = {};
 		
-		const service = question.settings.memory;
+		const service = this.settings.memory;
 		const response = await service.sendApi(
 			question.agent, "ai.note", "search", {
 				category: params.category || "",

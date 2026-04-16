@@ -31,6 +31,15 @@ export class ReadNote extends Tool
 	
 	
 	/**
+	 * Can use
+	 */
+	canUse(question)
+	{
+		return this.settings.memory.canUse(question.agent);
+	}
+	
+	
+	/**
 	 * Execute
 	 */
 	async execute(params, question)
@@ -43,7 +52,7 @@ export class ReadNote extends Tool
 		let id = params.id;
 		if (!Array.isArray(id)) id = [id];
 		
-		const service = question.settings.memory;
+		const service = this.settings.memory;
 		const response = await service.sendApi(
 			question.agent, "ai.note", "get", {
 				ids: id

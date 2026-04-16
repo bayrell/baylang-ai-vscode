@@ -29,6 +29,15 @@ export class DeleteMemory extends Tool
 	
 	
 	/**
+	 * Can use
+	 */
+	canUse(question)
+	{
+		return this.settings.memory.canUse(question.agent);
+	}
+	
+	
+	/**
 	 * Execute
 	 */
 	async execute(params, question)
@@ -38,7 +47,7 @@ export class DeleteMemory extends Tool
 			throw new Error("Memory name not found");
 		}
 		const name = params.name;
-		const service = question.settings.memory;
+		const service = this.settings.memory;
 		const response = await service.sendApi(
 			question.agent, "ai.memory", "delete", {
 				category: name,

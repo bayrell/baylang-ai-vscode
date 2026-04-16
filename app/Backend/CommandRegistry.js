@@ -255,6 +255,14 @@ export async function registerCommands(provider)
 		question.agent = agent;
 		question.settings = settings;
 		
+		if (!tool.canUse(question))
+		{
+			return {
+				success: false,
+				message: "Agent can't use this tool",
+			};
+		}
+		
 		let content = "";
 		try
 		{

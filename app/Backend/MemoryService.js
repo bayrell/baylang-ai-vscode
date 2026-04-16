@@ -58,6 +58,17 @@ export class MemoryService
 	
 	
 	/**
+	 * Can use
+	 */
+	canUse(agent)
+	{
+		const name = agent.memory;
+		const memory = this.findByName(name);
+		return memory != null;
+	}
+	
+	
+	/**
 	 * Discovery
 	 */
 	async discovery(agent)

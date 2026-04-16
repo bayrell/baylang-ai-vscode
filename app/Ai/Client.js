@@ -53,7 +53,7 @@ export class Client
 		var body = {
 			model: this.model_id,
 			messages: this.prompt,
-			tools: this.tools ? this.tools.getData() : null,
+			tools: this.tools ? this.tools.map((tool) => tool.getData()) : null,
 			tool_choice: "auto",
 			stream: true
 		};

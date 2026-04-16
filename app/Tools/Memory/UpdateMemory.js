@@ -42,6 +42,15 @@ export class UpdateMemory extends Tool
 	
 	
 	/**
+	 * Can use
+	 */
+	canUse(question)
+	{
+		return this.settings.memory.canUse(question.agent);
+	}
+	
+	
+	/**
 	 * Execute
 	 */
 	async execute(params, question)
@@ -53,7 +62,7 @@ export class UpdateMemory extends Tool
 		const name = params.name;
 		const content = params.content || "";
 		const command = params.command == "append" ? "add" : "save";
-		const service = question.settings.memory;
+		const service = this.settings.memory;
 		const response = await service.sendApi(
 			question.agent, "ai.memory", command, {
 				category: name,

@@ -55,6 +55,15 @@ export class AddNote extends Tool
 	
 	
 	/**
+	 * Can use
+	 */
+	canUse(question)
+	{
+		return this.settings.memory.canUse(question.agent);
+	}
+	
+	
+	/**
 	 * Execute
 	 */
 	async execute(params, question)
@@ -72,7 +81,7 @@ export class AddNote extends Tool
 			throw new Error("Content is required");
 		}
 		
-		const service = question.settings.memory;
+		const service = this.settings.memory;
 		const response = await service.sendApi(
 			question.agent, "ai.note", "add", {
 				title: params.title,

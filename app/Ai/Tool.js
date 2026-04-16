@@ -84,6 +84,15 @@ export class Tool
 	
 	
 	/**
+	 * Returns true if can use in question
+	 */
+	canUse(question)
+	{
+		return true;
+	}
+	
+	
+	/**
 	 * Returns props data
 	 */
 	getProps()

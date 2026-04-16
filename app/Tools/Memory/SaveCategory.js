@@ -36,6 +36,15 @@ export class SaveCategory extends Tool
 	
 	
 	/**
+	 * Can use
+	 */
+	canUse(question)
+	{
+		return this.settings.memory.canUse(question.agent);
+	}
+	
+	
+	/**
 	 * Execute
 	 */
 	async execute(params, question)
@@ -45,7 +54,7 @@ export class SaveCategory extends Tool
 			throw new Error("Category name is required");
 		}
 		
-		const service = question.settings.memory;
+		const service = this.settings.memory;
 		const response = await service.sendApi(
 			question.agent, "ai.note.category", "save", {
 				name: params.name,

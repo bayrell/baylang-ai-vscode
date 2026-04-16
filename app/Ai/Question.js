@@ -258,6 +258,7 @@ export class Question
 		if (this.agent.enableTools())
 		{
 			const tools_content = this.tools.items
+				.filter((tool) => tool.canUse(this))
 				.map((tool) => tool.prompt)
 				.filter((tool) => tool != "")
 			;
@@ -447,7 +448,10 @@ export class Question
 		client.prompt = prompt;
 		client.providers = this.agent.providers;
 		client.secure = this.agent.secure;
-		client.tools = this.agent.enableTools() ? this.tools : null;
+		client.tools = this.agent.enableTools() ?
+			this.tools.items.filter(
+				(tool) => tool.canUse(this)
+			) : null;
 		
 		/* Setup client */
 		this.setClient(client);
