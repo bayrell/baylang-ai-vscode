@@ -70,7 +70,9 @@ export function pad2(value)
 /* Convert to date */
 export function toDate(date)
 {
-	return date.y + "-" + pad2(date.m) + "-" + pad2(date.d) + " " + pad2(date.h) + ":" + pad2(date.i) + ":" + pad2(date.s);
+	const utcDate = new Date(Date.UTC(date.y, date.m - 1, date.d, date.h, date.i, date.s));
+	const dt = new Date(utcDate.getTime());
+	return dt.toString();
 }
 
 /**
