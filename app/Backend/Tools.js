@@ -11,7 +11,7 @@ import { UpdateMemory } from "../Tools/Memory/UpdateMemory.js";
 import { UpdateSoul } from "../Tools/Memory/UpdateSoul.js";
 import { DeleteMemory } from "../Tools/Memory/DeleteMemory.js";
 import { AddNote } from "../Tools/Memory/AddNote.js";
-import { SaveNote } from "../Tools/Memory/SaveNote.js";
+import { UpdateNote } from "../Tools/Memory/UpdateNote.js";
 import { ReadNote } from "../Tools/Memory/ReadNote.js";
 import { SearchNote } from "../Tools/Memory/SearchNote.js";
 import { SaveCategory } from "../Tools/Memory/SaveCategory.js";
@@ -42,7 +42,7 @@ export async function registerTools(settings)
 	
 	/* Notebook */
 	tools.add(new AddNote(settings));
-	tools.add(new SaveNote(settings));
+	tools.add(new UpdateNote(settings));
 	tools.add(new ReadNote(settings));
 	tools.add(new SearchNote(settings));
 	tools.add(new SaveCategory(settings));

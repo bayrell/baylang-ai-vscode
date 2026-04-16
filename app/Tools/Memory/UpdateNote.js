@@ -1,12 +1,12 @@
 import { Tool } from "../../Ai/Tool.js";
 
-export class SaveNote extends Tool
+export class UpdateNote extends Tool
 {
 	constructor(settings)
 	{
 		super();
-		this.setName("save_note");
-		this.setDescription("Save note in notebook with ID");
+		this.setName("update_note");
+		this.setDescription("Update note in notebook with ID");
 		this.addProps({
 			key: "id",
 			type: "number",
@@ -44,7 +44,7 @@ export class SaveNote extends Tool
 			description: "Note tags",
 			required: false,
 		});
-		this.setPrompt(`To save note use \`save_note\` tool.`);
+		this.setPrompt(`To update note use \`save_note\` tool.`);
 		this.settings = settings;
 	}
 	
