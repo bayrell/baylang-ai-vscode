@@ -49,8 +49,8 @@ export class SearchNote extends Tool
 	 */
 	getArgumentsText(params)
 	{
-		const category = params.category;
-		const query = params.query;
+		const category = params.category || "";
+		const query = params.query || "";
 		const tags = JSON.stringify(params.tags || []);
 		const page = params.page || 1;
 		return `(${category}, ${query}, ${tags}, ${page})`;

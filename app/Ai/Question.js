@@ -133,7 +133,7 @@ export class Question
 		const response = await this.settings.memory
 			.discovery(this.agent);
 		
-		if (response.code == 1)
+		if (response && response.code == 1)
 		{
 			this.discovery = response.data;
 		}
@@ -199,7 +199,7 @@ export class Question
 			};
 			
 			/* Add memory */
-			const memory_prompt = "This is the context memory (RAM) that is sent with each request. Use it to store important information that is needed in every request.";
+			const memory_prompt = "This is the context memory that is sent with each request. Use it to store important information that is needed in every request.";
 			const memory_content = memory_prompt + "\n\n" +
 				memory.map((memory) => "Memory name: " + memory.name + "\n```" + memory.content + "```")
 			;

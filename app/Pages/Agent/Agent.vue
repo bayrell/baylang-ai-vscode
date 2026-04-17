@@ -284,7 +284,7 @@ export default {
 					};
 				})
 			;
-			items.sort((a, b) => a.name.localeCompare(b.name));
+			items.sort((a, b) => a.key.localeCompare(b.key));
 			return items;
 		},
 		items()

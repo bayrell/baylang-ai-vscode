@@ -48,8 +48,8 @@ export class AddNote extends Tool
 	 */
 	getArgumentsText(params)
 	{
-		const category = params.category;
-		const title = params.title;
+		const category = params.category || "";
+		const title = params.title || "";
 		return `(${category}, ${title})`;
 	}
 	

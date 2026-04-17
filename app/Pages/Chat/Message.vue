@@ -244,6 +244,7 @@ export default {
 						"random",
 						"chat_history",
 						"read_chat_history",
+						"read_note",
 					];
 					const tool_name = this.message.tool_name;
 					if (names.indexOf(tool_name) >= 0)

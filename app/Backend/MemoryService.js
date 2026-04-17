@@ -47,7 +47,9 @@ export class MemoryService
 		
 		if (!response.ok)
 		{
-			const result = await getErrorResponse(response);
+			//const result = await getErrorResponse(response);
+			const result = response.status + " " +
+				response.statusText;
 			console.log(result);
 			return null;
 		}
@@ -89,7 +91,7 @@ export class MemoryService
 			{
 				let content = [];
 				content.push("Execute " + message.tool_name);
-				content.push("(" + message.tool_arguments + ")");
+				content.push(message.tool_arguments);
 				return {
 					id: message.id,
 					role: "tool",
