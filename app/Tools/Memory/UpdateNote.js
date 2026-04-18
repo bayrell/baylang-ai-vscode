@@ -54,9 +54,8 @@ export class UpdateNote extends Tool
 	 */
 	getArgumentsText(params)
 	{
-		const category = params.category;
 		const title = params.title;
-		return `(${category}, ${title})`;
+		return `(${title})`;
 	}
 	
 	

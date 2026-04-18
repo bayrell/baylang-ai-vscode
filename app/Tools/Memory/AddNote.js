@@ -14,6 +14,12 @@ export class AddNote extends Tool
 			required: true,
 		});
 		this.addProps({
+			key: "file_name",
+			type: "string",
+			description: "File name without extension",
+			required: true,
+		});
+		this.addProps({
 			key: "content",
 			type: "string",
 			description: "Note content",
@@ -85,6 +91,7 @@ export class AddNote extends Tool
 		const response = await service.sendApi(
 			question.agent, "ai.note", "add", {
 				title: params.title,
+				file_name: params.file_name,
 				content: params.content,
 				category: params.category,
 				tags: params.tags || [],

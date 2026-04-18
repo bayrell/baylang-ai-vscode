@@ -16,6 +16,7 @@ import { ReadNote } from "../Tools/Memory/ReadNote.js";
 import { SearchNote } from "../Tools/Memory/SearchNote.js";
 import { SaveCategory } from "../Tools/Memory/SaveCategory.js";
 import { SaveTag } from "../Tools/Memory/SaveTag.js";
+import { DeleteNote } from "../Tools/Memory/DeleteNote.js";
 
 
 /**
@@ -42,6 +43,7 @@ export async function registerTools(settings)
 	
 	/* Notebook */
 	tools.add(new AddNote(settings));
+	tools.add(new DeleteNote(settings));
 	tools.add(new UpdateNote(settings));
 	tools.add(new ReadNote(settings));
 	tools.add(new SearchNote(settings));

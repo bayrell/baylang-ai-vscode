@@ -16,7 +16,8 @@ export class SearchNote extends Tool
 		});
 		this.addProps({
 			key: "query",
-			type: "string",
+			type: "array",
+			items: { type: "string" },
 			description: "Query string (semantic search with cosine distance)",
 			required: false,
 		});
@@ -52,8 +53,7 @@ export class SearchNote extends Tool
 		const category = params.category || "";
 		const query = params.query || "";
 		const tags = JSON.stringify(params.tags || []);
-		const page = params.page || 1;
-		return `(${category}, ${query}, ${tags}, ${page})`;
+		return `(${category}, ${query}, ${tags})`;
 	}
 	
 	
@@ -73,24 +73,37 @@ export class SearchNote extends Tool
 	{
 		if (!params) params = {};
 		
+		let query = params.query;
+		if (!Array.isArray(query)) query = [query];
+		
+		const items = [];
+		const addItem = (item) => {
+			const index = items.findIndex((e) => e.id == item.id);
+			if (index >= 0) return;
+			items.push(item);
+		};
+		
 		const service = this.settings.memory;
-		const response = await service.sendApi(
-			question.agent, "ai.note", "search", {
-				category: params.category || "",
-				query: params.query || "",
-				tags: params.tags || [],
-				limit: params.limit || 20,
-				page: params.page - 1 || 0,
-				content: false,
-			}
-		)
-		if (response.code != 1)
+		for (let i=0; i<query.length; i++)
 		{
-			throw new Error(response.message);
-		}
-		const items = response.data.items.map(
-			(item) => {
-				return {
+			const response = await service.sendApi(
+				question.agent, "ai.note", "search", {
+					category: params.category || "",
+					query: query[i],
+					tags: params.tags || [],
+					limit: params.limit || 20,
+					page: params.page - 1 || 0,
+					content: false,
+				}
+			)
+			if (response.code != 1)
+			{
+				throw new Error(response.message);
+			}
+			for (let j=0; j<response.data.items.length; j++)
+			{
+				const item = response.data.items[j];
+				addItem({
 					id: item.id,
 					category: item.category,
 					title: item.title,
@@ -100,9 +113,9 @@ export class SearchNote extends Tool
 					distance: item.distance || 0,
 					gmtime_add: toDate(item.gmtime_add),
 					gmtime_edit: toDate(item.gmtime_edit),
-				};
+				});
 			}
-		)
+		}
 		return items;
 	}
 }
