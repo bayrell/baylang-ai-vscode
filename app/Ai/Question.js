@@ -736,7 +736,7 @@ export class Question
 			if (count > this.max_iter) break;
 			
 			/* Wait delay */
-			await delay((Math.random() * 20 + 5) * 1000);
+			await delay((Math.random() * 2) * 1000);
 		}
 	}
 	
