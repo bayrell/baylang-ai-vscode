@@ -84,6 +84,60 @@ export function delay(ms)
 }
 
 /**
+ * Parse command line string into array of arguments
+ * Handles quoted strings (both single and double quotes) and escaped characters
+ * @param {string} str - The command line string to parse
+ * @returns {string[]} Array of parsed arguments
+ */
+export function parseCommandLine(str) {
+	const args = [];
+	let current = '';
+	let inQuotes = false;
+	let quoteChar = null;
+	let i = 0;
+
+	while (i < str.length) {
+		const char = str[i];
+
+		if (inQuotes) {
+			if (char === quoteChar) {
+				// End of quoted string
+				inQuotes = false;
+				quoteChar = null;
+			} else if (char === '\\' && i + 1 < str.length) {
+				// Escape sequence
+				i++;
+				current += str[i];
+			} else {
+				current += char;
+			}
+		} else {
+			if (char === '"' || char === "'") {
+				// Start of quoted string
+				inQuotes = true;
+				quoteChar = char;
+			} else if (char === ' ') {
+				// End of current argument
+				if (current !== '') {
+					args.push(current);
+					current = '';
+				}
+			} else {
+				current += char;
+			}
+		}
+		i++;
+	}
+
+	// Add the last argument
+	if (current !== '') {
+		args.push(current);
+	}
+
+	return args;
+}
+
+/**
  * Read response
  */
 export async function getResponseMessage(response)

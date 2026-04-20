@@ -17,6 +17,8 @@ import { SearchNote } from "../Tools/Memory/SearchNote.js";
 import { SaveCategory } from "../Tools/Memory/SaveCategory.js";
 import { SaveTag } from "../Tools/Memory/SaveTag.js";
 import { DeleteNote } from "../Tools/Memory/DeleteNote.js";
+import { RunTool } from "../Tools/RunTool.js";
+import { ToolsList } from "../Tools/ToolsList.js";
 
 
 /**
@@ -34,6 +36,8 @@ export async function registerTools(settings)
 	tools.add(new DeleteFile(settings));
 	tools.add(new ListFiles(settings));
 	tools.add(new FindFileByName(settings));
+	tools.add(new RunTool(settings));
+	tools.add(new ToolsList(settings));
 	
 	/* Memory */
 	tools.add(new ReadMemory(settings));
