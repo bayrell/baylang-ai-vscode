@@ -198,7 +198,7 @@ export class Question
 			{
 				discovery_content.push(
 					"Notebook categories list:\n" +
-					this.discovery.categories.map((item) => item.name + "(" + item.description + ")").join(", ")
+					this.discovery.categories.map((item) => item.name + " (" + item.description + ")").join(", ")
 				);
 			}
 			
