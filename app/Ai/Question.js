@@ -164,7 +164,8 @@ export class Question
 		this.prompt = new PromptBuilder();
 		
 		/* Add prompt */
-		this.prompt.addMessage("system", this.agent.prompt);
+		const agent_prompt = this.agent.prompt.trim();
+		this.prompt.addMessage("system", agent_prompt);
 		
 		/* Add current date */
 		this.prompt.addCurrentDate();
@@ -183,27 +184,11 @@ export class Question
 				}
 			}
 			
-			/* Read discovery */
-			const readDiscovery = (items) =>
-			{
-				let arr = [];
-				for (let index in items)
-				{
-					arr.push({
-						name: items[index].name,
-						content: items[index].name + " - " + items[index].description,
-					})
-				}
-				arr.sort((a, b) => a.name.localeCompare(b.name));
-				return arr.map((item) => item.content).join("\n");
-			};
-			
 			/* Add memory */
 			const memory_prompt = "This is the context memory that is sent with each request. Use it to store important information that is needed in every request.";
 			const memory_content = memory_prompt + "\n\n" +
-				memory.map((memory) => "Memory name: " + memory.name + "\n```" + memory.content + "```")
+				memory.map((memory) => "Memory name: " + memory.name + "\n```" + memory.content + "```").join("\n\n")
 			;
-			this.prompt.addMessage("system", memory_content);
 			
 			/* Category list */
 			let discovery_content = [
@@ -211,19 +196,10 @@ export class Question
 			];
 			if (this.discovery.categories)
 			{
-				let arr = ["android", "public", "private", "public_user"];
-				for (let i=0; i<arr.length; i++)
-				{
-					let category_type = arr[i];
-					let items = this.discovery.categories.filter((item) => item.type == category_type);
-					if (items.length > 0)
-					{
-						discovery_content.push(
-							"Notebook " + category_type + " categories list:\n" +
-							readDiscovery(items)
-						);
-					}
-				}
+				discovery_content.push(
+					"Notebook categories list:\n" +
+					this.discovery.categories.map((item) => item.name + "(" + item.description + ")").join(", ")
+				);
 			}
 			
 			/* Tags list */
@@ -231,17 +207,12 @@ export class Question
 			{
 				discovery_content.push(
 					"Notebook tags list:\n" +
-					readDiscovery(this.discovery.tags)
+					this.discovery.tags.map((item) => item.name).join(", ")
 				);
 			}
 			
 			/* Add message */
-			if (discovery_content.length > 0)
-			{
-				this.prompt.addMessage("system",
-					discovery_content.join("\n\n")
-				);
-			}
+			this.prompt.addMessage("system", discovery_content.length > 0 ? memory_content + "\n\n" + discovery_content.join("\n\n") : memory_content);
 		}
 		
 		/* Add rules */
@@ -318,6 +289,23 @@ export class Question
 		
 		/* Load rules from settings */
 		this.loaded_rules = await this.settings.loadRules();
+		
+		const agents_file = path.join(
+			this.settings.workspaceFolderPath, "AGENTS.md"
+		);
+		try
+		{
+			const content = await fs.readFile(
+				agents_file, {encoding: "utf8"}
+			);
+			const rule = new Rule();
+			rule.global = true;
+			rule.content = content;
+			this.loaded_rules.push(rule);
+		}
+		catch (e)
+		{
+		}
 		
 		/* Add rules */
 		if (this.agent.rules && this.agent.rules.length > 0)
@@ -579,7 +567,7 @@ export class Question
 			if (result) return;
 			
 			/* Wait */
-			if (count + 1 < this.fallback_count) await delay((Math.random() * 20 + 5) * 1000);
+			if (count + 1 < this.fallback_count) await delay((Math.random() * 5 + 20) * 1000);
 			count++;
 		}
 		
@@ -736,7 +724,7 @@ export class Question
 			if (count > this.max_iter) break;
 			
 			/* Wait delay */
-			await delay((Math.random() * 2) * 1000);
+			await delay((Math.random() * 2 + 5) * 1000);
 		}
 	}
 	

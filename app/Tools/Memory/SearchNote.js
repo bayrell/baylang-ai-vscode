@@ -50,6 +50,7 @@ export class SearchNote extends Tool
 	 */
 	getArgumentsText(params)
 	{
+		if (!params) params = {};
 		const category = params.category || "";
 		const query = params.query || "";
 		const tags = JSON.stringify(params.tags || []);

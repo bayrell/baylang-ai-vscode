@@ -42,7 +42,6 @@ export async function registerTools(settings)
 	/* Memory */
 	tools.add(new ReadMemory(settings));
 	tools.add(new UpdateMemory(settings));
-	tools.add(new UpdateSoul(settings));
 	tools.add(new DeleteMemory(settings));
 	
 	/* Notebook */
