@@ -90,7 +90,7 @@ export class Client
 		if (this.connection_timeout > 0)
 		{
 			timer_id = setTimeout(() => {
-				if (has_messages) return;
+				/*if (has_messages) return;*/
 				abort.abort();
 			}, this.connection_timeout);
 		}

@@ -273,9 +273,7 @@ export class Question
 	updateRulesPrompt()
 	{
 		if (this.prompt_rules_index == -1) return;
-		const rules_content = this.rules
-			.map((rule) => rule.getRuleContent())
-		;
+		const rules_content = this.rules.map((rule) => rule.getRuleContent()).join("\n\n");
 		this.prompt.messages[this.prompt_rules_index].content = rules_content;
 	}
 	
@@ -540,8 +538,7 @@ export class Question
 			{
 				tool_result.has_answer = true;
 				tool_result.error = "Tool '" + tool_name + "' not found";
-				await this.sendError(new Error(tool_result.error));
-				continue;
+				this.prompt.addToolResult(tool_result);
 			}
 			
 			/* Parse args */
@@ -667,7 +664,7 @@ export class Question
 	 */
 	hasTools()
 	{
-		return this.tools_history.find((item) => !item.has_answer);
+		return this.tools_history.length > 0;
 	}
 	
 	
