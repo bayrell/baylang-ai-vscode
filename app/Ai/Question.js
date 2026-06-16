@@ -30,7 +30,7 @@ export class Question
 		this.rules = [];
 		this.loaded_rules = null;
 		this.max_iter = 100;
-		this.fallback_count = 5;
+		this.fallback_count = 20;
 		this.settings = null;
 		this.tools = null;
 		this.tools_history = [];
@@ -437,7 +437,7 @@ export class Question
 		client.tools = this.agent.enableTools() ?
 			this.tools.items.filter(
 				(tool) => tool.canUse(this)
-			) : null;
+			) : [];
 		
 		/* Setup client */
 		this.setClient(client);

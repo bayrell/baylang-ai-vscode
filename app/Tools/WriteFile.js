@@ -54,6 +54,19 @@ export class WriteFile extends Tool
 			throw new Error("File path not found");
 		}
 		
+		let obj = null;
+		try
+		{
+			obj = JSON.parse(file_path);
+		}
+		catch (e)
+		{
+		}
+		if (Array.isArray(obj))
+		{
+			throw new Error("Array is not allowed in file path");
+		}
+		
 		/* Check file path */
 		const absolute_file_path = resolve(file_path, this.settings.workspaceFolderPath);
 		
@@ -74,7 +87,7 @@ export class WriteFile extends Tool
 		}
 		catch (error)
 		{
-			throw new Error("Could not write file to " + relative_file_path + ". Details: " + error.message);
+			throw new Error("Could not write file to " + file_path + ". Details: " + error.message);
 		}
 		
 		return "Success file write";
