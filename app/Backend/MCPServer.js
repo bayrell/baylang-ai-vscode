@@ -1,6 +1,6 @@
 export class MCPServer
 {
-	constructor(config)
+	constructor(config, settings)
 	{
 		this.id = config.id;
 		this.name = config.name;
@@ -14,6 +14,7 @@ export class MCPServer
 		this.tools = config.tools || [];
 		this.process = null;               // child process for CLI
 		this.connected = false;
+		this.settings = settings;
 	}
 
 
@@ -42,11 +43,23 @@ export class MCPServer
 	{
 		if (this.type == "server")
 		{
-			return await this.connectHTTP();
+			await this.connectHTTP();
 		}
 		else if (this.type == "cli")
 		{
-			return await this.connectCLI();
+			if (this.connected && this.process != null) return;
+			await this.connectCLI();
+		}
+		if (this.connected)
+		{
+			await this.sendRequest("initialize", {
+				"protocolVersion": "2026-07-28",
+				"capabilities": {},
+				"clientInfo": {
+					"name": "BayLang AI",
+					"version": "0.5.0",
+				},
+			});
 		}
 	}
 
@@ -74,6 +87,7 @@ export class MCPServer
 			this.process = spawn(this.command, this.args, {
 				env: this.buildEnv(),
 				stdio: ["pipe", "pipe", "pipe"],
+				cwd: this.settings.workspaceFolderPath,
 			});
 
 			this.process.on("error", (err) =>
@@ -99,6 +113,11 @@ export class MCPServer
 	 */
 	async sendRequest(method, params)
 	{
+		if (!this.connected)
+		{
+			await this.connect();
+		}
+		
 		var request_id = "mcp-" + Date.now();
 		var request = {
 			jsonrpc: "2.0",
@@ -139,6 +158,10 @@ export class MCPServer
 					var response = JSON.parse(response_data);
 					clearTimeout(timeout);
 					this.process.stdout.removeListener("data", onData);
+					if (response.error)
+					{
+						reject(new Error(response.error.message));
+					}
 					resolve(response);
 				}
 				catch (e)

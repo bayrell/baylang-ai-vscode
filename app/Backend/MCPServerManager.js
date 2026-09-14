@@ -20,7 +20,7 @@ export class MCPServerManager
 
 		for (var i = 0; i < configs.length; i++)
 		{
-			var server = new MCPServer(configs[i]);
+			var server = new MCPServer(configs[i], this.settings);
 			this.servers.push(server);
 		}
 	}
@@ -42,7 +42,7 @@ export class MCPServerManager
 	 */
 	addServer(config)
 	{
-		var server = new MCPServer(config);
+		var server = new MCPServer(config, settings);
 		this.servers.push(server);
 		return server;
 	}

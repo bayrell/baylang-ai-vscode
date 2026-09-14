@@ -9,6 +9,7 @@ class Agent
 		this.layout = layout;
 		this.crud = new Crud(this);
 		this.items = [];
+		this.tools_data = [];
 		this.form = new Form();
 		this.form.setDefault({
 			"name": "",
@@ -70,6 +71,9 @@ class Agent
 	{
 		this.crud.showList();
 		await this.load();
+		
+		/* Load tools */
+		this.tools_data = await this.loadAvailableTools();
 	}
 	
 	

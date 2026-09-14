@@ -279,10 +279,21 @@ export async function registerCommands(provider)
 	/* Update MCP tools */
 	registry.register("update_mcp_tools", async (serverId) => {
 		var manager = settings.mcpManager;
-		var tools = await manager.updateServerTools(serverId);
+		var tools = [];
 	
 		// Recreate dynamic tools
-		settings.tools = await registerTools(settings);
+		try
+		{
+			tools = await manager.updateServerTools(serverId);
+			settings.tools = await registerTools(settings);
+		}
+		catch (e)
+		{
+			return {
+				success: false,
+				message: e.message,
+			};
+		}
 	
 		return {
 			success: true,
@@ -293,10 +304,21 @@ export async function registerCommands(provider)
 	/* Update all MCP Tools */
 	registry.register("update_all_mcp_tools", async () => {
 		var manager = settings.mcpManager;
-		var results = await manager.updateAllTools();
+		var results = [];
 	
 		// Recreate dynamic tools
-		settings.tools = await registerTools(settings);
+		try
+		{
+			results = await manager.updateAllTools();
+			settings.tools = await registerTools(settings);
+		}
+		catch (e)
+		{
+			return {
+				success: false,
+				message: e.message,
+			};
+		}
 	
 		return {
 			success: true,
@@ -307,7 +329,17 @@ export async function registerCommands(provider)
 	/* Run MCP Tool */
 	registry.register("run_mcp_tool", async ({ serverId, toolName, args }) => {
 		var manager = settings.mcpManager;
-		var result = await manager.callTool(serverId, toolName, args);
+		try
+		{
+			var result = await manager.callTool(serverId, toolName, args);
+		}
+		catch (e)
+		{
+			return {
+				success: false,
+				message: e.message,
+			};
+		}
 		return {
 			success: true,
 			data: result,

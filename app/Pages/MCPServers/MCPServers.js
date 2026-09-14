@@ -1,5 +1,6 @@
 import Crud from "@main/Components/Crud.js";
 import Form from "@main/Components/Form/Form.js";
+import Result from "@main/Components/Form/Result.js";
 import { ApiResult } from "@main/lib.js";
 
 class MCPServers
@@ -235,6 +236,7 @@ class MCPServers
 			{
 				server.tools = result.response.tools;
 			}
+			result.message = "Tools updated successfully";
 		}
 
 		return result;
@@ -266,6 +268,7 @@ class MCPServers
 					server.tools = serverResult.tools;
 				}
 			}
+			result.message = "All servers updated";
 		}
 
 		return result;

@@ -333,7 +333,6 @@ export default {
 	data(){
 		return {
 			reload_result: new Result(),
-			tools_data: null,
 		};
 	},
 	computed: {
@@ -429,6 +428,10 @@ export default {
 				}
 			}
 		},
+		tools_data()
+		{
+			return this.model.tools_data;
+		},
 		mcpToolsGrouped()
 		{
 			if (!this.tools_data || !this.tools_data.mcp) return {};
@@ -460,10 +463,6 @@ export default {
 		{
 			this.model.crud.showAdd();
 			this.model.setGlobal(global);
-		},
-		async loadToolsData()
-		{
-			this.tools_data = await this.model.loadAvailableTools();
 		},
 		isToolEnabled(toolName)
 		{

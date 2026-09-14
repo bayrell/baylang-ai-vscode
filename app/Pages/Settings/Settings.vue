@@ -77,7 +77,7 @@
 				<div class="info">
 					<div class="title">MCP Servers</div>
 					<div class="description">
-						Manage Model Context Protocol servers and tools
+						Manage Model Context Protocol servers
 					</div>
 				</div>
 				<div class="action">Configure</div>

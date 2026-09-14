@@ -125,6 +125,9 @@
 	color: var(--input-color);
 	font-size: 11px;
 }
+.mcp_servers_page :deep(.result){
+	margin-bottom: 10px;
+}
 .args_help{
 	font-size: 11px;
 	color: var(--input-color);
@@ -158,7 +161,13 @@
 				<div class="page_title">
 					MCP Servers
 				</div>
-
+				
+				<!-- Update result message -->
+				<Result
+					v-if="update_result.message"
+					:result="update_result"
+				/>
+				
 				<div
 					v-for="item in items"
 					:key="item.id"
@@ -340,12 +349,6 @@
 						</span>
 					</div>
 				</div>
-
-				<!-- Update result message -->
-				<Result
-					v-if="update_result.message"
-					:result="update_result"
-				/>
 			</template>
 
 			<template v-slot:delete_message>
@@ -374,10 +377,6 @@ export default {
 	data()
 	{
 		return {
-			update_result: {
-				code: 0,
-				message: "",
-			},
 		};
 	},
 	computed: {
@@ -394,6 +393,10 @@ export default {
 			var items = this.model.items.slice();
 			items.sort((a, b) => a.name.localeCompare(b.name));
 			return items;
+		},
+		update_result()
+		{
+			return this.model.update_result;
 		},
 		type_options()
 		{
@@ -415,7 +418,6 @@ export default {
 			this.model.form.item.enabled = true;
 			this.model.form.item.env = [];
 			this.model.form.item.tools = [];
-			this.update_result = { code: 0, message: "" };
 		},
 		showEdit(id)
 		{
@@ -425,7 +427,6 @@ export default {
 			var formData = this.model.prepareFormItem(item);
 			this.model.crud.showEdit(id);
 			this.model.form.setItem(formData);
-			this.update_result = { code: 0, message: "" };
 		},
 		formatArgs(args)
 		{
@@ -454,23 +455,11 @@ export default {
 		},
 		async showUpdateTools(id)
 		{
-			var result = await this.model.updateTools(id);
-			this.update_result = {
-				code: result.isSuccess() ? 1 : -1,
-				message: result.isSuccess()
-					? "Tools updated successfully"
-					: result.message || "Failed to update tools",
-			};
+			await this.model.updateTools(id);
 		},
 		async updateAllTools()
 		{
-			var result = await this.model.updateAllTools();
-			this.update_result = {
-				code: result.isSuccess() ? 1 : -1,
-				message: result.isSuccess()
-					? "All servers updated"
-					: result.message || "Failed to update servers",
-			};
+			await this.model.updateAllTools();
 		},
 	},
 }

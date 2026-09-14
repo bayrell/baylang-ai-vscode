@@ -38,7 +38,23 @@ export class MCPServerTool extends Tool
 			}
 		}
 	}
-
+	
+	
+	/**
+	 * Returns aguments text
+	 */
+	getArgumentsText(params)
+	{
+		var result = [];
+		for (const key in params)
+		{
+			let value = params[key];
+			if (value.length > 50) value = value.substring(0, 50);
+			result.push(value);
+		}
+		return result.join(", ");
+	}
+	
 
 	/**
 	 * Execute tool via MCP server
