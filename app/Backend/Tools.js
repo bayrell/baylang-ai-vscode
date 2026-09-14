@@ -30,5 +30,12 @@ export async function registerTools(settings)
 	tools.add(new ToolsList(settings));
 	tools.add(new SearchFiles(settings));
 	
+	/* Add MCP tools */
+	var mcpTools = settings.mcpManager.createDynamicTools();
+	for (var i = 0; i < mcpTools.length; i++)
+	{
+		tools.add(mcpTools[i]);
+	}
+	
 	return tools;
 }

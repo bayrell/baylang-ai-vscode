@@ -8,6 +8,7 @@ import { Usage } from "../Ai/Usage.js";
 import { Question } from "../Ai/Question.js";
 import { registerTools } from "./Tools.js";
 import { registerSendMessage } from "./SendMessage.js";
+import { MCPServerManager } from "./MCPServerManager.js";
 
 export class CommandRegistry
 {
@@ -82,6 +83,11 @@ export async function registerCommands(provider)
 	/* Init settings */
 	var settings = new Settings(provider.globalStorageUri);
 	await settings.loadData();
+	
+	/* MCP Manager */
+	var mcpManager = new MCPServerManager(settings);
+	mcpManager.loadServers();
+	settings.mcpManager = mcpManager;
 	
 	/* Init tools */
 	settings.tools = await registerTools(settings);
@@ -232,6 +238,79 @@ export async function registerCommands(provider)
 		await settings.deleteRule(id);
 		return {
 			success: true,
+		};
+	});
+	
+	/* Load MCP servers */
+	registry.register("load_mcp_servers", async () => {
+		var manager = settings.mcpManager;
+		return {
+			success: true,
+			items: manager.servers.map(s => s.getConfig()),
+		};
+	});
+	
+	/* Save MCP Server */
+	registry.register("save_mcp_server", async ({ id, item }) => {
+		var manager = settings.mcpManager;
+		if (id && manager.getServer(id))
+		{
+			// Update existing
+			var server = manager.getServer(id);
+			Object.assign(server, item);
+		}
+		else
+		{
+			// Add new
+			manager.addServer(item);
+		}
+		await manager.saveServers();
+		return { success: true };
+	});	
+	
+	/* Delete MCP Server */
+	registry.register("delete_mcp_server", async (id) => {
+		var manager = settings.mcpManager;
+		manager.removeServer(id);
+		await manager.saveServers();
+		return { success: true };
+	});
+	
+	/* Update MCP tools */
+	registry.register("update_mcp_tools", async (serverId) => {
+		var manager = settings.mcpManager;
+		var tools = await manager.updateServerTools(serverId);
+	
+		// Recreate dynamic tools
+		settings.tools = await registerTools(settings);
+	
+		return {
+			success: true,
+			tools: tools,
+		};
+	});	
+	
+	/* Update all MCP Tools */
+	registry.register("update_all_mcp_tools", async () => {
+		var manager = settings.mcpManager;
+		var results = await manager.updateAllTools();
+	
+		// Recreate dynamic tools
+		settings.tools = await registerTools(settings);
+	
+		return {
+			success: true,
+			items: results,
+		};
+	});
+	
+	/* Run MCP Tool */
+	registry.register("run_mcp_tool", async ({ serverId, toolName, args }) => {
+		var manager = settings.mcpManager;
+		var result = await manager.callTool(serverId, toolName, args);
+		return {
+			success: true,
+			data: result,
 		};
 	});
 	

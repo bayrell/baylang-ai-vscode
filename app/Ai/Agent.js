@@ -13,6 +13,7 @@ export class Agent
 		this.memory_token = "";
 		this.prompt = "";
 		this.rules = [];
+		this.enabled_tools = [];
 		this.providers = "";
 		this.secure = false;
 	}
@@ -27,6 +28,7 @@ export class Agent
 		if (data.global != undefined) this.global = data.global;
 		if (data.enable_rules) this.enable_rules = data.enable_rules;
 		if (data.enable_tools) this.enable_tools = data.enable_tools;
+		if (data.enabled_tools) this.enabled_tools = data.enabled_tools;
 		if (data.default) this.default = data.default;
 		if (data.model) this.model = data.model;
 		if (data.model_name) this.model_name = data.model_name;
@@ -53,6 +55,7 @@ export class Agent
 			global: this.global,
 			enable_rules: this.enable_rules,
 			enable_tools: this.enable_tools,
+			enabled_tools: this.enabled_tools,
 			default: this.default,
 			model: this.model,
 			model_name: this.model_name,
@@ -90,6 +93,23 @@ export class Agent
 	setFileName(value)
 	{
 		this.file_name = value;
+	}
+	
+	
+	/**
+	 * Returns true if tool enabled
+	 */
+	isToolEnabled(toolName)
+	{
+		// If enabled_tools is empty, all tools are enabled
+		if (Object.keys(this.enabled_tools).length === 0) return true;
+		// If tool has explicit setting, use it
+		if (this.enabled_tools.hasOwnProperty(toolName))
+		{
+			return this.enabled_tools[toolName] === true;
+		}
+		// Default: enabled if no explicit setting
+		return true;
 	}
 }
 
