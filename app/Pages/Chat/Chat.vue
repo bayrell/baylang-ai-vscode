@@ -61,7 +61,6 @@
 				v-for="message in messages"
 				:key="message.id"
 				:message="message"
-				@update="scrollHistory"
 			/>
 			<ChatTyping v-if="currentItem && currentItem.isTyping()" />
 		</div>
@@ -77,7 +76,7 @@
 			</span>
 		</div>
 		
-		<SendMessage />
+		<SendMessage @send="handleSend" />
 	</div>
 </template>
 
@@ -112,14 +111,26 @@ export default {
 			if (!chat) return [];
 			return chat.messages;
 		},
+		currentChatId()
+		{
+			return this.model.current_chat_id;
+		}
 	},
 	mounted: function()
 	{
 		this.model.load();
+		this.scrollHistory();
 	},
 	updated: function()
 	{
-		this.scrollHistory();
+		/*this.scrollHistory();*/
+	},
+	watch:
+	{
+		currentChatId(newValue, oldValue)
+		{
+			this.scrollHistory();
+		}
 	},
 	methods:
 	{
@@ -135,6 +146,10 @@ export default {
 			var arr = [];
 			if (this.model.is_drag) arr.push("chat--drag")
 			return arr.join(" ");
+		},
+		handleSend()
+		{
+			this.scrollHistory();
 		}
 	},
 };

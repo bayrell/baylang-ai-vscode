@@ -164,12 +164,12 @@ export default {
 	},
 	methods:
 	{
-		sendMessage()
+		async sendMessage()
 		{
 			var agent = this.layout.agent_page.items[this.model.current_agent_id];
 			if (!agent) return;
 			var model = this.models.find((item) => item.key == this.model.current_model_key);
-			this.model.sendMessage({
+			await this.model.sendMessage({
 				chat_id: this.model.current_chat_id,
 				agent_id: this.model.current_agent_id,
 				model: model ? model.model_name : "",
@@ -177,6 +177,7 @@ export default {
 				message: this.model.send_message
 			});
 			this.model.send_message = "";
+			this.$emit("send");
 		},
 		stopChat()
 		{
