@@ -42,7 +42,7 @@ export class MCPServerManager
 	 */
 	addServer(config)
 	{
-		var server = new MCPServer(config, settings);
+		var server = new MCPServer(config, this.settings);
 		this.servers.push(server);
 		return server;
 	}
