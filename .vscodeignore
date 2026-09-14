@@ -2,4 +2,5 @@
 .vscode-test/**
 .gitignore
 docs/**
+example
 node_modules/
