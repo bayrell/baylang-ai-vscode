@@ -1,5 +1,7 @@
 # Changelog
 
+14 Sep 2025 - Add MCP
+
 19 Apr 2025 - Add memory support
 
 22 Nov 2025 - File context fix, add retry send message button

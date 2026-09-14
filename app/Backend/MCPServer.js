@@ -235,7 +235,7 @@ export class MCPServer
 	/**
 	 * Disconnect from server
 	 */
-	disconnect()
+	async disconnect()
 	{
 		if (this.process)
 		{

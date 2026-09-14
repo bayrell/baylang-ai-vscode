@@ -52,7 +52,7 @@ export class MCPServerTool extends Tool
 			if (value.length > 50) value = value.substring(0, 50);
 			result.push(value);
 		}
-		return result.join(", ");
+		return "(" + result.join(", ") + ")";
 	}
 	
 

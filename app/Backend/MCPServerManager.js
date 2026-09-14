@@ -79,10 +79,8 @@ export class MCPServerManager
 		var server = this.getServer(id);
 		if (!server) throw new Error("Server not found");
 
-		if (!server.connected)
-		{
-			await server.connect();
-		}
+		await server.disconnect();
+		if (!server.connected) await server.connect();
 
 		await server.fetchTools();
 		await this.saveServers();
@@ -103,6 +101,7 @@ export class MCPServerManager
 
 			try
 			{
+				await server.disconnect();
 				if (!server.connected)
 				{
 					await server.connect();
