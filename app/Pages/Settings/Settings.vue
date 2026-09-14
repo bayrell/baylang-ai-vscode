@@ -73,6 +73,15 @@
 				</div>
 				<div class="action">Configure</div>
 			</div>
+			<div class="settings_item" @click="layout.setPage('mcp_servers')">
+				<div class="info">
+					<div class="title">MCP Servers</div>
+					<div class="description">
+						Manage Model Context Protocol servers and tools
+					</div>
+				</div>
+				<div class="action">Configure</div>
+			</div>
 			<div class="settings_item" @click="layout.setPage('usage')">
 				<div class="info">
 					<div class="title">Usage</div>

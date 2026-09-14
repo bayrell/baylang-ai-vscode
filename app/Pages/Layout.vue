@@ -9,6 +9,7 @@
 	<Rules v-show="layout.page == 'rules'" />
 	<Memory v-show="layout.page == 'memory'" />
 	<Usage v-show="layout.page == 'usage'" />
+	<MCPServers v-show="layout.page == 'mcp_servers'" />
 </template>
 
 <script lang="js">
@@ -19,6 +20,7 @@ import Rules from "./Rules/Rules.vue";
 import Settings from "./Settings/Settings.vue";
 import Memory from "./Memory/Memory.vue";
 import Usage from "./Usage/Usage.vue";
+import MCPServers from "./MCPServers/MCPServers.vue";
 
 export default {
 	name: "Layout",
@@ -29,7 +31,8 @@ export default {
 		Rules,
 		Settings,
 		Memory,
-		Usage
+		Usage,
+		MCPServers
 	},
 }
 </script>

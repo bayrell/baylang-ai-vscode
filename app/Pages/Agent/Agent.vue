@@ -67,6 +67,54 @@
 		cursor: pointer;
 	}
 }
+.tools_toggle{
+	margin-top: 5px;
+}
+.tools_group{
+	margin-bottom: 10px;
+
+	&__title{
+		font-weight: bold;
+		margin-bottom: 5px;
+		font-size: 12px;
+		color: var(--input-color);
+	}
+	&__list{
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+}
+.tools_toggle__item{
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 4px 8px;
+	cursor: pointer;
+	border-radius: 3px;
+
+	&:hover{
+		background-color: var(--vscode-list-hoverBackground, rgba(0, 0, 0, 0.1));
+	}
+
+	input[type="checkbox"]{
+		margin: 0;
+	}
+}
+.tools_toggle__name{
+	font-family: monospace;
+	font-size: 12px;
+}
+.tools_toggle__desc{
+	color: var(--input-color);
+	font-size: 11px;
+	margin-left: auto;
+}
+.tools_toggle__actions{
+	display: flex;
+	gap: 5px;
+	margin-top: 10px;
+}
 </style>
 
 <template>
@@ -198,6 +246,63 @@
 						</div>
 					</div>
 				</Field>
+				<Field name="tools_toggle" v-if="model.form.item.enable_tools == '1'">
+					<div class="label">Available Tools</div>
+					<div class="tools_toggle" v-if="tools_data">
+						<!-- Built-in tools -->
+						<div class="tools_group">
+							<div class="tools_group__title">Built-in Tools</div>
+							<div class="tools_group__list">
+								<label
+									v-for="toolName in tools_data.built_in"
+									:key="toolName"
+									class="tools_toggle__item"
+								>
+									<input
+										type="checkbox"
+										:checked="isToolEnabled(toolName)"
+										@change="toggleTool(toolName)"
+									/>
+									<span class="tools_toggle__name">{{ toolName }}</span>
+								</label>
+							</div>
+						</div>
+
+						<!-- MCP tools by server -->
+						<div
+							v-for="(serverTools, serverName) in mcpToolsGrouped"
+							:key="serverName"
+							class="tools_group"
+						>
+							<div class="tools_group__title">MCP Tools ({{ serverName }})</div>
+							<div class="tools_group__list">
+								<label
+									v-for="tool in serverTools"
+									:key="tool.name"
+									class="tools_toggle__item"
+								>
+									<input
+										type="checkbox"
+										:checked="isToolEnabled(tool.name)"
+										@change="toggleTool(tool.name)"
+									/>
+									<span class="tools_toggle__name">{{ tool.name }}</span>
+									<span class="tools_toggle__desc">{{ tool.description }}</span>
+								</label>
+							</div>
+						</div>
+
+						<!-- Quick actions -->
+						<div class="tools_toggle__actions">
+							<Button class="default small" @click="enableAllTools">
+								Enable All
+							</Button>
+							<Button class="default small" @click="disableAllTools">
+								Disable All
+							</Button>
+						</div>
+					</div>
+				</Field>
 			</template>
 			<template v-slot:delete_message>
 				Delete item {{ model.form.item.name }}?
@@ -228,6 +333,7 @@ export default {
 	data(){
 		return {
 			reload_result: new Result(),
+			tools_data: null,
 		};
 	},
 	computed: {
@@ -323,6 +429,20 @@ export default {
 				}
 			}
 		},
+		mcpToolsGrouped()
+		{
+			if (!this.tools_data || !this.tools_data.mcp) return {};
+
+			var grouped = {};
+			for (var i = 0; i < this.tools_data.mcp.length; i++)
+			{
+				var tool = this.tools_data.mcp[i];
+				var serverName = tool.server_name || "Unknown";
+				if (!grouped[serverName]) grouped[serverName] = [];
+				grouped[serverName].push(tool);
+			}
+			return grouped;
+		},
 	},
 	mounted()
 	{
@@ -340,7 +460,37 @@ export default {
 		{
 			this.model.crud.showAdd();
 			this.model.setGlobal(global);
-		}
+		},
+		async loadToolsData()
+		{
+			this.tools_data = await this.model.loadAvailableTools();
+		},
+		isToolEnabled(toolName)
+		{
+			return this.model.isToolEnabled(toolName);
+		},
+		toggleTool(toolName)
+		{
+			this.model.toggleTool(toolName);
+		},
+		enableAllTools()
+		{
+			if (!this.tools_data) return;
+			var allTools = [
+				...this.tools_data.built_in,
+				...this.tools_data.mcp.map((t) => t.name),
+			];
+			this.model.enableAllTools(allTools);
+		},
+		disableAllTools()
+		{
+			if (!this.tools_data) return;
+			var allTools = [
+				...this.tools_data.built_in,
+				...this.tools_data.mcp.map((t) => t.name),
+			];
+			this.model.disableAllTools(allTools);
+		},
 	},
 }
 </script>

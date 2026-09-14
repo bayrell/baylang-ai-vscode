@@ -93,6 +93,125 @@ class Agent
 	
 	
 	/**
+	 * Set tool enabled state
+	 */
+	setToolEnabled(toolName, enabled)
+	{
+		if (!this.form.item.enabled_tools)
+		{
+			this.form.item.enabled_tools = {};
+		}
+		this.form.item.enabled_tools[toolName] = enabled;
+	}
+	
+	
+	/**
+	 * Toggle tool state
+	 */
+	toggleTool(toolName)
+	{
+		var current = this.isToolEnabled(toolName);
+		this.setToolEnabled(toolName, !current);
+	}
+	
+	
+	/**
+	 * Check if tool is enabled
+	 */
+	isToolEnabled(toolName)
+	{
+		if (!this.form.item.enabled_tools) return true;
+		if (!this.form.item.enabled_tools.hasOwnProperty(toolName))
+		{
+			return true;
+		}
+		return this.form.item.enabled_tools[toolName] === true;
+	}
+	
+	
+	/**
+	 * Get all available tools grouped by source
+	 */
+	async loadAvailableTools()
+	{
+		var result = await this.layout.api.call("load_mcp_servers");
+		if (!result.isSuccess()) return { built_in: [], mcp: [] };
+
+		var builtInTools = [
+			"random",
+			"write_file",
+			"read_file",
+			"list_files",
+			"rename_file",
+			"delete_file",
+			"find_file_by_name",
+			"run_tool",
+			"tools_list",
+			"search_files",
+		];
+
+		var mcpTools = [];
+		for (var i = 0; i < result.response.items.length; i++)
+		{
+			var server = result.response.items[i];
+			if (!server.tools) continue;
+
+			for (var j = 0; j < server.tools.length; j++)
+			{
+				var tool = server.tools[j];
+				var fullName = server.prefix
+					? server.prefix + "_" + tool.name
+					: tool.name;
+
+				mcpTools.push({
+					name: fullName,
+					description: tool.description || "",
+					server_name: server.name,
+					server_id: server.id,
+				});
+			}
+		}
+
+		return {
+			built_in: builtInTools,
+			mcp: mcpTools,
+		};
+	}
+	
+	
+	/**
+	 * Enable all tools
+	 */
+	enableAllTools(toolsList)
+	{
+		if (!this.form.item.enabled_tools)
+		{
+			this.form.item.enabled_tools = {};
+		}
+		for (var i = 0; i < toolsList.length; i++)
+		{
+			this.form.item.enabled_tools[toolsList[i]] = true;
+		}
+	}
+	
+	
+	/**
+	 * Disable all tools
+	 */
+	disableAllTools(toolsList)
+	{
+		if (!this.form.item.enabled_tools)
+		{
+			this.form.item.enabled_tools = {};
+		}
+		for (var i = 0; i < toolsList.length; i++)
+		{
+			this.form.item.enabled_tools[toolsList[i]] = false;
+		}
+	}
+	
+	
+	/**
 	 * Add item
 	 */
 	async add()

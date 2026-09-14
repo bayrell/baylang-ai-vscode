@@ -5,6 +5,7 @@ import Models from "./Models/Models.js";
 import Rules from "./Rules/Rules.js";
 import Memory from "./Memory/Memory.js";
 import MarkdownIt from 'markdown-it';
+import MCPServers from "./MCPServers/MCPServers.js";
 import { markRaw } from "vue";
 import { Usage } from "./Usage/Usage.js";
 
@@ -19,6 +20,7 @@ class Layout
 		this.rules_page = new Rules(this);
 		this.memory_page = new Memory(this);
 		this.usage_page = new Usage(this);
+		this.mcp_servers_page = new MCPServers(this);
 		this.current_page = null;
 		this.vscode = markRaw(acquireVsCodeApi());
 		this.image_url = "";
@@ -78,6 +80,7 @@ class Layout
 		else if (page == "memory") this.current_page = this.memory_page;
 		else if (page == "usage") this.current_page = this.usage_page;
 		else if (page == "settings") this.current_page = null;
+		else if (page == "mcp_servers") this.current_page = this.mcp_servers_page;
 		if (this.current_page) this.current_page.open();
 	}
 	
