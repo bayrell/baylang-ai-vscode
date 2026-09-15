@@ -441,7 +441,7 @@ export class Settings
 		if (!this.data.mcp_servers) return;
 		var index = this.data.mcp_servers
 			.findIndex(item => item.id == id);
-		if (index)
+		if (index >= 0)
 		{
 			this.data.mcp_servers.splice(index, 1);
 			await this.saveData();

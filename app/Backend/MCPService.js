@@ -354,7 +354,7 @@ export class MCPService
 	/**
 	 * Delete server
 	 */
-	async deleteServer(id)
+	deleteServer(id)
 	{
 		const index = this.servers.findIndex(
 			item => item.id == id
@@ -362,7 +362,7 @@ export class MCPService
 		if (index >= 0)
 		{
 			const server = this.servers[index];
-			await server.disconnect();
+			server.disconnect();
 			this.servers.splice(index, 1);
 		}
 	}

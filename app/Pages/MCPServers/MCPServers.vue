@@ -1,4 +1,4 @@
-<style scoped>
+<style lang="sass" scoped>
 .mcp_servers{
 	padding-top: 5px;
 }
@@ -6,6 +6,22 @@
 	display: flex;
 	gap: 5px;
 	margin-bottom: 5px;
+}
+.list_env{
+	.button_row{
+		margin-bottom: 5px;
+	}
+	.item_env{
+		display: flex;
+		gap: 5px;
+	}
+	.item_env_key, .item_env_value{
+		flex: 1;
+	}
+	.item_env_delete{
+		display: flex;
+		align-items: center;
+	}
 }
 </style>
 
@@ -41,6 +57,70 @@
 						v-model="model.form.item.name"
 					/>
 				</Field>
+				<Field name="prefix">
+					<div class="label">Prefix</div>
+					<Input
+						type="input"
+						name="prefix"
+						v-model="model.form.item.prefix"
+					/>
+				</Field>
+				<Field name="type">
+					<div class="label">Type</div>
+					<Input
+						type="select"
+						name="type"
+						v-model="model.form.item.type"
+						:options="item_types"
+					/>
+				</Field>
+				<Field name="url" v-if="model.form.item.type == 'server'">
+					<div class="label">Url</div>
+					<Input
+						type="input"
+						name="url"
+						v-model="model.form.item.url"
+					/>
+				</Field>
+				<Field name="command" v-if="model.form.item.type == 'cli'">
+					<div class="label">Command</div>
+					<Input
+						type="input"
+						name="command"
+						v-model="model.form.item.command"
+					/>
+				</Field>
+				<Field name="args" v-if="model.form.item.type == 'cli'">
+					<div class="label">Args</div>
+					<Input
+						type="input"
+						name="args"
+						v-model="item_args"
+						@update:modelValue="updateArgs($event)"
+					/>
+				</Field>
+				<div class="list_env">
+					<div class="button_row">
+						<Button @click="addEnv">Add env</Button>
+					</div>
+					<div class="item_env" v-for="(item, index) in item_env" :key="index">
+						<div class="item_env_key">
+							<Input
+								type="input"
+								v-model="item.key"
+							/>
+						</div>
+						<div class="item_env_value">
+							<Input
+								type="input"
+								v-model="item.value"
+							/>
+						</div>
+						<div class="item_env_delete">
+							<Button @click="removeEnv(index)">Remove</Button>
+						</div>
+					</div>
+				</div>
 			</template>
 			<template v-slot:delete_message>
 				Delete item {{ model.form.item.name }}?
@@ -70,6 +150,7 @@ export default {
 	},
 	data(){
 		return {
+			item_args: "",
 		};
 	},
 	computed: {
@@ -94,6 +175,19 @@ export default {
 			}
 			return "Edit server";
 		},
+		item_types()
+		{
+			return [
+				{"key": "cli", "value": "Console"},
+				{"key": "server", "value": "Server"},
+			];
+		},
+		item_env()
+		{
+			if (!this.model.form.item) return [];
+			if (!this.model.form.item.env) return [];
+			return this.model.form.item.env;
+		}
 	},
 	mounted()
 	{
@@ -104,15 +198,34 @@ export default {
 		showAdd()
 		{
 			this.model.crud.showAdd();
+			this.item_args = "";
 		},
 		showEdit(item)
 		{
 			this.model.crud.showEdit(item.id);
+			this.item_args = item.args.join(" ");
 		},
 		showDelete(item)
 		{
 			this.model.crud.showDelete(item.id);
 		},
+		updateArgs(value)
+		{
+			this.model.form.item.args = value.split(" ")
+				.filter(item => item != "")
+			;
+		},
+		addEnv()
+		{
+			this.model.form.item.env.push({
+				"key": "",
+				"value": "",
+			})
+		},
+		removeEnv(index)
+		{
+			this.model.form.item.env.splice(index, 1);
+		}
 	},
 };
 

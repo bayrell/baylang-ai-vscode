@@ -223,7 +223,19 @@ export async function registerCommands(provider)
 	
 	/* Save MCP */
 	registry.register("save_mcp", async ({id, item}) => {
+		
 		let server = null;
+		
+		item = {
+			"name": item.name,
+			"prefix": item.prefix,
+			"type": item.type,
+			"url": item.url,
+			"command": item.command,
+			"args": item.args,
+			"env": item.env,
+		}
+		
 		if (!id)
 		{
 			server = settings.mcpService.addServer(item);
@@ -248,7 +260,7 @@ export async function registerCommands(provider)
 	
 	/* Delete MCP */
 	registry.register("delete_mcp", async (id) => {
-		await settings.mcpService.deleteServer(id);
+		settings.mcpService.deleteServer(id);
 		await settings.deleteMCPServer(id);
 		return {
 			success: true,
