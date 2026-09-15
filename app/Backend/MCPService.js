@@ -1,5 +1,6 @@
 import { spawn } from "child_process";
 import { MCPServerTool } from "../Tools/MCPServerTool";
+import { generate_uuid } from "../lib";
 
 export class MCPClient
 {
@@ -25,16 +26,16 @@ export class MCPClient
 	
 	assign(item)
 	{
-		if (item.id) this.id = item.id;
-		if (item.name) this.name = item.name;
-		if (item.type) this.type = item.type;
-		if (item.url) this.url = item.url;
-		if (item.command) this.command = item.command;
-		if (item.args) this.args = item.args;
-		if (item.prefix) this.prefix = item.prefix;
-		if (item.enabled) this.enabled = item.enabled;
-		if (item.env) this.env = item.env;
-		if (item.tools) this.tools = item.tools;
+		if (item.id != undefined) this.id = item.id;
+		if (item.name != undefined) this.name = item.name;
+		if (item.type != undefined) this.type = item.type;
+		if (item.url != undefined) this.url = item.url;
+		if (item.command != undefined) this.command = item.command;
+		if (item.args != undefined) this.args = item.args;
+		if (item.prefix != undefined) this.prefix = item.prefix;
+		if (item.enabled != undefined) this.enabled = item.enabled;
+		if (item.env != undefined) this.env = item.env;
+		if (item.tools != undefined) this.tools = item.tools;
 	}
 	
 	getData()
@@ -268,6 +269,20 @@ export class MCPService
 	
 	
 	/**
+	 * Generate unique server id
+	 */
+	generateId()
+	{
+		let result = "";
+		while (result == "" || this.findById(result))
+		{
+			result = "server-" + generate_uuid();
+		}
+		return result;
+	}
+	
+	
+	/**
 	 * Find server
 	 */
 	findById(id)
@@ -297,11 +312,14 @@ export class MCPService
 		const tools = [];
 		for (const server of this.servers)
 		{
-			for (const tool of this.servers.tools)
+			if (this.servers.tools)
 			{
-				tools.append(new MCPServerTool(
-					tool, server
-				));
+				for (const tool of this.servers.tools)
+				{
+					tools.append(new MCPServerTool(
+						tool, server
+					));
+				}
 			}
 		}
 		return tools;
@@ -314,6 +332,7 @@ export class MCPService
 	addServer(data)
 	{
 		const server = createMCP(data);
+		server.id = this.generateId();
 		this.servers.push(server);
 		return server;
 	}

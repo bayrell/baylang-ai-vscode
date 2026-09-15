@@ -84,6 +84,18 @@ export function delay(ms)
 }
 
 /**
+ * Generate UID
+ */
+export function generate_uuid()
+{
+	return 'xxxxxxxx-xxxx-xxxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (char) => {
+		const random = Math.random() * 16 | 0;
+		const value = char === 'x' ? random : (random & 0x3 | 0x8);
+		return value.toString(16);
+	});
+};
+
+/**
  * Parse command line string into array of arguments
  * Handles quoted strings (both single and double quotes) and escaped characters
  * @param {string} str - The command line string to parse

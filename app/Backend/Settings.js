@@ -422,7 +422,7 @@ export class Settings
 		{
 			this.data.mcp_servers = [];
 		}
-		var index = this.data.mcp_severs
+		var index = this.data.mcp_servers
 			.findIndex(item => item.id == id);
 		if (index == -1)
 		{

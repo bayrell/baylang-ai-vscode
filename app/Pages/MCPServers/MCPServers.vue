@@ -1,6 +1,11 @@
 <style scoped>
 .mcp_servers{
-	
+	padding-top: 5px;
+}
+.mcp_servers .buttons{
+	display: flex;
+	gap: 5px;
+	margin-bottom: 5px;
 }
 </style>
 
@@ -11,7 +16,7 @@
 			<Button class="back" @click="layout.setPage('settings')">Back</Button>
 			<Button class="success" @click="showAdd()">Add</Button>
 		</div>
-		<Crud :model="model.crud">
+		<Crud :crud="model.crud">
 			<template v-slot:list>
 				<div class="page_title">
 					Server list
@@ -48,9 +53,9 @@
 import Button from "@main/Components/Button.vue";
 import Crud from "@main/Components/Crud.vue";
 import Input from "@main/Components/Input.vue";
-import Field from "@main/Components/Field.vue";
-import FieldGroup from "@main/Components/FieldGroup.vue";
-import Result from "@main/Components/Result.vue";
+import Field from "@main/Components/Form/Field.vue";
+import FieldGroup from "@main/Components/Form/FieldGroup.vue";
+import Result from "@main/Components/Form/Result.vue";
 
 export default {
 	name: "MCPServers",
@@ -70,7 +75,7 @@ export default {
 	computed: {
 		model()
 		{
-			this.layout.mcp_page;
+			return this.layout.mcp_page;
 		},
 		items()
 		{
@@ -82,7 +87,7 @@ export default {
 		},
 		form_title()
 		{
-			if (!this.form.item) return "";
+			if (!this.model.form.item) return "";
 			if (this.model.crud.isAdd())
 			{
 				return "Add server";
@@ -102,11 +107,11 @@ export default {
 		},
 		showEdit(item)
 		{
-			this.model.crud.showEdit(item.pk);
+			this.model.crud.showEdit(item.id);
 		},
 		showDelete(item)
 		{
-			this.model.crud.showDelete(item.pk);
+			this.model.crud.showDelete(item.id);
 		},
 	},
 };

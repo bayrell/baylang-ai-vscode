@@ -1,4 +1,24 @@
 <style lang="scss">
+.list_item{
+	display: flex;
+	justify-content: space-between;
+	gap: 10px;
+	margin-bottom: 10px;
+	&:last-child{
+		margin-bottom: 0px;
+	}
+	&__name{
+		flex: 1;
+	}
+	&__buttons{
+		display: flex;
+		justify-content: space-between;
+		gap: 5px;
+		span {
+			cursor: pointer;
+		}
+	}
+}
 </style>
 
 <template>

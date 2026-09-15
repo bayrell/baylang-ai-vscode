@@ -213,7 +213,7 @@ export async function registerCommands(provider)
 	
 	/* Load MCP */
 	registry.register("load_mcp", async () => {
-		var items = settings.loadMCP();
+		var items = settings.mcpService.servers;
 		items = items.map(item => item.getData());
 		return {
 			success: true,
@@ -221,30 +221,28 @@ export async function registerCommands(provider)
 		}
 	});
 	
-	/* Add MCP */
-	registry.register("add_mcp", async (item) => {
-		item = settings.mcpService.addServer(item);
-		await settings.saveMCPServer(item);
-		return {
-			success: true,
-			item: item.getData(),
-		};
-	});
-	
 	/* Save MCP */
-	registry.register("save_mcp", async (id, item) => {
-		item = settings.mcpService.editServer(id, item);
-		if (!item)
+	registry.register("save_mcp", async ({id, item}) => {
+		let server = null;
+		if (!id)
+		{
+			server = settings.mcpService.addServer(item);
+		}
+		else
+		{
+			server = settings.mcpService.editServer(id, item);
+		}
+		if (!server)
 		{
 			return {
 				success: false,
 				message: "Item not found",
 			}
 		}
-		await settings.saveMCPServer(item);
+		await settings.saveMCPServer(id ? id : null, server);
 		return {
 			success: true,
-			item: item.getData(),
+			item: server.getData(),
 		}
 	});
 	

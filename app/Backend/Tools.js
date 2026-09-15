@@ -32,7 +32,7 @@ export async function registerTools(settings)
 	tools.add(new SearchFiles(settings));
 	
 	/* Register MCP */
-	tools = tools.concat(settings.mcpService.createTools());
+	tools.add(settings.mcpService.createTools());
 	
 	/* Setup tools */
 	settings.tools = tools;

@@ -7,7 +7,7 @@ export default class MCPServers
 	{
 		this.layout = layout;
 		this.items = [];
-		this.crud = new Crud();
+		this.crud = new Crud(this);
 		this.form = new Form();
 		this.form.setDefault({
 			"name": "",
@@ -26,7 +26,7 @@ export default class MCPServers
 	/**
 	 * Find item by pk
 	 */
-	findItemByPk(pk)
+	findItemById(pk)
 	{
 		return this.items.find(item => item.id == pk);
 	}
@@ -56,7 +56,7 @@ export default class MCPServers
 	 */
 	async load()
 	{
-		var result = this.layout.api.call("load_mcp");
+		var result = await this.layout.api.call("load_mcp");
 		if (!result.isSuccess()) return;
 		
 		this.items = [];
@@ -72,10 +72,13 @@ export default class MCPServers
 	 */
 	async add()
 	{
-		const item = this.form.item;
-		const result = await this.layout.api.call("add_mcp",
-			{ item: item }
-		);
+		const item = this.form.getItem();
+		const result = await this.layout.api.call("save_mcp", {item});
+		if (result.isSuccess())
+		{
+			this.items.push(result.response.item);
+			this.load();
+		}
 		return result;
 	}
 	
@@ -85,11 +88,15 @@ export default class MCPServers
 	 */
 	async save()
 	{
-		const pk = this.form.pk;
-		const item = this.form.item;
+		const pk = this.form.getPrimaryKey();
+		const item = this.form.getItem();
 		const result = await this.layout.api.call("save_mcp",
 			{ id: pk, item: item }
 		)
+		if (result.isSuccess())
+		{
+			this.load();
+		}
 		return result;
 	}
 	
@@ -99,10 +106,12 @@ export default class MCPServers
 	 */
 	async delete()
 	{
-		const pk = this.form.pk;
-		const result = await this.layout.api.call("delete_mcp",
-			{ id: pk }
-		);
+		const pk = this.form.getPrimaryKey();
+		const result = await this.layout.api.call("delete_mcp", pk);
+		if (result.isSuccess())
+		{
+			this.load();
+		}
 		return result;
 	}
 }

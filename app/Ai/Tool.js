@@ -157,6 +157,13 @@ export class Tools
 	 */
 	add(tool)
 	{
+		if (Array.isArray(tool))
+		{
+			for (const item of tool)
+			{
+				this.add(item);
+			}
+		}
 		this.items.push(tool);
 	}
 	
