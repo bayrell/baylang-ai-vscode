@@ -16,6 +16,7 @@ import { SearchFiles } from "../Tools/SearchFiles.js";
  */
 export async function registerTools(settings)
 {
+	/* Create tools */
 	var tools = new Tools();
 	
 	/* Create tools */
@@ -30,5 +31,9 @@ export async function registerTools(settings)
 	tools.add(new ToolsList(settings));
 	tools.add(new SearchFiles(settings));
 	
-	return tools;
+	/* Register MCP */
+	tools = tools.concat(settings.mcpService.createTools());
+	
+	/* Setup tools */
+	settings.tools = tools;
 }

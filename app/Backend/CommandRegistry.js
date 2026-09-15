@@ -8,6 +8,7 @@ import { Usage } from "../Ai/Usage.js";
 import { Question } from "../Ai/Question.js";
 import { registerTools } from "./Tools.js";
 import { registerSendMessage } from "./SendMessage.js";
+import { MCPService } from "./MCPService.js";
 
 export class CommandRegistry
 {
@@ -83,8 +84,11 @@ export async function registerCommands(provider)
 	var settings = new Settings(provider.globalStorageUri);
 	await settings.loadData();
 	
+	settings.mcpService = new MCPService(settings);
+	settings.mcpService.load();
+	
 	/* Init tools */
-	settings.tools = await registerTools(settings);
+	await registerTools(settings);
 	
 	/* Init usage */
 	settings.usage = new Usage(settings);

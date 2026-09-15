@@ -18,6 +18,7 @@ export class Settings
 		this.agents = [];
 		this.tools = [];
 		this.memory = null;
+		this.mcpService = null;
 		this.workspaceFolderPath = "";
 		this.workspaceFolderHash = "";
 		if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0)
@@ -384,6 +385,49 @@ export class Settings
 		var index = this.data.models.findIndex((model) => model.name == name);
 		if (index != -1) this.data.models.splice(index, 1);
 		await this.saveData();
+	}
+	
+	
+	loadMCP()
+	{
+		return this.data.mcp_servers ?
+			this.data.mcp_servers : [];
+	}
+	
+	
+	/**
+	 * Save server
+	 */
+	async saveMCPServer(id, server)
+	{
+		if (!this.data.mcp_servers)
+		{
+			this.data.mcp_servers = [];
+		}
+		var index = this.data.mcp_severs
+			.findIndex(item => item.id == id);
+		if (index == -1)
+		{
+			this.data.mcp_servers.push(server.getData());
+		}
+		else
+		{
+			this.data.mcp_servers[index] = server.getData();
+		}
+		await this.saveData();
+	}
+	
+	
+	async deleteMCPServer(id)
+	{
+		if (!this.data.mcp_servers) return;
+		var index = this.data.mcp_servers
+			.findIndex(item => item.id == id);
+		if (index)
+		{
+			this.data.mcp_servers.splice(index, 1);
+			await this.saveData();
+		}
 	}
 	
 	

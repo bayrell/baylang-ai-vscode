@@ -1,4 +1,5 @@
 import { spawn } from "child_process";
+import { MCPServerTool } from "../Tools/MCPServerTool";
 
 export class MCPClient
 {
@@ -67,6 +68,11 @@ export class MCPClient
 		return "2026-07-28";
 	}
 	
+	getToolName()
+	{
+		return this.prefix + "_" + this.name;
+	}
+	
 	async connect()
 	{
 		if (this.isConnected()) return;
@@ -96,7 +102,7 @@ export class MCPClient
 		});
 	}
 	
-	async send()
+	async send(method_name, params, timeout)
 	{
 		return null;
 	}
@@ -259,5 +265,49 @@ export class MCPClientServer extends MCPClient
 
 export class MCPService
 {
+	constructor(settings)
+	{
+		this.settings = settings;
+		this.servers = [];
+	}
 	
+	
+	load()
+	{
+		this.servers = this.settings.loadMCP();
+		this.servers = this.servers
+			.map(item => createMCP(item))
+			.filter(item => item != null)
+		;
+	}
+	
+	
+	createTools()
+	{
+		const tools = [];
+		for (const server of this.servers)
+		{
+			for (const tool of this.servers.tools)
+			{
+				tools.append(new MCPServerTool(
+					tool, server
+				));
+			}
+		}
+		return tools;
+	}
 }
+
+export function createMCP(data)
+{
+	let item = null;
+	if (data.type == "cli") item = new MCPClientCli();
+	else if (data.type == "server") item = new MCPClientServer();
+	
+	if (item)
+	{
+		item.assign(data);
+	}
+	
+	return item;
+};
