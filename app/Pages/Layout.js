@@ -4,6 +4,7 @@ import ChatModel from "./Chat/ChatModel.js";
 import Models from "./Models/Models.js";
 import Rules from "./Rules/Rules.js";
 import Memory from "./Memory/Memory.js";
+import MCPServers from "./MCPServers/MCPServers.js";
 import MarkdownIt from 'markdown-it';
 import { markRaw } from "vue";
 import { Usage } from "./Usage/Usage.js";
@@ -19,6 +20,7 @@ class Layout
 		this.rules_page = new Rules(this);
 		this.memory_page = new Memory(this);
 		this.usage_page = new Usage(this);
+		this.mcp_page = new MCPServers(this);
 		this.current_page = null;
 		this.vscode = markRaw(acquireVsCodeApi());
 		this.image_url = "";
@@ -77,6 +79,7 @@ class Layout
 		else if (page == "rules") this.current_page = this.rules_page;
 		else if (page == "memory") this.current_page = this.memory_page;
 		else if (page == "usage") this.current_page = this.usage_page;
+		else if (page == "mcp_servers") this.current_page = this.mcp_page;
 		else if (page == "settings") this.current_page = null;
 		if (this.current_page) this.current_page.open();
 	}

@@ -31,6 +31,24 @@ export class Settings
 	
 	
 	/**
+	 * Returns app name
+	 */
+	getAppName()
+	{
+		return "BayLang AI";
+	}
+	
+	
+	/**
+	 * Returns app version
+	 */
+	getAppVersion()
+	{
+		return "1.5.0";
+	}
+	
+	
+	/**
 	 * Load data
 	 */
 	async loadData()

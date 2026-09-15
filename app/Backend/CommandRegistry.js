@@ -211,6 +211,52 @@ export async function registerCommands(provider)
 		};
 	});
 	
+	/* Load MCP */
+	registry.register("load_mcp", async () => {
+		var items = settings.loadMCP();
+		items = items.map(item => item.getData());
+		return {
+			success: true,
+			items: items,
+		}
+	});
+	
+	/* Add MCP */
+	registry.register("add_mcp", async (item) => {
+		item = settings.mcpService.addServer(item);
+		await settings.saveMCPServer(item);
+		return {
+			success: true,
+			item: item.getData(),
+		};
+	});
+	
+	/* Save MCP */
+	registry.register("save_mcp", async (id, item) => {
+		item = settings.mcpService.editServer(id, item);
+		if (!item)
+		{
+			return {
+				success: false,
+				message: "Item not found",
+			}
+		}
+		await settings.saveMCPServer(item);
+		return {
+			success: true,
+			item: item.getData(),
+		}
+	});
+	
+	/* Delete MCP */
+	registry.register("delete_mcp", async (id) => {
+		await settings.mcpService.deleteServer(id);
+		await settings.deleteMCPServer(id);
+		return {
+			success: true,
+		}
+	});
+	
 	/* Load rules */
 	registry.register("load_rules", async () => {
 		var items = await settings.loadRules();

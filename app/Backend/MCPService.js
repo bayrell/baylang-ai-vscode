@@ -58,11 +58,6 @@ export class MCPClient
 		return this.connected;
 	}
 	
-	getAppVersion()
-	{
-		return "1.5.0";
-	}
-	
 	getProtocolVersion()
 	{
 		return "2026-07-28";
@@ -96,8 +91,8 @@ export class MCPClient
 			"capabilities": {},
 			"clientInfo":
 			{
-				"name": "BayLang AI",
-				"version": this.getAppVersion()
+				"name": this.settings.getAppName(),
+				"version": this.settings.getAppVersion()
 			}
 		});
 	}
@@ -272,6 +267,18 @@ export class MCPService
 	}
 	
 	
+	/**
+	 * Find server
+	 */
+	findById(id)
+	{
+		return this.servers.find(item => item.id == id);
+	}
+	
+	
+	/**
+	 * Load servers
+	 */
 	load()
 	{
 		this.servers = this.settings.loadMCP();
@@ -282,6 +289,9 @@ export class MCPService
 	}
 	
 	
+	/**
+	 * Create tools
+	 */
 	createTools()
 	{
 		const tools = [];
@@ -296,6 +306,47 @@ export class MCPService
 		}
 		return tools;
 	}
+	
+	
+	/**
+	 * Add new server
+	 */
+	addServer(data)
+	{
+		const server = createMCP(data);
+		this.servers.push(server);
+		return server;
+	}
+	
+	
+	/**
+	 * Edit server
+	 */
+	editServer(id, data)
+	{
+		const server = this.findById(id);
+		if (!server) return null;
+		
+		server.assign(data);
+		return server;
+	}
+	
+	
+	/**
+	 * Delete server
+	 */
+	async deleteServer(id)
+	{
+		const index = this.servers.findIndex(
+			item => item.id == id
+		);
+		if (index >= 0)
+		{
+			const server = this.servers[index];
+			await server.disconnect();
+			this.servers.splice(index, 1);
+		}
+	}
 }
 
 export function createMCP(data)
@@ -303,6 +354,7 @@ export function createMCP(data)
 	let item = null;
 	if (data.type == "cli") item = new MCPClientCli();
 	else if (data.type == "server") item = new MCPClientServer();
+	else item = new MCPClient();
 	
 	if (item)
 	{
