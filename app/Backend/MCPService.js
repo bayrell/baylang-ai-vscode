@@ -64,9 +64,9 @@ export class MCPClient
 		return "2025-06-18";
 	}
 	
-	getToolName()
+	getToolName(name)
 	{
-		return this.prefix + "_" + this.name;
+		return this.prefix + "_" + name;
 	}
 	
 	async connect()
@@ -216,7 +216,7 @@ export class MCPClientCli extends MCPClient
 		}
 		catch (e)
 		{
-			throw e;
+			throw new Error("Server connection error");
 		}
 		
 		this.process.stdout.on("data", (data) => {
@@ -328,14 +328,12 @@ export class MCPService
 		const tools = [];
 		for (const server of this.servers)
 		{
-			if (this.servers.tools)
+			if (!server.tools) continue;
+			for (const tool of server.tools)
 			{
-				for (const tool of this.servers.tools)
-				{
-					tools.append(new MCPServerTool(
-						tool, server
-					));
-				}
+				tools.push(new MCPServerTool(
+					tool, server
+				));
 			}
 		}
 		return tools;
