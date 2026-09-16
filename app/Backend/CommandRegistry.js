@@ -234,15 +234,25 @@ export async function registerCommands(provider)
 			}
 		}
 		
-		/* Disconnect */
-		await server.disconnect();
-		
-		/* Reload tools  */
-		await server.reloadTools();
-		
-		/* Update settings */
-		await settings.saveMCPServer(id, server);
-		await registerTools(settings);
+		try
+		{
+			/* Disconnect */
+			await server.disconnect();
+			
+			/* Reload tools  */
+			await server.reloadTools();
+			
+			/* Update settings */
+			await settings.saveMCPServer(id, server);
+			await registerTools(settings);
+		}
+		catch (e)
+		{
+			return {
+				success: false,
+				message: e.message,
+			}
+		}
 		
 		/* Return result */
 		return {

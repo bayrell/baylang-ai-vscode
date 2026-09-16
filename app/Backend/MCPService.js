@@ -85,7 +85,7 @@ export class MCPClient
 		if (this.isConnected()) return;
 	}
 	
-	async disconnect()
+	async disconnect(err)
 	{
 		this.connected = false;
 		this.buffer = "";
@@ -93,7 +93,11 @@ export class MCPClient
 		{
 			const listener = this.listeners[request_id];
 			const reject = listener.reject;
-			if (reject) reject(new Error("Disconnected"));
+			if (reject)
+			{
+				if (err) reject (err);
+				else reject(new Error("Disconnected"));
+			}
 		}
 		this.listeners = {};
 	}
@@ -237,40 +241,51 @@ export class MCPClientCli extends MCPClient
 	{
 		if (this.isConnected()) return;
 		
-		try
-		{
-			this.process = spawn(
-				this.command, this.args, {
-					cwd: this.settings.workspaceFolderPath,
-					env: this.getEnv(),
-					timeout: this.connectionTimeout,
-				}
-			);
+		return new Promise((resolve, reject) => {
+		
+			try
+			{
+				this.process = spawn(
+					this.command, this.args, {
+						stdio: ["pipe", "pipe", "pipe"],
+						cwd: this.settings.workspaceFolderPath,
+						env: this.getEnv(),
+						timeout: this.connectionTimeout,
+					}
+				);
+			}
+			catch (e)
+			{
+				reject(new Error("Server connection error"));
+				return;
+			}
+			
+			this.process.stdout.on("data", (data) => {
+				this.addLine(data.toString("utf-8"));
+			});
+			
+			this.process.stderr.on("data", (data) => {
+				/*this.addBuffer(data);*/
+			});
+			
+			this.process.on("error", (err) => {
+				reject(err);
+				this.disconnect(err);
+			})
+			
+			this.process.on("close", (code) => {
+				this.disconnect();
+			});
+			
 			this.connected = true;
-		}
-		catch (e)
-		{
-			throw new Error("Server connection error");
-		}
-		
-		this.process.stdout.on("data", (data) => {
-			this.addLine(data.toString("utf-8"));
-		});
-		
-		this.process.stderr.on("data", (data) => {
-			/*this.addBuffer(data);*/
-		});
-		
-		this.process.on("close", (code) => {
-			this.disconnect()
-		});
-		
-		await this.init();
+			resolve();
+			
+		}).then(() => { return this.init(); });
 	}
 	
-	async disconnect()
+	async disconnect(err)
 	{
-		await super.disconnect();
+		await super.disconnect(err);
 		this.process = null;
 	}
 	
