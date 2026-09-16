@@ -300,8 +300,14 @@ export async function registerCommands(provider)
 	
 	/* Delete MCP */
 	registry.register("delete_mcp", async (id) => {
+		
+		/* Remove server */
 		settings.mcpService.deleteServer(id);
 		await settings.deleteMCPServer(id);
+		
+		/* Register new tools list */
+		await registerTools(settings);
+		
 		return {
 			success: true,
 		}
