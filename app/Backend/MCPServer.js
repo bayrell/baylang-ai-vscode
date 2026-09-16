@@ -16,7 +16,16 @@ export class MCPServer
 		this.connected = false;
 		this.settings = settings;
 	}
-
+	
+	
+	/**
+	 * Returns version
+	 */
+	getVersion()
+	{
+		return "2025-06-18";
+	}
+	
 
 	/**
 	 * Build environment object from env array
@@ -53,11 +62,11 @@ export class MCPServer
 		if (this.connected)
 		{
 			await this.sendRequest("initialize", {
-				"protocolVersion": "2026-07-28",
+				"protocolVersion": this.getVersion(),
 				"capabilities": {},
 				"clientInfo": {
-					"name": "BayLang AI",
-					"version": "0.5.0",
+					"name": this.settings.getAppName(),
+					"version": this.settings.getAppVersion(),
 				},
 			});
 		}
@@ -185,7 +194,7 @@ export class MCPServer
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
-				"MCP-Protocol-Version": "2026-07-28",
+				"MCP-Protocol-Version": this.getVersion(),
 			},
 			body: JSON.stringify(request),
 		});

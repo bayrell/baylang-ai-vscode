@@ -273,6 +273,7 @@ export async function registerCommands(provider)
 		var manager = settings.mcpManager;
 		manager.removeServer(id);
 		await manager.saveServers();
+		settings.tools = await registerTools(settings);
 		return { success: true };
 	});
 	
