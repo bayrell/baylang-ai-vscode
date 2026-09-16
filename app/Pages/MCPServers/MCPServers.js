@@ -1,5 +1,6 @@
 import Crud from "../../Components/Crud.js";
 import Form from "../../Components/Form/Form.js";
+import Result from "../../Components/Form/Result.js";
 
 export default class MCPServers
 {
@@ -7,6 +8,7 @@ export default class MCPServers
 	{
 		this.layout = layout;
 		this.items = [];
+		this.reload_result = new Result();
 		this.crud = new Crud(this);
 		this.form = new Form();
 		this.form.setDefault({
@@ -63,6 +65,25 @@ export default class MCPServers
 		for (const item of result.response.items)
 		{
 			this.items.push(item);
+		}
+	}
+	
+	
+	/**
+	 * Reload tools
+	 */
+	async reloadTools()
+	{
+		this.reload_result.setWaitMessage();
+		
+		const id = this.form.getPrimaryKey();
+		const result = await this.layout.api.call("reload_server", id);
+		
+		this.reload_result.setApiResult(result);
+		
+		if (result.isSuccess() && this.form.item && this.form.item.id == id)
+		{
+			this.form.item.tools = result.response.item.tools;
 		}
 	}
 	

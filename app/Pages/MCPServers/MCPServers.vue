@@ -23,6 +23,12 @@
 		align-items: center;
 	}
 }
+.reload_tools__button{
+	display: flex;
+	gap: 5px;
+	align-items: center;
+	margin-bottom: 5px;
+}
 </style>
 
 <template>
@@ -121,6 +127,17 @@
 						</div>
 					</div>
 				</div>
+				<div class="reload_tools">
+					<div class="reload_tools__button">
+						<Button @click="reloadTools">Reload</Button>
+						<Result :result="model.reload_result" />
+					</div>
+					<div class="reload_tools__list"
+						v-if="list_tools.length > 0"
+					>
+						Tools: {{ list_tools }}
+					</div>
+				</div>
 			</template>
 			<template v-slot:delete_message>
 				Delete item {{ model.form.item.name }}?
@@ -187,6 +204,13 @@ export default {
 			if (!this.model.form.item) return [];
 			if (!this.model.form.item.env) return [];
 			return this.model.form.item.env;
+		},
+		list_tools()
+		{
+			if (!this.model.form.item) return "";
+			if (!this.model.form.item.tools) return "";
+			const tools = this.model.form.item.tools.map(item => item.name);
+			return tools.join(", ");
 		}
 	},
 	mounted()
@@ -225,6 +249,11 @@ export default {
 		removeEnv(index)
 		{
 			this.model.form.item.env.splice(index, 1);
+		},
+		async reloadTools()
+		{
+			await this.model.reloadTools();
+			await this.model.load();
 		}
 	},
 };

@@ -61,7 +61,7 @@ export class MCPClient
 	
 	getProtocolVersion()
 	{
-		return "2026-07-28";
+		return "2025-06-18";
 	}
 	
 	getToolName()
@@ -80,7 +80,8 @@ export class MCPClient
 		this.buffer = "";
 		for (const listener in this.listeners)
 		{
-			listener.reject(new Error("Disconnected"));
+			const reject = listener.reject;
+			if (reject) reject(new Error("Disconnected"));
 		}
 		this.listeners = {};
 	}
@@ -105,6 +106,8 @@ export class MCPClient
 	
 	addBuffer(data)
 	{
+		data = data.toString("utf-8");
+		
 		this.buffer += data;
 		const lines = this.buffer.split("\n");
 		
@@ -117,18 +120,25 @@ export class MCPClient
 	
 	addLine(line)
 	{
-		const response = JSON.parse(line);
-		const request_id = response.id;
-		if (this.listeners[request_id])
+		try
 		{
-			const resolve = this.listeners[request_id].resolve;
-			resolve(line);
+			const response = JSON.parse(line);
+			const request_id = response.id;
+			if (this.listeners[request_id])
+			{
+				const resolve = this.listeners[request_id].resolve;
+				if (resolve) resolve(response);
+			}
+			else
+			{
+				this.listeners[request_id] = {
+					"response": response,
+				};
+			}
 		}
-		else
+		catch (e)
 		{
-			this.listeners[request_id] = {
-				"response": response,
-			};
+			throw new Error("JSON Parse");
 		}
 	}
 	
@@ -164,6 +174,15 @@ export class MCPClient
 				}, timeout);
 			}
 		});
+	}
+	
+	async reloadTools()
+	{
+		const response = await this.send("tools/list");
+		if (response.result)
+		{
+			this.tools = response.result.tools;
+		}
 	}
 }
 
@@ -201,11 +220,11 @@ export class MCPClientCli extends MCPClient
 		}
 		
 		this.process.stdout.on("data", (data) => {
-			this.addBuffer(data);
+			this.addLine(data.toString("utf-8"));
 		});
 		
 		this.process.stderr.on("data", (data) => {
-			this.addBuffer(data);
+			/*this.addBuffer(data);*/
 		});
 		
 		this.process.on("close", (code) => {
@@ -218,16 +237,13 @@ export class MCPClientCli extends MCPClient
 	async disconnect()
 	{
 		await super.disconnect();
-		if (this.process)
-		{
-			this.process.disconnect();
-		}
 		this.process = null;
 	}
 	
 	async send(method_name, params, timeout)
 	{
 		if (timeout == undefined) timeout = 60 * 1000;
+		if (params == undefined) params = {};
 		if (!this.isConnected())
 		{
 			await this.connect();
@@ -298,7 +314,7 @@ export class MCPService
 	{
 		this.servers = this.settings.loadMCP();
 		this.servers = this.servers
-			.map(item => createMCP(item))
+			.map(item => createMCP(this.settings, item))
 			.filter(item => item != null)
 		;
 	}
@@ -331,7 +347,7 @@ export class MCPService
 	 */
 	addServer(data)
 	{
-		const server = createMCP(data);
+		const server = createMCP(this.settings, data);
 		server.id = this.generateId();
 		this.servers.push(server);
 		return server;
@@ -368,12 +384,12 @@ export class MCPService
 	}
 }
 
-export function createMCP(data)
+export function createMCP(settings, data)
 {
 	let item = null;
-	if (data.type == "cli") item = new MCPClientCli();
-	else if (data.type == "server") item = new MCPClientServer();
-	else item = new MCPClient();
+	if (data.type == "cli") item = new MCPClientCli(settings);
+	else if (data.type == "server") item = new MCPClientServer(settings);
+	else item = new MCPClient(settings);
 	
 	if (item)
 	{

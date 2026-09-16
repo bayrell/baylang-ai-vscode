@@ -221,6 +221,36 @@ export async function registerCommands(provider)
 		}
 	});
 	
+	/* Reload server */
+	registry.register("reload_server", async(id) => {
+		
+		/* Find server */
+		const server = settings.mcpService.findById(id);
+		if (!server)
+		{
+			return {
+				success: false,
+				message: "Item not found",
+			}
+		}
+		
+		/* Disconnect */
+		await server.disconnect();
+		
+		/* Reload tools  */
+		await server.reloadTools();
+		
+		/* Update settings */
+		await settings.saveMCPServer(id, server);
+		await registerTools(settings);
+		
+		/* Return result */
+		return {
+			success: true,
+			item: server.getData(),
+		}
+	});
+	
 	/* Save MCP */
 	registry.register("save_mcp", async ({id, item}) => {
 		
