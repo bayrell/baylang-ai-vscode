@@ -69,6 +69,17 @@ export class MCPClient
 		return this.prefix + "_" + name;
 	}
 	
+	getEnv()
+	{
+		const result = {};
+		for (const item of this.env)
+		{
+			const value = item["key"];
+			result[value] = item["value"];
+		}
+		return result;
+	}
+	
 	async connect()
 	{
 		if (this.isConnected()) return;
@@ -78,8 +89,9 @@ export class MCPClient
 	{
 		this.connected = false;
 		this.buffer = "";
-		for (const listener in this.listeners)
+		for (const request_id in this.listeners)
 		{
+			const listener = this.listeners[request_id];
 			const reject = listener.reject;
 			if (reject) reject(new Error("Disconnected"));
 		}
@@ -112,7 +124,7 @@ export class MCPClient
 		const lines = this.buffer.split("\n");
 		
 		this.buffer = lines.pop();
-		for (let line in lines)
+		for (let line of lines)
 		{
 			this.addLine(line.trim());
 		}
@@ -184,6 +196,28 @@ export class MCPClient
 			this.tools = response.result.tools;
 		}
 	}
+	
+	async execute(name, params)
+	{
+		const response = await this.send("tools/call", {
+			name: name,
+			arguments: params,
+		})
+		if (!response)
+		{
+			throw new Error("Response is null");
+		}
+		if (response.error)
+		{
+			throw new Error(response.error.message);
+		}
+		return response.result.content
+			.filter(item => item.type == "text")
+			.map(item => item.text.trim())
+			.filter(item => item != "")
+			.join(" ")
+		;
+	}
 }
 
 export class MCPClientCli extends MCPClient
@@ -208,7 +242,7 @@ export class MCPClientCli extends MCPClient
 			this.process = spawn(
 				this.command, this.args, {
 					cwd: this.settings.workspaceFolderPath,
-					env: this.env,
+					env: this.getEnv(),
 					timeout: this.connectionTimeout,
 				}
 			);
@@ -251,6 +285,10 @@ export class MCPClientCli extends MCPClient
 		
 		this.request_id += 1;
 		
+		const response = this.readResponse(
+			this.request_id, timeout
+		);
+		
 		const request = {
 			"jsonrpc": "2.0",
 			"id": this.request_id,
@@ -260,10 +298,7 @@ export class MCPClientCli extends MCPClient
 		this.process.stdin.write(JSON.stringify(request));
 		this.process.stdin.write("\n");
 		
-		const response = await this.readResponse(
-			this.request_id, timeout
-		);
-		return response;
+		return await response;
 	}
 }
 

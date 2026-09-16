@@ -53,7 +53,7 @@ export class MCPServerTool extends Tool
 	{
 		try
 		{
-			return this.server.send(this.tool.name, params);
+			return await this.server.execute(this.tool.name, params);
 		}
 		catch (e)
 		{
