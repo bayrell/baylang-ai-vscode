@@ -121,6 +121,7 @@ export default {
 			current_model_id: null,
 		};
 	},
+	emits: ["send"],
 	computed:
 	{
 		model()
