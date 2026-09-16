@@ -164,7 +164,7 @@ export class Tools
 				this.add(item);
 			}
 		}
-		this.items.push(tool);
+		else this.items.push(tool);
 	}
 	
 	

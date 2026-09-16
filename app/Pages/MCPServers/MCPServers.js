@@ -74,6 +74,8 @@ export default class MCPServers
 	 */
 	async reloadTools()
 	{
+		await this.save();
+		
 		this.reload_result.setWaitMessage();
 		
 		const id = this.form.getPrimaryKey();

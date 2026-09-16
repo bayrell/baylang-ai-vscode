@@ -13,6 +13,7 @@ export class MCPServerTool extends Tool
 		this.setName(server.getToolName(tool.name));
 		this.setDescription(tool.description);
 		
+		/* Add props */
 		if (tool.inputSchema)
 		{
 			const required = tool.inputSchema.required;

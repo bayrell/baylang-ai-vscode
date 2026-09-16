@@ -127,7 +127,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="reload_tools">
+				<div class="reload_tools" v-if="!model.crud.isAdd()">
 					<div class="reload_tools__button">
 						<Button @click="reloadTools">Reload</Button>
 						<Result :result="model.reload_result" />

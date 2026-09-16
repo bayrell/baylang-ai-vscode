@@ -249,7 +249,7 @@ export class MCPClientCli extends MCPClient
 					this.command, this.args, {
 						stdio: ["pipe", "pipe", "pipe"],
 						cwd: this.settings.workspaceFolderPath,
-						env: this.getEnv(),
+						env: Object.assign(process.env, this.getEnv()),
 						timeout: this.connectionTimeout,
 					}
 				);
@@ -261,11 +261,11 @@ export class MCPClientCli extends MCPClient
 			}
 			
 			this.process.stdout.on("data", (data) => {
-				this.addLine(data.toString("utf-8"));
+				this.addBuffer(data);
 			});
 			
 			this.process.stderr.on("data", (data) => {
-				/*this.addBuffer(data);*/
+				/*console.log(data.toString("utf-8"));*/
 			});
 			
 			this.process.on("error", (err) => {
@@ -274,7 +274,7 @@ export class MCPClientCli extends MCPClient
 			})
 			
 			this.process.on("close", (code) => {
-				this.disconnect();
+				this.disconnect(new Error("Exit code: " + code));
 			});
 			
 			this.connected = true;
