@@ -1,6 +1,7 @@
 .vscode/history
 .vscode/memory
 .vscode/rules/soul.rule
+example
 dist/index.cjs
 dist/index.cjs.map
 dist/main.css
