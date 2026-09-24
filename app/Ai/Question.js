@@ -30,7 +30,7 @@ export class Question
 		this.rules = [];
 		this.loaded_rules = null;
 		this.max_iter = 100;
-		this.fallback_count = 20;
+		this.fallback_count = 100;
 		this.settings = null;
 		this.tools = null;
 		this.tools_history = [];
@@ -564,7 +564,7 @@ export class Question
 			if (result) return;
 			
 			/* Wait */
-			if (count + 1 < this.fallback_count) await delay((Math.random() * 5 + 20) * 1000);
+			if (count + 1 < this.fallback_count) await delay((Math.random() * 2 + 5) * 1000);
 			count++;
 		}
 		
